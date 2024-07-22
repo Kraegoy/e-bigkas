@@ -1,0 +1,153 @@
+.welcome-message-container{
+    margin-left: -6em;
+    margin-top: -2.5em;
+}
+.welcome-message{
+    color: wheat;
+    text-transform: capitalize;
+    font-weight: bold;
+    font-size: 2em;
+
+}
+.welcome-message-username{
+    font-size: 0.9em;
+    margin-top: -2em;
+    color: #ccccccc1;
+}
+.profile-picture{
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    margin-right: 6em;
+    border: 1px solid wheat;
+}
+
+.form-label{
+    color: wheat;
+    font-size: 0.85em;
+}
+
+
+.profile-top-content-container{
+    width: 130%;
+    background-color: rgba(0, 0, 0, 0.321);;
+    height: 65%;
+    margin-left: -12em;
+    z-index: -1;
+    
+  }
+ 
+  .profile-container{
+    transition: margin-left 0.3s ease;
+    margin-top: 4em;
+  
+  }
+
+  .profile-form {
+    width: 250px;
+    padding: 0.5em;
+    border: 1px solid #000000;
+    border-radius: 5px;
+    margin-top: 4em;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #8d8d8d;
+    border-radius: 4px;
+    box-sizing: border-box;
+    background-color: #e6e6e6;
+}
+
+.file-input {
+    margin-bottom: 15px;
+}
+
+.submit-btn {
+    width: 50%;
+    padding: 6px;
+    background-color: wheat;
+    color: black;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.submit-btn:hover {
+    background-color: rgb(137, 207, 254);;
+}
+
+body{
+    overflow-x: hidden;
+}
+
+.custum-file-upload {
+    height: 20px;
+    width: 40px;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed #e8e8e8;
+    background-color: #212121;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0px 15px 15px -10px #e8e8e8;
+    margin-bottom: 1em;
+    margin-left: 4.9em;
+  }
+  
+  .custum-file-upload .icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .custum-file-upload .icon svg {
+    height: 30px;
+    fill: #e8e8e8;
+  }
+  
+  .custum-file-upload .text {
+    font-size: 1em;
+    display: block; 
+  }
+  
+  .custum-file-upload .text span {
+    font-weight: 400;
+    color: #e8e8e8;
+  }
+  
+  .custum-file-upload input {
+    display: none;
+  }
+  .form-label-file{
+    color: wheat;
+    font-size: 0.85em;
+    font-weight: bold;
+    display: block;
+    padding: 10px;
+  }
+  .bottom-content-profile {
+    background: linear-gradient(to bottom,#000000e6, #0000008b);
+    padding: 20px;
+    text-align: center; 
+    width: 100%;
+    min-height: 18vh;
+    color: rgb(216, 214, 214);
+    z-index: -10;
+    position: absolute;
+    bottom: 0; 
+    left: 0;
+    transition: margin-left 0.3s ease;
+}

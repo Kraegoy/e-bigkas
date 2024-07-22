@@ -1,0 +1,55 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Browser</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/styleFlask.css') }}">
+</head>
+<body>
+    <script>
+        function confirmDelete() {
+            return confirm("Are you sure you want to delete this folder?");
+        }
+    </script>
+    <h1><a href="/">File Browser</a></h1>
+    <form action="/" method="post">
+        <label for="search">Search:</label>
+        <input type="text" id="search" name="search">
+        <button type="submit" id="search">Search</button>
+    </form>
+    <form action="/create_folder" method="post">
+        <label for="new_folder">New Folder Name:</label>
+        <input type="text" id="new_folder" name="new_folder">
+        <button type="submit" class="addF">Create Folder</button>
+    </form>
+    <ul>
+        {% for file in files %}
+        <li>
+            <form action="/browse" method="post">
+                <input type="hidden" name="folder" value="{{ file }}">
+                <input type="hidden" name="current_path" value="{{ current_path }}">
+                <button type="submit">{{ file }}</button>
+                
+
+                {% if not file.isdigit() and not file.endswith('.npy') %}
+                <label for="no_sequences">Number of Sequences to add:</label>
+                <input type="text" id="no_sequences" name="no_sequences" value="3">
+                <button type="submit" class="add" name="action" value="add_frames">Add</button>
+                {% endif %}
+
+            </form>
+
+                {% if file.isdigit and not file.endswith('.npy') %}
+                <form action="/delete_folder" method="post" onsubmit="return confirmDelete()" style="display: inline; margin: 0;">
+                    <input type="hidden" name="folder" value="{{ file }}">
+                    <input type="hidden" name="current_path" value="{{ current_path }}">
+                    <button type="submit" class="delete" name="action" value="delete">Delete</button>
+                </form>
+                {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
