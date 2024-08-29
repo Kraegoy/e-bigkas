@@ -71,15 +71,64 @@ def add_friend(request, friend_id):
         ).exists()
 
         if existing_friendship:
-            return JsonResponse({'success': False, 'error': 'Friendship already exists'})
+            return JsonResponse({'success': False, 'error': 'Friendship already exists'}) 
 
         # Create a new Friendship object
-        friendship = Friendship.objects.create(user1=request.user, user2=friend)
+        friendship = Friendship.objects.create(user1=request.user, user2=friend, initiator=request.user),
 
         return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
     else:
         form = AddFriendForm()
     return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+@login_required
+def accept_friend_request(request, friendship_id):
+    friendship = get_object_or_404(Friendship, pk=friendship_id)
+    if request.user != friendship.initiator:
+        friendship.status = 'friends'
+        friendship.save()
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+@login_required
+def decline_friend_request(request, friendship_id):
+    friendship = get_object_or_404(Friendship, pk=friendship_id)
+    if request.user != friendship.initiator:
+        friendship.delete()
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+@login_required
+def cancel_friend_request(request, friendship_id):
+    friendship = get_object_or_404(Friendship, pk=friendship_id)
+    if request.user == friendship.initiator:
+        friendship.delete()
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+@login_required
+def pending_friendships_list(request):
+    current_user = request.user
+    
+    friendships = Friendship.objects.filter(Q(user1=request.user) | Q(user2=request.user))
+
+    # Filter friendships where initiator is not the current user and status is 'pending'
+    friendships = Friendship.objects.filter(
+        Q(user1=request.user) | Q(user2=request.user),
+        ~Q(initiator=current_user),
+        status='pending'
+    )
+        
+    pending_user_info = [
+        {
+            'username': friendship.user1.username if friendship.user2 == current_user else friendship.user2.username,
+            'user_id': friendship.user1.id if friendship.user2 == current_user else friendship.user2.id,
+            'profile_picture': friendship.user1.userprofile.profile_picture.url if friendship.user2 == current_user else friendship.user2.userprofile.profile_picture.url,
+            'friendship_id': friendship.id
+        }
+        for friendship in friendships
+    ]
+    return JsonResponse({'success': True, 'pending_user_info': pending_user_info})
 
 @login_required
 def friends_list(request):
@@ -91,6 +140,9 @@ def friends_list(request):
 
     # Iterate over the friendships and add the corresponding friend info (username, ID, profile picture) to the list
     for friendship in friendships:
+        if friendship.status != 'friends':
+            continue
+        
         if friendship.user1 == request.user:
             friend_user = friendship.user2
         else:

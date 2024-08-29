@@ -291,6 +291,7 @@ fetch('/friends_list/')
     .then(response => response.json())
     .then(data => {
         const friendsList = document.getElementById("friends-list");
+        friendsList.innerHTML = "";
 
            // Sort friends based on status: online users first
            data.friends.sort((a, b) => {

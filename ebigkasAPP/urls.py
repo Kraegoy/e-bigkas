@@ -18,6 +18,10 @@ from .views import (
     get_username,
     friends_conversations,
     reset_unread_count,
+    pending_friendships_list,
+    accept_friend_request,
+    decline_friend_request,
+    
 )
 
 urlpatterns = [
@@ -35,10 +39,14 @@ urlpatterns = [
     path('room/<str:room_id>/', room_detail, name='room_detail'),
     
     path('add_friend/<int:friend_id>/', add_friend, name='add_friend'),
+    path('accept_friend_request/<int:friendship_id>/', accept_friend_request, name='accept_friend_request'),
+    path('decline_friend_request/<int:friendship_id>/', decline_friend_request, name='decline_friend_request'),
+
     path('friends_list/', friends_list, name='friends_list'),
     path('search/', search_users, name='search_users'),
     
     path('load_messages/', load_messages, name='load_messages'),
+    path('pending_friendships_list/', pending_friendships_list, name='pending_friendships_list'),
     path('api/get-username/<int:user_id>/', get_username, name='get-username'),
     path('reset_unread_count/<str:conversation_name>/', reset_unread_count, name='reset_unread_count'),
 

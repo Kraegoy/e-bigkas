@@ -32,6 +32,8 @@ class Room(models.Model):
 class Friendship(models.Model):
     user1 = models.ForeignKey(User, related_name='friendships_as_user1', on_delete=models.CASCADE)
     user2 = models.ForeignKey(User, related_name='friendships_as_user2', on_delete=models.CASCADE)
+    initiator = models.ForeignKey(User, related_name='friendships_initiated', on_delete=models.CASCADE)
+    status = models.CharField(max_length=10, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -4,6 +4,51 @@ const socket = new WebSocket('ws://localhost:8000/ws/video_call/');
 
 let sentStatus = sessionStorage.getItem('sentStatus') || 0;
 
+let inactivityTimeout;
+let isOnline = false; // Flag to track if the status is online
+
+// Function to handle status updates
+function handleStatusUpdate(status) {
+    if (socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({
+            type: 'friend_status',
+            loggedInUserID: sessionStorage.getItem('loggedInUserId'),
+            loggedInUsername: sessionStorage.getItem('loggedInUsername'),
+            status: status
+        }));
+    }
+}
+
+
+
+// Function to reset inactivity timer and update status
+function resetInactivityTimer() {
+    clearTimeout(inactivityTimeout);
+
+    // Send online status if not already set
+    if (!isOnline) {
+        handleStatusUpdate('online');
+        isOnline = true;
+        console.log("hello")
+    }
+
+    // Set the timeout to notify the server of inactivity
+    inactivityTimeout = setTimeout(() => {
+        handleStatusUpdate('offline');
+        isOnline = false; // Update flag when going offline
+    }, 2 * 60 * 1000); // 2 minutes
+}
+
+// Initialize the inactivity timer
+resetInactivityTimer();
+
+
+// Reset the inactivity timer on user activity
+window.addEventListener('mousemove', resetInactivityTimer);
+window.addEventListener('keydown', resetInactivityTimer);
+window.addEventListener('scroll', resetInactivityTimer);
+
+
 
 socket.onopen = function(event) {
     const conversationName1 = sessionStorage.getItem('ConversationName');
@@ -31,18 +76,23 @@ socket.onopen = function(event) {
 
     console.log("WebSocket connection established with room id");
 };
-
 socket.onclose = function(event) {
-
-    socket.send(JSON.stringify({
-        type: 'friend_status',
-        loggedInUserID: sessionStorage.getItem('loggedInUserId'),
-        loggedInUsername: sessionStorage.getItem('loggedInUsername'),
-        status: 'offline'
-    }));
+    if (socket.readyState === WebSocket.OPEN) {
+        try {
+            socket.send(JSON.stringify({
+                type: 'friend_status',
+                loggedInUserID: sessionStorage.getItem('loggedInUserId'),
+                loggedInUsername: sessionStorage.getItem('loggedInUsername'),
+                status: 'offline'
+            }));
+        } catch (error) {
+            console.error('Error sending message on WebSocket close:', error);
+        }
+    } else {
+        console.warn('WebSocket is not open. Cannot send message.');
+    }
     console.log('WebSocket connection closed.');
 };
-
 
 
 socket.onmessage = function(event) {
@@ -174,7 +224,7 @@ if (message.type === 'messages_loaded') {
     
         // Function to play ringtone sound
         function playRingtone() {
-            const ringtone = new Audio("{% static '/images/notif.wav' %}");
+            const ringtone = new Audio("static\\images\\notif.wav"); 
             ringtone.play();
         }
         
