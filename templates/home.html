@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <!--  <script src="static/styles/index.js"></script>    -->
+    <title>Sign Language Detection</title>
+</head>
+
+<body>
+
+<div class="container">
+    {% include 'nav.html' %}
+    {% include 'topnav.html' %}
+   
+    <main class="main-content">
+        <div class="content-container">
+            <div class="upper-content">
+                <div class="news">
+                    DI KO PA ALAM // NEWS
+                </div>
+                <div class="history">
+                    DI KO PA ALAM // HISTORY
+                </div>
+            </div>
+
+            <div class="below-content">
+                <div class="bottom1">
+                    DI KO PA ALAM
+                </div>
+                <div class="bottom2">
+                    DI KO PA ALAM
+                </div>
+                <div class="bottom3">
+                    DI KO PA ALAM
+                </div>
+
+            </div>
+        </div>
+
+  
+    </main>
+
+
+ 
+
+</div>
+<div id="overlay" class="overlay"></div> <!-- Overlay div -->
+
+
+<div id="newUserModal" class="newUserModal">
+    
+</div>
+
+<footer class="footer">
+    <div class="footer-content">
+        <p>&copy; 2024 e-Bigkas</p>
+    </div>
+</footer>
+
+<script src="{% static 'JS/index.js' %}"></script>
+<script>
+
+    sessionStorage.setItem('loggedInUserId', '{{ request.user.id }}');
+    sessionStorage.setItem('loggedInUsername', '{{ request.user.username }}');
+    var welcomeContent = document.querySelector(".welcome-content");
+
+    function typeText(element, text, index = 0) {
+        if (index < text.length) {
+            element.textContent += text.charAt(index);
+            index++;
+            setTimeout(() => typeText(element, text, index), 45);
+        }
+    }
+    
+    window.onload = function() {
+        var isNewUser = "{{ isNewUser }}";
+    
+        console.log("is new:" + isNewUser);
+        const newUserModal = document.getElementById("newUserModal");
+    
+        if (isNewUser === "True") {     
+            
+            const newUserModalContent = `
+                <div class="newUserModal-content">
+                    <div class="Welcome-video-container" id="Welcome-video-container">
+                        <video id="Welcome-video" controls >
+                            <source src="{% static 'tutorial_ebigkas/part1.mp4' %}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    
+                    <span class="close">&times;</span>
+                    <p class="welcome-content"></p>
+                </div>
+            `;
+
+            newUserModal.innerHTML = newUserModalContent;
+
+            // Show the modal
+            var modal = document.getElementById("newUserModal");
+            var overlay = document.getElementById("overlay");
+            var welcomeMessages = [
+                "Welcome to e-Bigkas, where gestures speak volumes.",
+                "Help us build a better tomorrow, where barriers dissolve and understanding reigns supreme.",
+                "Join our community at e-Bigkas, where every sign is a step towards a more inclusive world.",
+                "Together, let's shape a future where communication knows no bounds.",
+                "Let your gestures be heard."
+            ];
+        
+            var x = 0;
+        
+            var span = document.getElementsByClassName("close")[0];
+        
+            var video = document.getElementById("Welcome-video");
+        
+            modal.style.display = "block";
+            overlay.style.display = "block";
+        
+            video.onplay = function() {
+                // Start typing the welcome messages when the video starts playing
+                typeText(welcomeContent, welcomeMessages[x]);
+
+                function nextMessage() {
+                    setTimeout(function() {
+                        if (x < welcomeMessages.length - 1) {
+                            x++;
+                            welcomeContent.textContent = ""; // Clear the content before typing the next message
+                            typeText(welcomeContent, welcomeMessages[x]);
+                            nextMessage(); // Call nextMessage recursively to iterate through messages
+                        }
+                    }, 8000); // Wait for 10 seconds before showing the next message
+                }
+            
+                nextMessage(); // Start the process
+            };
+        
+      
+        
+            // Close the modal when the user clicks on the close button
+            span.onclick = function() {
+                modal.style.display = "none";
+                overlay.style.display = "none";
+            }
+        
+            // Close the modal when the user clicks anywhere outside of it
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+        }
+        
+    }
+    
+    </script>
+</body>
+</html>

@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{% static 'styles/styles.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+
+    <title>Sign Language Detection</title>
+</head>
+
+<body>
+    <style>
+        .nav-container{
+            z-index: 10000;
+            transition: transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+
+        }
+
+        .Btn {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            width: 2.5em;
+            height: 2.5em;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition-duration: .3s;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.199);
+            background-color: grey;
+          }
+          
+          /* plus sign */
+          .sign {
+            width: 100%;
+            transition-duration: .3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          
+          .sign svg {
+            width: 17px;
+          }
+          
+          .sign svg path {
+            fill: white;
+          }
+          /* text */
+          .text {
+            position: absolute;
+            right: 0%;
+            width: 0%;
+            opacity: 0;
+            color: white;
+            font-size: 1.2em;
+            font-weight: 600;
+            transition-duration: .3s;
+          }
+          /* hover effect on button width */
+          .Btn:hover {
+            width: 125px;
+            border-radius: 40px;
+            transition-duration: .3s;
+          }
+          
+          .Btn:hover .sign {
+            width: 20%;
+            transition-duration: .3s;
+            padding-left: -10px;
+          }
+          /* hover effect button's text */
+          .Btn:hover .text {
+            opacity: 1;
+            width: 50%;
+            transition-duration: .3s;
+            padding-right: 10px;
+          }
+          /* button click effect*/
+          .Btn:active {
+            transform: translate(2px ,2px);
+          }
+
+         
+        
+        
+    </style>
+
+   
+
+    <div class="nav-container">
+        <nav class="left-nav">
+            <div class="burger-menu">
+            <input type="checkbox" id="checkbox">
+            <label for="checkbox" class="toggle">
+                <div class="bars" id="bar1"></div>
+                <div class="bars" id="bar2"></div>
+                <div class="bars" id="bar3"></div>
+            </label>
+        </div>  
+            <header>
+            
+                <div id="current-user-profilepic">
+                 <a  href="{% url 'profile' %}">  <img src="{{ user.userprofile.profile_picture.url }}" alt="Profile Picture" id="user-profilePic"> </a>
+                    <p class="loggedinUser" id="loggedinUser"><a href="{% url 'profile' %}" class="loggedinUser" >{{ request.user.username }}</a>
+                </div>
+                <div id="current-user-id" data-user-id="{{ request.user.id }}"></div>
+
+            <h1 id="appName" class="appName" style="text-align: right">
+                <a href="{% url 'home' %}" style="text-decoration: none; color: wheat; margin-right: 1em;">e-Bigkas</a>
+            </h1>
+            
+          
+            </header>
+
+          
+
+            <div class="navs" id="navs">
+                <div class="nav-home">
+                    <a href="{% url 'home' %}" class="nav-home"><i class="fas fa-home" style="margin-right: 1em"></i> Home</a>
+                </div>
+
+                <p class="friends-header"> <i class="fas fa-users" style="margin-right: 0.8em"></i>
+                     Friends:</p>
+                <div class="friend-list">
+                    <div id="friends-list">
+                        <!-- Friends will be dynamically added here -->
+                    </div>
+                    <br>
+                </div>
+
+                <div class="nav-help">
+                    <a href="{% url 'help' %}" class="nav-people">    <i class="fas fa-question" style="margin-right: 1em"></i>
+                        Help</a>
+                </div>
+
+                                <!-- 
+
+                      <div class="nav-profile">
+                    <a href="{% url 'profile' %}" id="profile" class="nav-profile">Profile</a>
+                </div>
+
+              
+                <div class="nav-people">
+                    <a href="{% url 'people' %}" class="nav-people">People</a>
+                </div>
+
+                <form action="{% url 'logout' %}" method="post" onclick="logout()">
+            {% csrf_token %}
+            <button class="Btn">
+        
+                <div class="sign"><svg viewBox="0 0 512 512"><path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"></path></svg></div>
+                
+                <div class="text">Logout</div>
+            </button>       
+
+            </form>
+                -->
+
+               
+
+            </div>        
+            
+            
+            
+        
+
+        </nav>
+</div>
+
+<div id="confirmationModal" class="modal">
+    <div class="modal-content">
+      <p>Do you want to join the video call?</p>
+      <button id="confirmBtn">Yes</button>
+      <button id="cancelBtn">No</button>
+    </div>
+  </div>
+
+
+  <div class="messages-container-home">
+    <span class="close-message-home" onclick="closeChat()"> x </span>
+    <div class="receiver-username" id="receiver-username"> username </div>
+
+    <div class="messages">
+    
+    </div>
+    
+
+    <div class="chat-box">
+        <form id="chat-form" method="post" action="">
+            {% csrf_token %}
+            <textarea id="chat-input" name="message" class="chat-here" placeholder="Enter chat..." onkeydown="handleKeyDown(event)"></textarea>
+            <input type="hidden" id="sender" name="sender" value="">
+            <input type="hidden" id="receiver" name="receiver" value="">
+            <input type="hidden" id="conversationName" name="conversationName" value="">
+            <button id="sendButton" class="sendButton" onclick="sendMessage()" type="submit">Send</button>
+        </form>
+        
+    </div>
+    
+</div>
+
+</body>
+
+<script src="{% static 'JS/websocket.js' %}"></script>
+
+<script>
+
+
+
+    
+let profile1 = document.getElementById("profile")
+const loggedInUserID = sessionStorage.getItem('loggedInUserId');
+const loggedInUsername = sessionStorage.getItem('loggedInUsername');
+
+
+
+
+const messageBox1 = document.querySelector('.messages-container-home');
+        let kkk = false; 
+        
+        function displaychat1(friend_userID, friend_username) {
+            const loggedInUserID_for_displaychat = sessionStorage.getItem('loggedInUserId');
+            const receiver_username = document.getElementById("receiver-username")
+            kkk = !kkk; // Toggle the variable
+            messageBox1.style.display = 'block';
+            sessionStorage.setItem('receiverId', friend_userID);
+            //console.log(friend_userID);
+            //console.log(friend_username);
+            receiver_username.textContent = friend_username; 
+            const userHolderContainer = document.getElementById('user-holder-container')
+            if(userHolderContainer){
+                userHolderContainer.innerHTML = ''; // Clear the container on page load
+            }
+
+            if(loggedInUserID_for_displaychat > friend_userID){
+                conversationName = `${loggedInUserID_for_displaychat} and ${friend_userID}`;
+            }
+            else{
+                conversationName = `${friend_userID} and ${loggedInUserID_for_displaychat}`;
+            }
+            sessionStorage.setItem('conversationName', conversationName);
+
+
+            if (conversationName) {
+                //console.log("Sending request to load messages for conversation:", conversationName1);
+                socket.send(JSON.stringify({
+                    type: 'load_messages',
+                    conversationName: conversationName
+                }));
+            }
+
+            const chatInputOnFocus = document.getElementById('chat-input');
+            chatInputOnFocus.addEventListener('focus', () => {
+                console.log('Chat input focused');
+                reset_unread_count(conversationName);
+                loadFriendsConversations();
+
+            });
+
+            scrollToBottom();
+            reset_unread_count(conversationName);
+
+        }
+
+        function closeChat(){
+            messageBox1.style.display = 'none';
+            kkk = !kkk; // Toggle the variable
+            scrollToBottom();
+            sessionStorage.removeItem('receiverId');
+            sessionStorage.removeItem('conversationName');
+
+        }
+        
+        // Function to scroll to the bottom of the chat window
+        function scrollToBottom() {
+            const messagesContainer = document.querySelector('.messages');
+            if (messagesContainer) {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+        }
+
+
+function friends_list(){
+fetch('/friends_list/')  
+    .then(response => response.json())
+    .then(data => {
+        const friendsList = document.getElementById("friends-list");
+
+           // Sort friends based on status: online users first
+           data.friends.sort((a, b) => {
+            if (a.status === 'online' && b.status !== 'online') {
+                return -1; // a should come before b
+            } else if (a.status !== 'online' && b.status === 'online') {
+                return 1; // b should come before a
+            } else {
+                return 0; // maintain order
+            }
+        });
+            
+        // Loop through the friends array and create list items for each friend
+    data.friends.forEach(friend => {
+
+        // User-profile code (replace this with your actual code)
+        const profilePictureContainer = document.createElement('div');
+        profilePictureContainer.classList.add('profile-picture-container');
+
+        const profilePicture = document.createElement('img');
+        profilePicture.classList.add('friend-profile-picture');
+        profilePicture.src = friend.profile_picture;
+        profilePicture.alt = '.media/profile_pics/default.png'; // Default alt text
+        profilePictureContainer.appendChild(profilePicture);
+
+        const listItem = document.createElement('div'); // Wrap the content in a <div>
+        listItem.classList.add('friend-container');
+        listItem.classList.add(`${friend.username}${friend.id}`);
+
+        const friend_userID = `${friend.id}`;
+
+
+        listItem.appendChild(profilePictureContainer); 
+
+        const usernameSpan = document.createElement('div');
+        usernameSpan.classList.add("friend-username-div");
+        usernameSpan.textContent = `${friend.username}`; 
+
+        if (friend.status === 'online') {
+            usernameSpan.style.color = '#01d601'; 
+            usernameSpan.style.fontWeight = 'bold'; 
+        }
+        
+        listItem.classList.add('friend-username'); // Add a class for styling
+        listItem.appendChild(usernameSpan); // Append username
+        const friend_username = `${friend.username}`;
+
+        
+        listItem.addEventListener("click", () => displaychat1(friend_userID, friend_username));
+
+        // Create the form element for creating a room
+        const createRoomForm = document.createElement('form');
+        createRoomForm.classList.add('form-vidcall'); 
+        createRoomForm.method = 'POST'; // Change the method to POST
+        createRoomForm.action = '{% url "create_room" %}';
+        
+        // Create a CSRF token input field
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = '{{ csrf_token }}';
+        
+        // Create hidden input fields for the inviting user ID and the invited user ID
+        const invitingUserInput = document.createElement('input');
+        invitingUserInput.type = 'hidden';
+        invitingUserInput.name = 'inviting_user_id';
+        invitingUserInput.value = '{{ request.user.id }}'; 
+        
+        const invitedUserInput = document.createElement('input');
+        invitedUserInput.type = 'hidden';
+        invitedUserInput.name = 'invited_user_id';
+        invitedUserInput.value = friend.id; 
+        
+        // Create a hidden input field for the room ID (randomly generated)
+        const roomIDInput = document.createElement('input');
+        roomIDInput.type = 'hidden';
+        roomIDInput.name = 'room_id';
+        roomIDInput.value = generateRoomID(); // Generate a room ID here
+        
+    // Create the image for the video call button
+    const videoCallButtonImg = document.createElement('img');
+    videoCallButtonImg.src = '{% static "/images/video.svg" %}'; // Reference the static image using Django templating
+    videoCallButtonImg.alt = 'Video Call'; // Add alt text for accessibility
+    videoCallButtonImg.classList.add('video-call-button'); // Add a class for styling
+
+    // Add event listener to the image for form submission
+    videoCallButtonImg.addEventListener('click', function() {
+        createRoomForm.submit(); // Submit the form when the image is clicked
+    });
+
+    // Append the CSRF token input field, user ID inputs, room ID input, and image to the form
+    createRoomForm.appendChild(csrfInput);
+    createRoomForm.appendChild(invitingUserInput);
+    createRoomForm.appendChild(invitedUserInput);
+    createRoomForm.appendChild(roomIDInput);
+    createRoomForm.appendChild(videoCallButtonImg);
+    
+    // Append the form to the list item
+    listItem.appendChild(createRoomForm);
+    
+    // Append the list item to the friends list
+    friendsList.appendChild(listItem);
+
+    // Add event listener to the username to trigger handleUsernameClick function
+    listItem.addEventListener('click', handleUsernameClick);
+    });
+
+    })
+    .catch(error => {
+        console.error('Error fetching friends list:', error);
+    });
+
+}
+friends_list()
+
+
+    function handleUsernameClick(event) {
+        // Get the form element containing the button
+        const form = event.target.closest('form');
+        // Get the room ID from the form's input field
+        const roomID = form.querySelector('input[name="room_id"]').value;
+        // Get the invited user ID from the form
+        const invitedUserID = form.querySelector('input[name="invited_user_id"]').value;
+
+        sessionStorage.setItem('invited', 'false');
+        sessionStorage.setItem('invitedUserID', invitedUserID);
+        
+        const loggedInUserId = "{{ request.user.id }}";
+        // Pass loggedInUserId as an argument to the sendVideoCallInvitation function
+        sendVideoCallInvitation(roomID, invitedUserID, loggedInUserId);
+    }
+
+
+// Function to handle messages loaded event
+function handleMessagesLoaded(data) {
+    //console.log("Received messages_loaded event from server. Data:", data);
+    const messagesContainer = document.querySelector('.messages');
+    const loggedInUserId = sessionStorage.getItem('loggedInUserId');
+    
+    messagesContainer.innerHTML = '';
+    
+    data.messages.forEach(message => {
+        handleIncomingMessage(message);
+    });
+    scrollToBottom();
+
+}
+
+// Function to handle incoming messages
+function handleIncomingMessage(message) {
+    loadFriendsConversations();
+    console.log("loadedede")
+
+    const messagesContainer = document.querySelector('.messages');
+    const loggedInUserId = sessionStorage.getItem('loggedInUserId');
+
+    const sender = message.sender_id == loggedInUserId ? 'your-messages' : 'friends-messages';
+
+    const messageDiv = document.createElement('div');
+    messageDiv.classList.add(sender);
+    
+    const messageContent = document.createElement('div');
+    messageContent.textContent = message.content;
+    messageContent.classList.add('indiv-messages');
+
+    messageDiv.appendChild(messageContent);
+    const timeSent = document.createElement('div');
+    const messageDate = new Date(message.timestamp);
+    const currentDate = new Date();
+
+    if (messageDate.toDateString() === currentDate.toDateString()) {
+        // Display time if message was sent today
+        timeSent.textContent = messageDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    } else {
+        // Display date and time if message was sent on a different day
+        const options = { month: 'short', day: 'numeric' };
+        const formattedDate = messageDate.toLocaleDateString('en-US', options);
+        timeSent.textContent = `${formattedDate}, ${messageDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
+    }
+    // Add appropriate CSS class based on sender
+    timeSent.classList.add(message.sender_id == loggedInUserId ? 'your-time-sent' : 'friends-time-sent');
+    messageDiv.appendChild(timeSent);
+        
+    messagesContainer.appendChild(messageDiv);
+}
+
+
+
+
+function sendMessage() {
+    loadFriendsConversations();
+    const chatInput = document.getElementById('chat-input');
+    const messageContent = chatInput.value;
+    const senderId = sessionStorage.getItem('loggedInUserId');
+    const conversationName = sessionStorage.getItem('conversationName');
+    const userHolderContainer = document.getElementById('user-holder-container')
+    if(userHolderContainer){
+        userHolderContainer.style.display= 'none';
+    }
+    
+    const recieverID = sessionStorage.getItem('receiverId');
+    if (messageContent.trim() !== '' && recieverID) { 
+        const message = {
+            sender_id: senderId,
+            receiver_id: recieverID, 
+            content: messageContent,
+            timestamp: new Date().toISOString(),
+            conversationName: conversationName
+        };
+        
+        console.log("Sending message:", message);
+        socket.send(JSON.stringify({ type: 'message', message: message }));
+        
+        chatInput.value = '';
+        
+        scrollToBottom();
+    } else {
+        console.error('Receiver ID is null or undefined');
+    }
+}
+
+
+function handleKeyDown(event) {
+    // Check if the Enter key is pressed
+    if (event.keyCode === 13 && !event.shiftKey) {
+        event.preventDefault(); // Prevent the default Enter key behavior (line break)
+        sendMessage(); // Call the sendMessage function
+    }
+}
+
+
+function sendVideoCallInvitation(roomID, invitedUserID, loggedInUserId) {
+    const message = {
+        type: 'video_call_invitation',
+        room_id: roomID,
+        invited_user_id: invitedUserID,
+        inviting_user_id: loggedInUserId, // Corrected typo here
+    };
+    socket.send(JSON.stringify(message)); // Send the message object
+}
+
+
+// Event listener for the "Video Call" button click
+document.addEventListener('click', function(event) {
+    if (event.target.classList.contains('video-call-button')) {
+        const form = event.target.closest('form');
+        form.submit(); 
+    }
+});
+
+
+// Function to generate a random room ID
+function generateRoomID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
+
+
+
+function removeDuplicates(text) {
+    // Split the text into phrases or words based on a delimiter, e.g., space
+    const phrases = text.split(' ');
+    
+    // Use a Set to track unique phrases
+    const uniquePhrases = [];
+    const seenPhrases = new Set();
+    
+    for (const phrase of phrases) {
+        if (!seenPhrases.has(phrase)) {
+            uniquePhrases.push(phrase);
+            seenPhrases.add(phrase);
+        }
+    }
+    
+    // Reconstruct the text from unique phrases
+    const sanitizedText = uniquePhrases.join(' ');
+    
+    return sanitizedText;
+}
+
+
+
+function reset_unread_count(conversation_name) {
+        fetch(`/reset_unread_count/${encodeURIComponent(conversation_name)}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken') // Ensure this function is correctly implemented
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Unread count reset successfully');
+                // Optionally refresh the messages or UI
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // Function to get the CSRF token from cookies
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+        
+</script>
+
+
+
+  
+
+
+</html>

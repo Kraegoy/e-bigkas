@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <title>Sign Language Detection</title>
+</head>
+
+<body>
+
+<div class="container">
+    {% include 'nav.html' %}
+
+    <main class="main-content">
+        <div class="top-content">
+            <div class="toptop" id="toptop">
+                <div class='all-friend' id='allfriend'>
+                    <div class="friend-container">
+                        <div class="search-bar">
+                            <form action="{% url 'search_users' %}" method="GET">
+                                <input type="text" name="query" placeholder="Search users...">
+                                <button type="submit">Search</button>
+                            </form>
+                        </div>
+
+                        <div class="user-holder-container" >
+                            {% for user in users %}
+                            <div class="friend">
+                                <div class="user-holder">{{ user.username }} </div>
+                                {% if user != request.user %}
+                                {% if user in request.user.friends.all %}
+                                <button disabled>Friends</button>
+                                {% else %}
+                                <form method="post" action="{% url 'add_friend' friend_id=user.id %}">
+                                    {% csrf_token %}
+                                    {{ form }}
+                                    <input type="hidden" name="friend_id" value="{{ user.id }}">
+                                    <button type="submit" class="addfriend">
+                                        <i class="fas fa-user-plus"></i>
+                                    </button>
+                                </form>
+
+                                {% if error %}
+                                <p>{{ error }}</p>
+                                {% endif %}
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="friend-list">
+                            <p>Friends:</p>
+                            <div id="friends-list">
+                                <!-- Friends will be dynamically added here -->
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Embed the camera feed here -->
+                    <div class="camera-container">
+                        <img id="video" class="cvW">
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="bottom-content">
+
+            </div>
+
+        </div>
+    </main>
+
+</div>
+<script src="{% static 'JS/index.js' %}"></script>
+
+</body>
+</html>

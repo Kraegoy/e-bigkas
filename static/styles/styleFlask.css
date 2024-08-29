@@ -1,0 +1,87 @@
+/* Add your CSS styles here */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #333;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+h1 {
+    color: #fff;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    width: 70%;
+}
+
+li {
+    margin-bottom: 0.8em;
+    border: 1px solid #fff;
+    background-color: #444;
+}
+button.addF{
+    width: 14%;
+    background-color: rgb(121, 121, 233);
+}
+
+button {
+    background-color: #c5f8c6;
+    font-weight: bolder;
+    font-size: 1.15em;
+    color: rgb(0, 0, 0);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width:25%;
+    text-transform: uppercase;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+li form button {
+    display: inline-block; /* or inline */
+    margin-right: 10px; /* Optional: Add space between buttons */
+}
+.add{
+    width: 10%;
+    background-color: #358a38;
+
+}
+label{
+    color: white;
+    padding: 1em;
+}
+input{
+    width: 15%;
+    text-align: center;
+    font-size: 1.15em;
+    font-weight: bold;
+}
+button.delete{
+    width: 10%;
+    font-size: 0.6em;
+    background-color: red;
+}
+form{
+    margin-top: 1em;
+}
+#search{
+    width: 5em;
+    text-align: left;
+}
+input#search{
+    width: 15em;
+}
+h1{
+    text-decoration: none;
+    color: white;
+}

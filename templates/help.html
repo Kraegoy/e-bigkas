@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <!--  <script src="static/styles/index.js"></script>    -->
+    <title>Sign Language Detection</title>
+</head>
+
+<style>
+    .tutorial{
+        width: 20%;
+        height: 15%;
+        margin-left: 53em;
+        margin-top: 2em;
+    }
+    .video-container1 {
+        overflow-y: auto;
+        max-width: 52%;
+        height: 90%;
+        max-height: 500px;
+        margin-left: -8em;
+        position: relative;
+        display: flex;
+        flex-wrap: wrap;
+        flex-grow: 1; /* Allow container to grow and fill available space */
+        background-color: rgba(0, 0, 0, 0.312);
+        border-radius: 10px;
+        padding: 1.5em;
+    }
+    
+    /* Style for the scrollbar track */
+.video-container1::-webkit-scrollbar, .sent-actions::-webkit-scrollbar {
+  width: 0.4em;
+}
+
+
+/* Style for the scrollbar thumb */
+.video-container1::-webkit-scrollbar-thumb, .sent-actions::-webkit-scrollbar {
+  background-color: wheat; 
+  border-radius: 5px; 
+}
+
+/* Style for the scrollbar track on hover */
+.video-container1::-webkit-scrollbar-track:hover , .sent-actions::-webkit-scrollbar{
+  background-color: #000000; 
+}
+
+/* Style for the scrollbar thumb on hover */
+.video-container1::-webkit-scrollbar-thumb:hover , .sent-actions::-webkit-scrollbar {
+  background-color: rgba(245, 222, 179, 0.765); 
+}
+    
+    
+    .video-list {
+        width: auto;
+        display: flex;
+        transition: transform 0.5s ease-in-out;
+    }
+    
+    .video-card1 {
+        display: flex;
+        flex-wrap: wrap; 
+        width: 220px; 
+        color: wheat;
+        height: 5%;
+        background-color: black;
+        margin: 2px;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+    .video-card1:hover{
+        background-color: rgb(113, 113, 113);
+        color: black;
+    }
+    
+    .folder-name {
+        flex-grow: 1; /* Allow the folder name to grow */
+    }
+    
+    h4 {
+        color: rgba(245, 222, 179, 0.908);
+        cursor: pointer;
+        text-transform: capitalize;
+    }
+    
+    .video-item {
+        flex: 0 0 auto;
+        margin: 10px;
+        width: 40%;
+        height: 100%;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Add box shadow */
+
+    }
+    .video-item::-webkit-media-controls {
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .video-item::-webkit-media-controls-play-button {
+        display: block !important;
+        margin: auto;
+    }
+    
+    .video-item::-webkit-media-controls-volume-slider {
+        display: none !important;
+    }
+    .overlay {
+        display: none; 
+        position: fixed; 
+        z-index: 11111; 
+        top: 0; 
+        left: 0; 
+        width: 100%; 
+        height: 100%; 
+        background-color: rgba(0, 0, 0, 0.5); 
+      }
+    
+    .videoModal {
+        display: none; 
+        position: fixed; 
+        z-index: 111111;
+        left: 55%; 
+        top: 50%; 
+        transform: translate(-50%, -50%); 
+        width: 70%; 
+        height: 90%; 
+        overflow-y: auto;
+        overflow-x: hidden; 
+        background-color: black; 
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add shadow for depth */
+
+      }
+      .PS, .PS1{
+        color: rgba(188, 188, 188, 0.776);
+        text-align: left;
+        padding: 1em;
+    }
+      
+      
+      .videoModal-content {
+     
+        background-color: #rgb(25 25 25);
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 600px;
+
+      }
+      
+      .close {
+        color: wheat;
+        float: right;
+        font-size: 2em;
+        font-weight: bold;
+        padding: 5px;
+        margin-right: 10px;
+
+      }
+      .modal-content1 {
+        background-color:rgb(29 29 29);
+        box-shadow: 0 10px 18px rgba(2, 1, 0, 0.558);
+        margin-bottom: 0;
+        border: 1px solid #313030;
+        width: 100%;
+        height: 77%;
+        text-align: center;
+        border-radius: 0.8em;
+        color: rgb(247, 237, 218);
+    
+      }
+      .close:hover,
+      .close:focus {
+        color: red;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      
+    
+      .button {
+        line-height: 1;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: .75rem;
+        background-color: var(--clr);
+        color: #fff;
+        border-radius: 10rem;
+        font-weight: 600;
+        padding: .75rem 1.5rem;
+        padding-left: 20px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transition: background-color .3s;
+        cursor: pointer;
+      }
+      
+      .button__icon-wrapper {
+        flex-shrink: 0;
+        width: 25px;
+        height: 25px;
+        position: relative;
+        color: var(--clr);
+        background-color: #fff;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+      }
+      
+      .button:hover {
+        background-color: rgb(51, 150, 255);
+      }
+      
+      .button:hover .button__icon-wrapper {
+        color: #000;
+      }
+      
+      .button__icon-svg--copy {
+        position: absolute;
+        transform: translate(-150%, 150%);
+      }
+      
+      .button:hover .button__icon-svg:first-child {
+        transition: transform .3s ease-in-out;
+        transform: translate(150%, -150%);
+      }
+      
+      .button:hover .button__icon-svg--copy {
+        transition: transform .3s ease-in-out .1s;
+        transform: translate(0);
+      }
+
+      .form {
+        --width-of-input: 98%;
+        --border-height: 1px;
+        --border-before-color: rgba(221, 221, 221, 0.39);
+        --border-after-color: #5891ff;
+        --input-hovered-color: #4985e01f;
+        position: relative;
+        width: var(--width-of-input);
+       }
+       /* styling of Input */
+       .input {
+        color: #fff;
+        font-size: 0.9rem;
+        background-color: transparent;
+        width: 100%;
+        box-sizing: border-box;
+        padding-inline: 0.5em;
+        padding-block: 0.7em;
+        border: none;
+        border-bottom: var(--border-height) solid var(--border-before-color);
+       }
+       /* styling of animated border */
+       .input-border {
+        position: absolute;
+        background: var(--border-after-color);
+        width: 0%;
+        height: 2px;
+        bottom: 0;
+        left: 0;
+        transition: 0.3s;
+       }
+       /* Hover on Input */
+       input:hover {
+        background: var(--input-hovered-color);
+       }
+       
+       input:focus {
+        outline: none;
+       }
+       /* here is code of animated border */
+       input:focus ~ .input-border {
+        width: 100%;
+       }
+       /* === if you want to do animated border on typing === */
+       /* remove input:focus code and uncomment below code */
+       /* input:valid ~ .input-border{
+         width: 100%;
+       } */
+    
+</style>
+<body>
+
+<div class="container">
+    {% include 'nav.html' %}
+    {% include 'topnav.html' %}
+
+    <main class="main-content">
+        <div class="top-content">
+            <div class="tutorial"> 
+                <a style="--clr: rgb(106 172 243 / 56%)" class="button" onclick="help_daw()">
+                    <span class="button__icon-wrapper">
+                        <svg width="10" class="button__icon-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 15">
+                            <path fill="currentColor" d="M13.376 11.552l-.264-10.44-10.44-.24.024 2.28 6.96-.048L.2 12.56l1.488 1.488 9.432-9.432-.048 6.912 2.304.024z"></path>
+                        </svg>
+                        
+                        <svg class="button__icon-svg  button__icon-svg--copy" xmlns="http://www.w3.org/2000/svg" width="10" fill="none" viewBox="0 0 14 15">
+                            <path fill="currentColor" d="M13.376 11.552l-.264-10.44-10.44-.24.024 2.28 6.96-.048L.2 12.56l1.488 1.488 9.432-9.432-.048 6.912 2.304.024z"></path>
+                        </svg>
+                    </span>
+                    How to use?
+                </a>            </div>
+            <div class="toptop" id="toptop">
+            
+                <div class="video-container1">
+                    <div class="form">
+                        <form id="search-form" >
+                            <div class="PS">Please note that some actions depicted in this project may vary 
+                                slightly from traditional Filipino Sign Language (FSL) norms. These adjustments
+                                are made to optimize hand movement detection and support the functionality of the 
+                                Mediapipe detection system. This project is in its beta version, and your feedback is valuable
+                                to help enhance its accuracy and usability.
+                                    <br><br>
+                                Click or search for words or actions you wish to learn more about.
+                                </div>
+                            <input type="search" id="search-input" class="input" placeholder="Search...">
+                            <span class="input-border"></span>
+                            <div id="no-match-message" style="display: none; font-size: 0.8em" class="PS1">I'm sorry, the word you're looking for is not yet available.</div>
+
+
+                        </form>
+                     </div>
+                    {% for folder in folders %}
+                    <div class="video-card1">
+                        <h4 class="folder-name">{{ folder.name }}</h4>
+                        <div class="video-list" style="display: none;">
+                            <!-- Placeholder for videos -->
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+            </div>
+            <div class="bottom-content">
+            </div>
+        </div>
+    </main>
+    <div class="overlay"></div> <!-- Overlay div -->
+    <div id="videoModal" class="videoModal">
+        <div class="modal-content1">
+          <span class="close">&times;</span>
+          <div id="videoContainer"></div>
+        </div>
+      </div>
+      
+
+    
+</div>
+<script src="{% static 'JS/index.js' %}"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.video-card1').click(function() { // Change selector to .video-card1
+            var folderName = $(this).find('.folder-name').text().toUpperCase(); // Get folder name within .video-card1
+    
+            $.ajax({
+                url: '/load_videos/', 
+                method: 'GET',
+                data: { folder_name: folderName },
+                success: function(response) {
+                    var videos = response.videos;
+                    var videoContainer = $('#videoContainer');
+                    videoContainer.empty();
+    
+                    // Display videos in modal
+                    $.each(videos, function(index, video) {
+                        var videoElement = $('<video class="video-item" width="320" height="240" controls muted></video>');
+                        var sourceElement = $('<source type="video/mp4">');
+                        sourceElement.attr('src', `/static/Tutorial Videos/${folderName}/${video}`);
+                        videoElement.append(sourceElement);
+                        videoContainer.append(videoElement);
+                    });
+    
+                    // Display folder name in modal at bottom end
+                    var folderNameElement = $('<h2>').text(folderName);
+                    folderNameElement.css({
+                        'text-transform': 'uppercase', 
+                        'position': 'absolute', 
+                        'top': '90%', 
+                        'left': '50%',
+                        'transform': 'translate(-50%, -50%)', 
+                        'margin': '0', // Remove default margins
+                        'font-size': '2em',
+                        'color' : 'wheat'
+                    });
+                    $('.modal-content1').append(folderNameElement);
+    
+                    $('.overlay').css('display', 'block'); 
+                    $('#videoModal').css('display', 'block'); 
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading videos:', error);
+                }
+            });
+        });
+    
+        $('.close').click(function() {
+            $('.overlay').css('display', 'none');
+            $('#videoModal').css('display', 'none'); 
+            $('.modal-content1 h2').remove(); // Remove folder name element from modal content
+        });
+
+        $(document).ready(function() {
+            $('#search-input').on('input', function() {
+                var searchTerm = $(this).val().toLowerCase();
+                var matchFound = false; // Flag to track if any match is found
+                
+                $('.folder-name').each(function() {
+                    var folderName = $(this).text().toLowerCase();
+                    if (folderName.includes(searchTerm)) {
+                        $(this).parent().show(); // Show folder if it matches search term
+                        matchFound = true; // Set flag to true if match is found
+                    } else {
+                        $(this).parent().hide(); // Hide folder if it doesn't match search term
+                    }
+                });
+        
+                // If no match is found, display the message
+                if (!matchFound) {
+                    $('#no-match-message').show();
+                } else {
+                    $('#no-match-message').hide();
+                }
+            });
+        });
+        
+        
+    });
+
+
+    function help_daw() {
+        // Create the modal HTML elements
+        var modalHTML = `
+        <div id="overlay" class="overlay"></div>
+
+            <div id="newUserModal" class="newUserModal">
+                <div class="newUserModal-content">
+                    <div class="Welcome-video-container" id="Welcome-video-container">
+                        <video id="Welcome-video" autoplay>
+                            <source src="{% static 'tutorial_ebigkas/part1.mp4' %}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    <span class="close" onclick="span_click()">&times;</span>
+                    <div id="welcomeContent" class="welcome-content"></div>
+                </div>
+            </div>`;
+    
+        // Append modal HTML to the body
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+        // Show the modal
+        var modal = document.getElementById("newUserModal");
+        var overlay = document.getElementById("overlay");
+        var welcomeMessages = [
+            "Welcome to e-Bigkas, where gestures speak volumes.",
+            "Help us build a better tomorrow, where barriers dissolve and understanding reigns supreme.",
+            "Join our community at e-Bigkas, where every sign is a step towards a more inclusive world.",
+            "Together, let's shape a future where communication knows no bounds.",
+            "Let your gestures be heard."
+        ];
+        var x = 0;
+        var span = document.getElementsByClassName("close")[0];
+        var video = document.getElementById("Welcome-video");
+    
+        modal.style.display = "block";
+        overlay.style.display = "block";
+    
+        video.onplay = function() {
+            // Start typing the welcome messages when the video starts playing
+            typeText(welcomeContent, welcomeMessages[x]);
+            speakText(welcomeMessages[x]); 
+        
+            function nextMessage() {
+                setTimeout(function() {
+                    if (x < 4) {
+                        x++;
+                        welcomeContent.textContent = ""; 
+                        speakText(welcomeMessages[x]); 
+                        typeText(welcomeContent, welcomeMessages[x]);
+                        nextMessage(); 
+                    }
+                }, 8000); 
+            }
+        
+            nextMessage(); 
+        };
+        
+     
+        
+    
+    
+    }
+
+    function typeText(element, text) {
+        // Display the text one character at a time
+        let index = 0;
+        const typing = setInterval(() => {
+            element.textContent += text[index];
+            index++;
+            if (index === text.length) {
+                clearInterval(typing); // Stop typing when the entire text is displayed
+            }
+        }, 50); // Adjust typing speed as needed
+    }
+    
+
+    function speakText(textToSpeak) {
+        var synth = window.speechSynthesis;
+        var utterance = new SpeechSynthesisUtterance(textToSpeak);
+    
+        // Set the language
+        utterance.lang = 'en-IE'; // English (Ireland)
+    
+        // Set the voice directly without relying on onvoiceschanged event
+        var voices = synth.getVoices();
+        for (var i = 0; i < voices.length; i++) {
+            if (voices[i].name === 'Microsoft Emily Online (Natural) - English (Ireland)') {
+                utterance.voice = voices[i];
+                break;
+            }
+        }
+        // Speak the utterance
+        synth.speak(utterance);
+    }
+    
+    
+    function span_click() {
+        var modal = document.getElementById("newUserModal");
+        var overlay = document.getElementById("overlay");
+        var video = document.getElementById("Welcome-video");
+        var welcomeContent = document.getElementById("welcomeContent");
+        window.location.href = 'http://127.0.0.1:8000/help/';
+        // Pause the video and reset it to the beginning
+        video.pause();
+        video.currentTime = 0;
+    
+        // Clear the welcome messages
+        welcomeContent.textContent = "";
+    
+        // Hide the modal and overlay
+        modal.style.display = "none";
+        overlay.style.display = "none";
+    };
+    
+    
+        
+           
+      
+        
+        
+    
+    
+</script>
+
+
+
+
+</body>
+</html>
