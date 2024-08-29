@@ -18,7 +18,7 @@ and for the "Friendship of Enjoy" community.
 2. **Clone or download** the project repository.
 
     ```bash
-    git clone https://github.com/yourusername/e-BIGKAS.git
+    git clone https://github.com/kraegoy/e-BIGKAS.git
     cd e-BIGKAS
     ```
 
