@@ -218,7 +218,10 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
             if self.cap is not None:
                 self.cap.release()
                 cv2.destroyAllWindows()
-                paraphrased_text = paraphrase(self.output_text_f)  
+                if len(self.output_text_f) > 0:
+                    paraphrased_text = paraphrase(self.output_text_f)  
+                else:
+                    paraphrased_text = 'blank'
                 await self.channel_layer.group_send(
                     "video_call_group",
                     {

@@ -155,9 +155,13 @@
         if(toggleDrop){
             dropdown.style.display = 'block';
             toggleDrop = false;
+            pendingDropdownContainer.style.display = 'none';
             message_dropdown.style.display = 'none';
             envelope.style.boxShadow = 'none'; 
             toggleMessageDrop = true;
+            friendRequest.style.boxShadow = 'none'; 
+            friendRequest.classList.remove('active');
+            envelope.classList.remove('active');
         }
         else{
             dropdown.style.display = 'none';
@@ -219,9 +223,7 @@
             toggleFriendRequest = false;
             friendRequest.style.boxShadow = '-1px -2px 20px 4px wheat'; 
             friendRequest.classList.add('active');
-
-
-       
+            dropdown.style.display = 'none';
         }
         else{
             pendingDropdownContainer.style.display = 'none';

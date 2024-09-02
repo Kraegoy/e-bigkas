@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'styles/admin.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'styles/styles.css' %}">
+
+
+    <title>Sign Language Detection</title>
+</head>
+
+
+<body>
+    <div class='admin-page-container'>
+        {% include 'admin_nav.html' %}
+
+        <div class="admin-main-content">
+            <div class="admin-top1">
+                <div class="new-users">
+                    <h2>User Sign-up Statistics</h2>
+                    <canvas id="userChart" width="400" height="200"></canvas>
+                    <select id="chartType">
+                        <option value="line">Line Chart</option>
+                        <option value="bar">Bar Chart</option>
+                 
+                    </select>
+                </div>
+
+                <div class="edit-dashboard-home">
+                </div>
+            </div>
+
+            <div class="admin-top2">
+            </div>
+            <div class="admin-top3">
+            </div>
+        </div>
+
+    </div>
+
+
+    <script>
+        // Data passed from Django view
+        const dates = JSON.parse('{{ dates|safe }}');
+        const counts = JSON.parse('{{ counts|safe }}');
+
+        const ctx = document.getElementById('userChart').getContext('2d');
+        let userChart = new Chart(ctx, {
+            type: 'line',  // Default chart type
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Number of Users Joined',
+                    data: counts,
+                    backgroundColor: 'rgba(75, 192, 192, 1)',  // Area fill color
+                    borderColor: 'rgba(75, 192, 192, 1)',      // Line color
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'day'
+                        },
+                        grid: {
+                            color: 'white', // Color of the vertical grid lines
+                            lineWidth: 1,   // Width of the vertical grid lines
+                        },
+                        border: {
+                            color: 'white', // Color of the x-axis line
+                            lineWidth: 1,   // Width of the x-axis line
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'white', // Color of the horizontal grid lines
+                            lineWidth: 1,   // Width of the horizontal grid lines
+                        },
+                        border: {
+                            color: 'white', // Color of the y-axis line
+                            lineWidth: 1,   // Width of the y-axis line
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'white' // Color of the legend text
+                        }
+                    }
+                }
+            }
+        });
+
+        // Update chart type based on user selection
+        document.getElementById('chartType').addEventListener('change', function() {
+            const selectedType = this.value;
+
+            userChart.destroy(); // Destroy the existing chart
+
+            userChart = new Chart(ctx, {
+                type: selectedType,  // Set the new chart type
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Number of Users Joined',
+                        data: counts,
+                        backgroundColor: 'rgba(75, 192, 192, 1)',  // Area fill color
+                        borderColor: 'rgba(75, 192, 192, 1)',      // Line color
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: selectedType === 'pie' ? 'linear' : 'time',  // Adjust x-axis type if needed
+                            time: {
+                                unit: 'day'
+                            },
+                            grid: {
+                                color: 'white', // Color of the vertical grid lines
+                                lineWidth: 1,   // Width of the vertical grid lines
+                            },
+                            border: {
+                                color: 'white', // Color of the x-axis line
+                                lineWidth: 1,   // Width of the x-axis line
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'white', // Color of the horizontal grid lines
+                                lineWidth: 1,   // Width of the horizontal grid lines
+                            },
+                            border: {
+                                color: 'white', // Color of the y-axis line
+                                lineWidth: 1,   // Width of the y-axis line
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white' // Color of the legend text
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

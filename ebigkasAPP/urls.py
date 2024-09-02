@@ -1,4 +1,3 @@
-# base/urls.py
 from django.urls import path
 from .views import (
     home, 
@@ -21,6 +20,10 @@ from .views import (
     pending_friendships_list,
     accept_friend_request,
     decline_friend_request,
+    update_room_status,
+    get_recent_calls,
+    update_call_duration,
+    
     
 )
 
@@ -49,9 +52,8 @@ urlpatterns = [
     path('pending_friendships_list/', pending_friendships_list, name='pending_friendships_list'),
     path('api/get-username/<int:user_id>/', get_username, name='get-username'),
     path('reset_unread_count/<str:conversation_name>/', reset_unread_count, name='reset_unread_count'),
-
-
-
-
+    path('update-room-status/<str:room_id>/<str:status>/', update_room_status, name='update_room_status'),
+    path('recent-calls/', get_recent_calls, name='get_recent_calls'),
+    path('update_call_duration/<uuid:room_id>/', update_call_duration, name='update_call_duration'),
 
 ]

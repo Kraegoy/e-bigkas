@@ -13,8 +13,9 @@ from django.db.models import Q
 from .forms import UserProfileForm  
 from django.dispatch import receiver
 from django.db.models.signals import post_save
-from .models import UserProfile, UserForm, Conversation, Message
+from .models import UserProfile, UserForm, Conversation, Message, RecentCalls
 import os
+from django.utils import timezone
 from django.http import HttpResponseRedirect
 from urllib.parse import urlparse
 import logging
@@ -214,29 +215,117 @@ def reset_unread_count(request, conversation_name):
     messages.update(unread=False)
     return JsonResponse({'success': True})
     
-
 @login_required
 def create_room(request):
     if request.method == 'POST':
-        # Extract the room ID directly from the POST data
+        # Extract the room ID and user IDs from the POST data
         room_id = request.POST.get('room_id')
-        if not room_id:  # If room ID is not provided, return a JsonResponse with an error message
+        if not room_id:
             return JsonResponse({'error': 'Room ID not provided'}, status=400)
 
         inviting_user_id = request.POST.get('inviting_user_id')
         invited_user_id = request.POST.get('invited_user_id')
-        
-        room, created = Room.objects.get_or_create(room_id=room_id)
-        
+
+        if not inviting_user_id:
+            return JsonResponse({'error': 'Inviting user ID not provided'}, status=400)
+
+        # Fetch the inviting and invited users
         inviting_user = get_object_or_404(User, pk=inviting_user_id)
-        room.users.add(inviting_user)
-        
         invited_user = get_object_or_404(User, pk=invited_user_id)
+
+        # Create or get the room instance
+        room, created = Room.objects.get_or_create(room_id=room_id, initiator=inviting_user)
+
+        # Add users to the room
+        room.users.add(inviting_user)
         room.users.add(invited_user)
         
+         # Create a RecentCalls entry for the inviting user
+        RecentCalls.objects.create(
+            room=room,
+            user=inviting_user,  # Specify the user
+            call_with=invited_user,
+            is_initiator=True,
+            timestamp=room.created_at  # Assuming room has a created_at timestamp
+        )
+
+        # Create a RecentCalls entry for the invited user
+        RecentCalls.objects.create(
+            room=room,
+            user=invited_user,  # Specify the user
+            call_with=inviting_user,
+            is_initiator=False,
+            timestamp=room.created_at  # Assuming room has a created_at timestamp
+        )
+
+        # Redirect to room detail page
         return redirect('room_detail', room_id=room_id)
+
+    return redirect('home')
+
+def update_call_duration(request, room_id):
+    if request.method == 'POST':
+        # Fetch the Room object using the room_id
+        room = get_object_or_404(Room, room_id=room_id)
+        
+        # Fetch the RecentCalls instances related to the room
+        recent_calls = RecentCalls.objects.filter(room=room)
+        
+        now = timezone.now()
+        
+        # Calculate the duration as the difference between the current time and the room's creation time
+        duration = now - room.created_at
+        
+        # Update the duration for all RecentCalls related to this room
+        recent_calls.update(duration=duration)
+        
+        return JsonResponse({'success': True})
     
-    return redirect('home')  
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
+
+def update_room_status(request, room_id, status):
+    room = get_object_or_404(Room, room_id=room_id)
+    room.status = status
+    room.save()
+    RecentCalls.objects.filter(room=room).update(status=status)
+
+    return JsonResponse({'success': True})
+@login_required
+def get_recent_calls(request):
+    user = request.user
+    
+    # Fetch recent calls for the logged-in user
+    recent_calls = RecentCalls.objects.filter(user=user).order_by('-timestamp')
+
+    # Prepare the data to be returned
+    calls_data = []
+    for call in recent_calls[:10]:
+        # Get the profile picture URL for the call_with user
+        profile_pic_url = None
+        try:
+            user_profile = UserProfile.objects.get(user=call.call_with)
+            if user_profile.profile_picture:
+                profile_pic_url = user_profile.profile_picture.url
+        except UserProfile.DoesNotExist:
+            profile_pic_url = None
+
+        # Convert duration to total seconds
+        duration_seconds = call.duration.total_seconds()
+
+        calls_data.append({
+            'room_id': call.room.id,
+            'call_with': call.call_with.username,
+            'call_with_profile_pic': profile_pic_url,
+            'duration': duration_seconds,  # Send duration in seconds
+            'timestamp': call.timestamp,
+            'status': call.status,
+            'is_initiator': call.is_initiator
+        })
+    
+    return JsonResponse({'recent_calls': calls_data})
+
+
+    
 
 @login_required
 def room_detail(request, room_id):
@@ -291,6 +380,9 @@ def loginPage(request):
         if username and password:  # Check if both fields are not empty
             user = authenticate(request, username=username, password=password)
             if user is not None:
+
+                if user.is_staff:
+                    return redirect('ebigkas_admin')
                 login(request, user)
                 
                 # Update user profile status
@@ -311,11 +403,15 @@ def loginPage(request):
     context = {'page': page}
     return render(request, 'login.html', context)
 
+def ebigkas_admin(request):
+    return render(request, 'admin_page.html')
+
 @login_required
 def home(request):
     userProfile = UserProfile.objects.get(user=request.user)  # Get the UserProfile object for the current user
+    user_profile_pic = userProfile.profile_picture.url if hasattr(userProfile, 'profile_picture') else None
     isNewUser = userProfile.newUser  # Get the newUser field value from the UserProfile object
-    return render(request, 'home.html', {'isNewUser': isNewUser})
+    return render(request, 'home.html', {'isNewUser': isNewUser, 'user_profile_pic': user_profile_pic})
 
 @login_required
 def search_users(request):
@@ -378,6 +474,7 @@ def load_videos(request):
         return JsonResponse({'videos': videos})
     else:
         return JsonResponse({'error': 'Invalid request method'})
+    
 
 @login_required
 def logout_view(request):
@@ -388,4 +485,9 @@ def logout_view(request):
     
     logout(request)
     return redirect('login')
+
+
+
+
+
 

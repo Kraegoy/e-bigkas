@@ -1,0 +1,95 @@
+body{
+    background-color: rgb(23, 23, 23) !important;
+}
+.admin-page-container{
+    display: flex;
+}
+.admin-nav-container{
+    background-color: black;
+    width: 17%;
+    height: 100vw;
+    position: relative;
+
+}
+
+.admin-nav-content{
+    position: fixed;
+}
+
+.admin-nav{
+    position: fixed;
+}
+
+.admin-main-content{
+    padding: 1em;
+    width: 83%;
+    background: linear-gradient(to bottom,#292929e6, #1414146f);
+    color: white;
+}
+
+.admin-user-profile{
+    color: wheat;
+    padding: 1em;
+    display: flex;
+}
+
+.admin-nav{
+    color: white;
+    padding: 1em;
+}
+
+.nav-opt{
+    padding: 1em;
+    width: 100%;
+    cursor: pointer;
+}
+
+.nav-opt:hover{
+    color: wheat;
+}
+
+hr{
+    border-color: grey;
+}
+
+.admin-user-profil{
+    color: white;
+}
+
+.admin-top1{
+    display: flex;
+    height: 450px;
+    width: 100%;
+}
+
+.new-users, .edit-dashboard-home{
+    width: 50%;
+    margin: 0.5em;
+    border: 1px solid rgb(69, 69, 69);
+    background-color: black;
+    border-radius: 10px;
+    padding-top: 1em;
+    
+}
+
+.new-users {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; 
+    text-align: center; 
+}
+
+
+select{
+    background-color: white;
+    padding: 0.2em;
+    border: 1px solid rgba(75, 192, 192, 0.8);
+    border-radius: 5px;
+
+}
+
+a{
+    text-decoration: none;
+    color: white;
+}

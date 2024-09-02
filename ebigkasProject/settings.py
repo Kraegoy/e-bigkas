@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'ebigkasAPP.apps.EbigkasappConfig',
+    'ebigkasAdminAPP',
 
 ]
 
@@ -151,3 +152,7 @@ LOGIN_URL = '/login/'
 
 # URL where users should be redirected to after they log in
 LOGIN_REDIRECT_URL = '/'
+
+
+SESSION_COOKIE_AGE = 259200  # 3 days in seconds
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True

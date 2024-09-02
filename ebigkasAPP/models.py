@@ -4,8 +4,8 @@ from django.db import models
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserChangeForm
+from datetime import timedelta
 
-from django.contrib.auth.models import User as BaseUser
     
 class UserForm(UserChangeForm):
     class Meta:
@@ -25,6 +25,8 @@ class Room(models.Model):
     room_id = models.CharField(max_length=100, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     users = models.ManyToManyField(User, related_name='rooms')
+    initiator = models.ForeignKey(User, related_name="room_initiated", on_delete=models.CASCADE)
+    status = models.CharField(max_length=10, null=True)
 
     def __str__(self):
         return self.room_id
@@ -66,3 +68,31 @@ class Message(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     content = models.TextField()
     unread = models.BooleanField(default=True)
+
+class RecentCalls(models.Model):
+    room = models.ForeignKey('Room', on_delete=models.CASCADE, related_name='recent_calls')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='recent_calls')  # User who has this call in their history
+    call_with = models.ForeignKey(User, on_delete=models.CASCADE, related_name='calls_with')  # The other user involved in the call
+    is_initiator = models.BooleanField(default=False)
+    duration = models.DurationField(default=timedelta(0), null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=10, null=True, default='missed') 
+
+    
+    class Meta:
+        ordering = ['-timestamp']  # Orders the calls by the most recent first
+        indexes = [
+            models.Index(fields=['timestamp']),  # Adding an index for performance optimization
+        ]
+    
+    def __str__(self):
+        return f"Call between {self.user} and {self.call_with} at {self.timestamp}"
+    
+    def end_call(self, end_time):
+        """
+        Call this method to end the call and set the duration.
+        """
+        if not self.timestamp:
+            raise ValueError("Start time is not set. Cannot calculate duration.")
+        self.duration = end_time - self.timestamp
+        self.save()

@@ -15,7 +15,7 @@ footer{
   justify-content: center;
   color: whitesmoke;
   background:black;
-
+  z-index: -1;
 }
 @media screen and (max-width: 768px) {
   body {
@@ -46,7 +46,7 @@ footer{
   text-orientation: upright;
   margin-left: 4em;
   margin-top: 0.8em;
-  letter-spacing: 2em;
+  letter-spacing: 1.7em;
   text-transform: uppercase;
   cursor: pointer;
   font-family: 'Courier New', Courier, monospace;
@@ -350,11 +350,20 @@ overflow-y: hidden; /* Remove vertical scroll */
   margin-top: 1em;
 }
 
-.bottom1, .bottom2, .bottom3{
-  width: 33.3%;
+ .bottom2, .bottom3{
+  width: 37.5%;
   padding: 1em;
   margin: 0.5em;
   border: 1px solid #ccc;
+}
+.bottom1{
+  width: 250px;
+  padding: 1em;
+  margin: 0.5em;
+  border: 1px solid #777777;
+  overflow-y: scroll;
+  border-radius: 10px;
+  background-color: rgb(24, 24, 24);
 }
 
 
@@ -1522,7 +1531,7 @@ position: absolute;
 top: calc(100% + 10px); /* Adjust distance from the parent element */
 padding: 1em;
 border-radius: 0.6em;
-border: 1px solid white;
+border: 1px solid rgba(128, 128, 128, 0.535);
 border-top: none; /* Remove top border */
 display: none;
 }
@@ -1582,6 +1591,7 @@ overflow-y: scroll;
 overflow-x: hidden;
 margin-top: 7px;
 font-size: 0.9em;
+border: 1px solid rgba(128, 128, 128, 0.535);
 }
 
 .dropdown-messages{
@@ -1687,6 +1697,8 @@ font-weight: bold;
     overflow-x: hidden;
     margin-top: 7px;
     font-size: 0.9em;
+    border: 1px solid rgba(128, 128, 128, 0.535);
+
 }
 
 .pending-friendships-text{
@@ -1748,4 +1760,54 @@ font-weight: bold;
   width: 2em;
   border-radius: 50%;
   margin-right: 0.5em;
+}
+
+
+.recent-calls-header{
+  color: wheat;
+  padding: 1em;
+  padding-top: 0;
+}
+
+.recent-call{
+  color: whitesmoke;
+  border-radius: 0.2em;
+  height: 3em;
+  background-color: rgb(42, 42, 41);
+  border: 1px solid rgba(109, 108, 108, 0.878);
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-bottom: 7px;
+  font-size: 0.9em;
+}
+
+.home-user-profile-pic{
+  width: 2em;
+  height: 2em;
+  border: 1px solid white;
+  border-radius: 50%;
+  margin-right: 8px;
+  margin-left: 5px;
+}
+
+.missed-call{
+  color: rgb(255, 163, 163);
+}
+.recent-call-timestamp{
+  position: absolute;
+  font-size: 0.6em;
+  color: rgb(179, 179, 179);
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%);
+}
+
+.recent-call-username{
+  color: wheat;
+}
+
+.recent-call-duration{
+  color: rgb(255, 141, 141);
+  font-size: 0.8em;
 }

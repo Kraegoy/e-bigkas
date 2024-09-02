@@ -213,19 +213,19 @@
               });
   
                 // Function to fetch username from the server
-async function fetchUsername(userId) {
-    try {
-        const response = await fetch(`/api/get-username/${userId}/`);
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
-        return data.username;
-    } catch (error) {
-        console.error('There was a problem with the fetch operation:', error);
-        return 'Unknown User';
-    }
-}   
+        async function fetchUsername(userId) {
+            try {
+                const response = await fetch(`/api/get-username/${userId}/`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                return data.username;
+            } catch (error) {
+                console.error('There was a problem with the fetch operation:', error);
+                return 'Unknown User';
+            }
+        }   
         const messageBox = document.querySelector('.messages-container');
         let kk = false; 
         
@@ -594,6 +594,26 @@ function sendMessage() {
         });
     });
 
+
+    function reset_unread_count(conversation_name) {
+        fetch(`/reset_unread_count/${encodeURIComponent(conversation_name)}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken') // Ensure this function is correctly implemented
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Unread count reset successfully');
+                // Optionally refresh the messages or UI
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+
     function goHome(){
         const roomID1 = sessionStorage.getItem('roomID');
         sessionStorage.removeItem('roomID');
@@ -608,7 +628,31 @@ function sendMessage() {
     document.getElementById('leave-btn').addEventListener('click', function() {
         // Retrieve room ID, username, and user ID from session storage
         const roomID = sessionStorage.getItem('roomID');
-        
+    
+        fetch(`/update_call_duration/${roomID}/`, {
+            method: 'POST', // Use POST as your backend expects it
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken') // Ensure you have a function to get the CSRF token
+            },
+            body: JSON.stringify({
+                room_id: roomID // The backend expects this in the body
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Handle success (e.g., update the UI, notify the user)
+                console.log('Call duration updated successfully.');
+            } else {
+                // Handle failure (e.g., display an error message)
+                console.error('Failed to update call duration:', data);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    
         // Remove room ID, username, and user ID from session storage
         sessionStorage.removeItem('roomID');
         sessionStorage.removeItem('invitingUserID');
@@ -617,22 +661,20 @@ function sendMessage() {
         sessionStorage.removeItem('ConversationName');
         
         let receiver_id;
-        if(loggedInUserId == invitedUserID){
+        if (loggedInUserId == invitedUserID) {
             receiver_id = invitingUserID;
-        }
-        else{
+        } else {
             receiver_id = invitedUserID;
         }
-
+    
         socket.send(JSON.stringify({
             type: 'hang_up',
             receiver_id: receiver_id,
         }));
         
         window.location.href = `http://127.0.0.1:8000/`;
-
     });
-
+    
     const micBtn = document.getElementById('mic-btn');
     let x = true; 
 

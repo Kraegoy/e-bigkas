@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Statistics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
+
+</head>
+<body>
+    <h2>User Sign-up Statistics</h2>
+    <canvas id="userChart" width="400" height="200"></canvas>
+    <script>
+        // Data passed from Django view
+        const dates = JSON.parse('{{ dates|safe }}');
+        const counts = JSON.parse('{{ counts|safe }}');
+
+        const ctx = document.getElementById('userChart').getContext('2d');
+        const userChart = new Chart(ctx, {
+            type: 'line',  // or 'bar', 'pie', etc.
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Number of Users Joined',
+                    data: counts,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'day'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

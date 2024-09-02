@@ -103,7 +103,7 @@ socket.onmessage = function(event) {
 
     if (message.type === 'output_text_s' && message.room_id === roomID) {
         console.log('Received data with room ID:', message); 
-        const outputText = message.output_text1;
+        const outputText = message.output_text1 ? message.output_text1 : "blank";
         
         const sanitizedOutputText = removeDuplicates(outputText);
         
@@ -127,7 +127,10 @@ socket.onmessage = function(event) {
         const outputTextElement = document.getElementById('translatedText');
         outputTextElement.textContent = ''; 
         typeText(outputTextElement, sanitizedOutputText); 
-        speakText(sanitizedOutputText);
+        if(sanitizedOutputText != 'blank'){
+            speakText(sanitizedOutputText);
+        }
+  
         setTimeout(() => {
             newDiv.textContent = sanitizedOutputText;
     
@@ -232,15 +235,56 @@ if (message.type === 'messages_loaded') {
         confirmBtn.addEventListener('click', function() {
             sessionStorage.setItem('invited', 'true');
             const loggedInUserID12 = sessionStorage.getItem('loggedInUserId');
-            const loggedInUsername = sessionStorage.getItem('loggedInUsername');
             sessionStorage.setItem('invitedUserID', loggedInUserID12);
-            window.location.href = `http://127.0.0.1:8000/room/${roomId}/`;
 
+            // Retrieve call start time from session storage
+            const callStartTime = new Date(sessionStorage.getItem('callStartTime'));
+            const callEndTime = new Date();
+            const duration = new Date(callEndTime - callStartTime); // Duration in milliseconds
 
-            playRingtone()
+            // Format duration in HH:MM:SS
+            const hours = String(duration.getUTCHours()).padStart(2, '0');
+            const minutes = String(duration.getUTCMinutes()).padStart(2, '0');
+            const seconds = String(duration.getUTCSeconds()).padStart(2, '0');
+            const formattedDuration = `${hours}:${minutes}:${seconds}`;
+
+            // Send AJAX request to update the room status
+            fetch(`/update-room-status/${roomId}/accepted/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') // Add CSRF token for POST requests
+                },
+                body: JSON.stringify({
+                    room_id: roomId,
+                    status: 'accepted'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = `http://127.0.0.1:8000/room/${roomId}/`;
+                    playRingtone(); // Call function to play ringtone
+                }
+            })
+            .catch(error => console.error('Error:', error));
         });
-        
+
         cancelBtn.addEventListener('click', function() {
+
+            fetch(`/update-room-status/${roomId}/missed/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') 
+                },
+                body: JSON.stringify({
+                    room_id: roomId,
+                    status: 'missed'
+                })
+            })
+            .then(response => response.json())
+            .catch(error => console.error('Error:', error));
                     
             socket.send(JSON.stringify({
                 type: 'hang_up',
@@ -296,7 +340,6 @@ if (message.type === 'messages_loaded') {
     }
 
     if(message.type === 'hang_up'){
-
 
         if(loggedInUserId == message.receiver_id){
             const hangup_overlay = document.getElementById('hangup_overlay');

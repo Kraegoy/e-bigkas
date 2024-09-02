@@ -348,6 +348,7 @@ fetch('/friends_list/')
         createRoomForm.method = 'POST'; // Change the method to POST
         createRoomForm.action = '{% url "create_room" %}';
         
+        
         // Create a CSRF token input field
         const csrfInput = document.createElement('input');
         csrfInput.type = 'hidden';
@@ -577,7 +578,7 @@ function removeDuplicates(text) {
 
 
 
-function reset_unread_count(conversation_name) {
+    function reset_unread_count(conversation_name) {
         fetch(`/reset_unread_count/${encodeURIComponent(conversation_name)}/`, {
             method: 'POST',
             headers: {
