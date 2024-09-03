@@ -19,6 +19,9 @@
     <div class='admin-page-container'>
         {% include 'admin_nav.html' %}
 
+        <div class="admin-overlay" id="admin-overlay"> </div>
+        <div class="edit-dash-overlay" id="edit-dash-overlay"> </div>
+
         <div class="admin-main-content">
             <div class="admin-top1">
                 <div class="new-users">
@@ -31,7 +34,47 @@
                     </select>
                 </div>
 
-                <div class="edit-dashboard-home">
+                <div class="edit-dashboard-home" id="edit-dashboard-container">
+                    <div class="slideshows-element">
+                        <div id="show-form-button" class="slideshow-picture add-slide">
+                            <i class="fas fa-plus"></i> 
+                        </div>
+                        {% for slideshow in slideshows %}
+                            <a href="#">
+                                <img src="{{ slideshow.image.url }}" alt="{{ slideshow.description }}" class="slideshow-picture slide-{{slideshow.is_active}}">
+                            </a>
+                        {% empty %}
+                            <span>No slideshow</span>
+                        {% endfor %}
+                       
+                    </div>
+
+
+                    <!-- Form Container initially hidden -->
+                    <div id="form-container">
+                        <form method="post" action="{% url 'add_slideshow' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <label for="description">Description (optional):</label>
+                        <textarea name="description"></textarea>
+
+                        <label for="image">Image:</label>
+                        <input type="file" name="image" required>
+
+                        <label for="is_active">Is Active:</label>
+                        <input type="checkbox" name="is_active">
+
+                        <button type="submit">Add Slideshow</button>
+                        </form>
+
+                        {% if messages %}
+                        <ul>
+                            {% for message in messages %}
+                            <li>{{ message }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
 
@@ -44,14 +87,70 @@
     </div>
 
 
-    <script>
-        // Data passed from Django view
-        const dates = JSON.parse('{{ dates|safe }}');
-        const counts = JSON.parse('{{ counts|safe }}');
+<script>
+    // Data passed from Django view
+    const dates = JSON.parse('{{ dates|safe }}');
+    const counts = JSON.parse('{{ counts|safe }}');
 
-        const ctx = document.getElementById('userChart').getContext('2d');
-        let userChart = new Chart(ctx, {
-            type: 'line',  // Default chart type
+    const ctx = document.getElementById('userChart').getContext('2d');
+    let userChart = new Chart(ctx, {
+        type: 'line',  // Default chart type
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Number of Users Joined',
+                data: counts,
+                backgroundColor: 'rgba(75, 192, 192, 1)',  // Area fill color
+                borderColor: 'rgba(75, 192, 192, 1)',      // Line color
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'day'
+                    },
+                    grid: {
+                        color: 'white', // Color of the vertical grid lines
+                        lineWidth: 1,   // Width of the vertical grid lines
+                    },
+                    border: {
+                        color: 'white', // Color of the x-axis line
+                        lineWidth: 1,   // Width of the x-axis line
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'white', // Color of the horizontal grid lines
+                        lineWidth: 1,   // Width of the horizontal grid lines
+                    },
+                    border: {
+                        color: 'white', // Color of the y-axis line
+                        lineWidth: 1,   // Width of the y-axis line
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: 'white' // Color of the legend text
+                    }
+                }
+            }
+        }
+    });
+
+    // Update chart type based on user selection
+    document.getElementById('chartType').addEventListener('change', function() {
+        const selectedType = this.value;
+
+        userChart.destroy(); // Destroy the existing chart
+
+        userChart = new Chart(ctx, {
+            type: selectedType,  // Set the new chart type
             data: {
                 labels: dates,
                 datasets: [{
@@ -65,7 +164,7 @@
             options: {
                 scales: {
                     x: {
-                        type: 'time',
+                        type: selectedType === 'pie' ? 'linear' : 'time',  // Adjust x-axis type if needed
                         time: {
                             unit: 'day'
                         },
@@ -99,63 +198,89 @@
                 }
             }
         });
+    });
 
-        // Update chart type based on user selection
-        document.getElementById('chartType').addEventListener('change', function() {
-            const selectedType = this.value;
 
-            userChart.destroy(); // Destroy the existing chart
 
-            userChart = new Chart(ctx, {
-                type: selectedType,  // Set the new chart type
-                data: {
-                    labels: dates,
-                    datasets: [{
-                        label: 'Number of Users Joined',
-                        data: counts,
-                        backgroundColor: 'rgba(75, 192, 192, 1)',  // Area fill color
-                        borderColor: 'rgba(75, 192, 192, 1)',      // Line color
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        x: {
-                            type: selectedType === 'pie' ? 'linear' : 'time',  // Adjust x-axis type if needed
-                            time: {
-                                unit: 'day'
-                            },
-                            grid: {
-                                color: 'white', // Color of the vertical grid lines
-                                lineWidth: 1,   // Width of the vertical grid lines
-                            },
-                            border: {
-                                color: 'white', // Color of the x-axis line
-                                lineWidth: 1,   // Width of the x-axis line
-                            }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'white', // Color of the horizontal grid lines
-                                lineWidth: 1,   // Width of the horizontal grid lines
-                            },
-                            border: {
-                                color: 'white', // Color of the y-axis line
-                                lineWidth: 1,   // Width of the y-axis line
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: 'white' // Color of the legend text
-                            }
-                        }
-                    }
-                }
+    document.addEventListener('DOMContentLoaded', function() {
+        const showFormButton = document.getElementById('show-form-button');
+        const adminOverlay = document.getElementById('admin-overlay');
+        const formContainer = document.getElementById('form-container');
+
+        
+        showFormButton.addEventListener('click', function() {
+            if (formContainer.style.display === 'none' || formContainer.style.display === '') {
+                formContainer.style.display = 'block';
+                adminOverlay.style.display = 'block';
+
+            }
+            else {
+                formContainer.style.display = 'none';
+                adminOverlay.style.display = 'none';
+            }
+        });
+        
+        adminOverlay.addEventListener('click', function() {
+            formContainer.style.display = 'none';
+            adminOverlay.style.display = 'none';
+
+        });
+        });
+        
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const editDash = document.getElementById('edit-dash');
+            const editDashContainer = document.getElementById('edit-dashboard-container');
+            const editDashOverlay = document.getElementById('edit-dash-overlay'); // Assuming this is the overlay element
+            const adminOverlay = document.getElementById('admin-overlay');
+            const formContainer = document.getElementById('form-container');
+            
+        
+            // Original styles for the container
+            const originalStyles = {
+                position: 'relative',
+                top: '',
+                left: '',
+                transform: '',
+                height: 'auto',
+                width: '50%',
+                margin: '0.5em',
+                border: '1px solid rgb(69, 69, 69)',
+                backgroundColor: 'black',
+                borderRadius: '10px',
+                paddingTop: '1em'
+            };
+            editDashContainer.style.zIndex = "3";
+
+        
+            editDash.addEventListener('click', function() {
+                editDashContainer.style.position = "fixed";
+                editDashContainer.style.top = "50%";
+                editDashContainer.style.left = "50%";
+                editDashContainer.style.transform = "translate(-50%, -50%)";
+                editDashContainer.style.height = "500px";
+                editDashContainer.style.width = "500px";
+                editDashOverlay.style.display = "block";
+
+            });
+        
+            editDashOverlay.addEventListener('click', function() {
+                // Reset to original styles
+                Object.assign(editDashContainer.style, originalStyles);
+        
+                // Hide the overlay
+                editDashOverlay.style.display = "none";
+                formContainer.style.display = 'none';
+                adminOverlay.style.display = 'none';
             });
         });
-    </script>
+        
+
+       
+</script>
+
+
+
 </body>
 </html>

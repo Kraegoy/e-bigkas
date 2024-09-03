@@ -622,7 +622,17 @@ function sendMessage() {
         sessionStorage.removeItem('invited');
         sessionStorage.removeItem('ConversationName');
 
-        window.location.href = 'http://127.0.0.1:8000/';       
+        fetch('/')
+        .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        // Redirect to the home page
+        window.location.href = '/';
+        })
+        .catch(error => {
+        console.error('There was a problem with the fetch operation:', error);
+        });      
     }
 
     document.getElementById('leave-btn').addEventListener('click', function() {
@@ -672,7 +682,19 @@ function sendMessage() {
             receiver_id: receiver_id,
         }));
         
-        window.location.href = `http://127.0.0.1:8000/`;
+        // JavaScript code to redirect the user to the home page
+            fetch('/')
+            .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            // Redirect to the home page
+            window.location.href = '/';
+            })
+            .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+            });
+
     });
     
     const micBtn = document.getElementById('mic-btn');

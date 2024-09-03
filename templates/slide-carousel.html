@@ -1,0 +1,125 @@
+{% load static %}
+
+<style>
+    .carousel {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+      overflow: hidden;
+      height: 100%;
+      background-color: black;
+      border-radius: 20px;
+
+    }
+
+    .carousel-slides {
+        display: flex;
+        transition: transform 0.5s ease;
+        height: 100%;
+    }
+
+    .carousel-slide {
+      min-width: 100%;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center; 
+      justify-content: center; 
+  }
+
+    .carousel-slide img {
+        height: 95%;
+        width: 90%;
+        border-radius: 10px;
+        object-fit: contain;
+        border: 1px solid #77777;
+    }
+
+    .carousel-controls {
+        position: absolute;
+        top: 50%;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        transform: translateY(-50%);
+    }
+
+    .carousel-prev, .carousel-next {
+        background-color: rgba(0, 0, 0, 0.5);
+        border: none;
+        color: #fff;
+        padding: 10px;
+        cursor: pointer;
+        font-size: 18px;
+        border-radius: 50%;
+    }
+
+    .carousel-prev:hover, .carousel-next:hover {
+        background-color: rgba(0, 0, 0, 0.8);
+    }
+
+    .visit-slide{
+      position:absolute;
+      bottom: 5px;
+      background-color: black;
+      padding: 0.5em;
+      border-radius: 5px;
+      color: wheat;
+      border: 2px solid grey;
+      cursor: pointer;
+    }
+</style>
+
+<div class="carousel">
+  <div class="carousel-slides">
+
+     
+
+      {% for slideshow in slideshows %}
+    
+      <div class="carousel-slide">
+        <img src="{{ slideshow.image.url }}" alt="{{ slideshow.description }}">
+       <!-- <div class="visit-slide">Explore</div> --> 
+      </div>
+
+      {% empty %}
+          <span>No slideshow</span>
+      {% endfor %}
+  </div>
+  <div class="carousel-controls">
+      <button class="carousel-prev">❮</button>
+      <button class="carousel-next">❯</button>
+  </div>
+</div>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const slides = document.querySelector('.carousel-slides');
+    const slideCount = document.querySelectorAll('.carousel-slide').length;
+    let currentIndex = 0;
+    const slideInterval = 10000; // Interval in milliseconds
+
+    function showSlide(index) {
+        const offset = -index * 100;
+        slides.style.transform = `translateX(${offset}%)`;
+    }
+
+    function nextSlide() {
+        currentIndex = (currentIndex + 1) % slideCount;
+        showSlide(currentIndex);
+    }
+
+    function prevSlide() {
+        currentIndex = (currentIndex - 1 + slideCount) % slideCount;
+        showSlide(currentIndex);
+    }
+
+    document.querySelector('.carousel-next').addEventListener('click', nextSlide);
+    document.querySelector('.carousel-prev').addEventListener('click', prevSlide);
+
+    setInterval(nextSlide, slideInterval);
+
+    showSlide(currentIndex);
+});
+
+</script>

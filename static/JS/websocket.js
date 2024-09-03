@@ -29,7 +29,6 @@ function resetInactivityTimer() {
     if (!isOnline) {
         handleStatusUpdate('online');
         isOnline = true;
-        console.log("hello")
     }
 
     // Set the timeout to notify the server of inactivity

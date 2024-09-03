@@ -69,7 +69,10 @@ hr{
     background-color: black;
     border-radius: 10px;
     padding-top: 1em;
-    
+}
+
+.edit-dashboard-home{
+    transition: all 0.1s ease;    
 }
 
 .new-users {
@@ -92,4 +95,77 @@ select{
 a{
     text-decoration: none;
     color: white;
+}
+
+#form-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px; /* Adjust width as needed */
+    max-width: 600px; /* Maximum width for larger screens */
+    height: 500px;
+    background-color: #5d5d5d; 
+    border: 1px solid #ccc; /* Border color */
+    border-radius: 8px; /* Rounded corners */
+    padding: 20px; 
+    display: none; 
+    z-index: 1000;
+    z-index: 5;
+  }
+  
+
+  .admin-overlay{
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.768);
+    overflow-y: hidden;
+    z-index: 1;
+    display: none;
+  }
+
+  .slideshows-element{
+    display: flex;
+    height: 80%;
+    width: 100%;
+    flex-wrap: wrap;
+    overflow-y: scroll;
+  }
+
+  .slideshow-picture{
+    width: 100px;
+    height: 100px;
+    margin: 5px;
+    margin-bottom: 0;
+    border: 1px solid grey;
+    color: white;
+  }
+
+  .slide-True{
+    border: 4px solid rgba(75, 192, 192, 1);
+
+  }
+
+  .add-slide{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+    color: rgba(75, 192, 192, 1);
+  }
+
+  .fa-plus{
+    font-size: 2em;
+  }
+
+.edit-dash-overlay{
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.768);
+    overflow-y: hidden;
+    z-index: 1;
+    display: none;
 }

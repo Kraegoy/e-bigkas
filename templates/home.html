@@ -16,10 +16,12 @@
     <div class="container">
       {% include 'nav.html' %} {% include 'topnav.html' %}
 
-      <main class="main-content">
+      <main class="main-content"> 
         <div class="content-container">
           <div class="upper-content">
-            <div class="news">DI KO PA ALAM // NEWS</div>
+
+            <div class="news">    {% include 'slide-carousel.html' with slideshows=slideshows %} </div>
+            
             <div class="history">DI KO PA ALAM // HISTORY</div>
           </div>
 
@@ -67,8 +69,6 @@
 
       window.onload = function () {
         var isNewUser = "{{ isNewUser }}";
-
-        console.log("is new:" + isNewUser);
         const newUserModal = document.getElementById("newUserModal");
 
         if (isNewUser === "True") {

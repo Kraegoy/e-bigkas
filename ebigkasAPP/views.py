@@ -11,6 +11,7 @@ from .models import Room, Friendship
 from .forms import AddFriendForm
 from django.db.models import Q
 from .forms import UserProfileForm  
+from ebigkasAdminAPP.models import Slideshow
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from .models import UserProfile, UserForm, Conversation, Message, RecentCalls
@@ -290,6 +291,7 @@ def update_room_status(request, room_id, status):
     RecentCalls.objects.filter(room=room).update(status=status)
 
     return JsonResponse({'success': True})
+
 @login_required
 def get_recent_calls(request):
     user = request.user
@@ -382,7 +384,9 @@ def loginPage(request):
             if user is not None:
 
                 if user.is_staff:
+                    login(request, user)
                     return redirect('ebigkas_admin')
+                
                 login(request, user)
                 
                 # Update user profile status
@@ -411,7 +415,12 @@ def home(request):
     userProfile = UserProfile.objects.get(user=request.user)  # Get the UserProfile object for the current user
     user_profile_pic = userProfile.profile_picture.url if hasattr(userProfile, 'profile_picture') else None
     isNewUser = userProfile.newUser  # Get the newUser field value from the UserProfile object
-    return render(request, 'home.html', {'isNewUser': isNewUser, 'user_profile_pic': user_profile_pic})
+    
+    # Retrieve active slideshows first, ordered by most recent
+    slideshows = Slideshow.objects.filter(is_active=True).order_by('-created_at')
+    
+    
+    return render(request, 'home.html', {'isNewUser': isNewUser, 'user_profile_pic': user_profile_pic, 'slideshows': slideshows})
 
 @login_required
 def search_users(request):
