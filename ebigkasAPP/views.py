@@ -11,7 +11,7 @@ from .models import Room, Friendship
 from .forms import AddFriendForm
 from django.db.models import Q
 from .forms import UserProfileForm  
-from ebigkasAdminAPP.models import Slideshow
+from ebigkasAdminAPP.models import Slideshow, Feedback
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from .models import UserProfile, UserForm, Conversation, Message, RecentCalls
@@ -39,21 +39,55 @@ def create_user_profile(sender, instance, created, **kwargs):
 def save_user_profile(sender, instance, **kwargs):
     instance.userprofile.save()
     
-@login_required
-def profile(request):
-    user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+def update_profile_info(request):
+    user = User.objects.get(id=request.user.id)
+    user_profile = UserProfile.objects.get(user=user)
     if request.method == 'POST':
-        user_form = UserForm(request.POST, instance=request.user)
-        profile_form = UserProfileForm(request.POST, request.FILES, instance=user_profile)
-        if user_form.is_valid() and profile_form.is_valid():
-            user_form.save()
-            profile_form.save()
-            return redirect('profile')
-    else:
-        user_form = UserForm(instance=request.user)
-        profile_form = UserProfileForm(instance=user_profile)
-        user_profile_pic = user_profile.profile_picture.url if hasattr(user_profile, 'profile_picture') else None
-    return render(request, 'profile.html', {'user_form': user_form, 'profile_form': profile_form, 'user_profile_pic': user_profile_pic})
+
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        bio = request.POST.get('bio')
+        location = user_profile.location
+        
+        if first_name:
+            user.first_name = first_name
+        if last_name:
+            user.last_name = last_name
+        if bio:
+            user_profile.bio = bio
+        
+        if 'profile_picture' in request.FILES:
+            user_profile.profile_picture = request.FILES['profile_picture']       
+                    
+        user_profile.save()
+        user.save()
+
+        return redirect('profile', user_id=request.user.id) 
+    
+@login_required
+def profile(request, user_id):
+    user = User.objects.get(id=user_id)
+    user_profile = UserProfile.objects.get(user=user)
+    friendships = Friendship.objects.filter(Q(user1=user_id) | Q(user2=user_id), status='friends')
+    friends_count = friendships.count()
+    
+   
+    user_profile_pic = user_profile.profile_picture.url if user_profile.profile_picture else None
+    location = user_profile.location 
+    bio = user_profile.bio
+    context = {       
+        'username': user.username,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'date_joined': user.date_joined,
+        'user_profile_pic': user_profile_pic,
+        'friends_count': friends_count,
+        'location' : location,
+        'bio' : bio,
+        'user_id': user_id
+    }
+    
+    return render(request, 'profile.html', context)
 
 @login_required
 def people(request):
@@ -62,10 +96,7 @@ def people(request):
 @login_required
 def add_friend(request, friend_id):
     if request.method == 'POST':
-        try:
-            friend = User.objects.get(id=friend_id)
-        except User.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'User does not exist'})
+        friend = get_object_or_404(User, id=friend_id)
 
         # Check if a friendship already exists
         existing_friendship = Friendship.objects.filter(
@@ -76,11 +107,9 @@ def add_friend(request, friend_id):
             return JsonResponse({'success': False, 'error': 'Friendship already exists'}) 
 
         # Create a new Friendship object
-        friendship = Friendship.objects.create(user1=request.user, user2=friend, initiator=request.user),
+        Friendship.objects.create(user1=request.user, user2=friend, initiator=request.user)
 
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
-    else:
-        form = AddFriendForm()
+        return JsonResponse({'success': True})
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 @login_required
@@ -336,8 +365,7 @@ def room_detail(request, room_id):
     # Render the room.html template with the room details
     return render(request, 'room.html', {'room': room})
 
-from django.http import JsonResponse
-from .models import Message
+
 import json
 
 def load_messages(request):
@@ -407,8 +435,7 @@ def loginPage(request):
     context = {'page': page}
     return render(request, 'login.html', context)
 
-def ebigkas_admin(request):
-    return render(request, 'admin_page.html')
+
 
 @login_required
 def home(request):
@@ -422,11 +449,12 @@ def home(request):
     
     return render(request, 'home.html', {'isNewUser': isNewUser, 'user_profile_pic': user_profile_pic, 'slideshows': slideshows})
 
+
 @login_required
-def search_users(request):
-    query = request.GET.get('query')
+def search_users_ajax(request):
+    query = request.GET.get('query', '')
     users = User.objects.filter(username__icontains=query)
-    no_results = users.count() == 0  # Check if there are no results
+    no_results = users.count() == 0
 
     current_user = request.user
     user_friendships_as_user1 = Friendship.objects.filter(user1=current_user)
@@ -434,35 +462,31 @@ def search_users(request):
     user_friendships = user_friendships_as_user1 | user_friendships_as_user2
     user_friend_ids = [friend.user1_id if friend.user2_id == current_user.id else friend.user2_id for friend in user_friendships]
 
-    referer = request.META.get('HTTP_REFERER')
-    if referer:
-        parsed_referer = urlparse(referer)
+    users_with_profile_pics = []
+    for user in users:
+        user_profile = UserProfile.objects.get(user=user)
+        profile_picture_url = user_profile.profile_picture.url if user_profile.profile_picture else '/media/profile_pics/default.png'
+        
+        # Check if the user is a friend
+        is_friend = user.id in user_friend_ids
 
-        if parsed_referer.path == '/search/':
-            # If the referer is '/search/', use the previous referer path if available
-            previous_referer = request.session.get('previous_referer')
-            if previous_referer:
-                referer_path = previous_referer
-            else:
-                referer_path = 'home.html'  # Default template if no previous referer
+        users_with_profile_pics.append({
+            'user_id': user.id,
+            'username': user.username,
+            'profile_picture': profile_picture_url,
+            'is_friend': is_friend
+        })
 
-        else:
-            # Get the path segment and concatenate with .html
-            referer_path = parsed_referer.path.replace('/', '') + '.html'
-            # Update the session with the current referer path
-            request.session['previous_referer'] = referer_path
-
-    else:
-        referer_path = 'home.html'  # Default template if no referer
-
-    
-    return render(request, referer_path if len(referer_path) > 5 else "home.html", {
-        'users': users,
+    response_data = {
+        'users': users_with_profile_pics,
         'query': query,
-        'current_user': current_user,
+        'current_user_id': current_user.id,
         'user_friend_ids': user_friend_ids,
-        'no_results': no_results  # Pass the no_results variable to the template
-    })
+        'no_results': no_results,
+    }
+
+    return JsonResponse(response_data)
+
 
 @login_required
 def help_view(request):
@@ -484,6 +508,59 @@ def load_videos(request):
     else:
         return JsonResponse({'error': 'Invalid request method'})
     
+
+@login_required
+def feedback_view(request):
+    # Fetch all feedbacks for the current user
+    user_feedbacks = Feedback.objects.filter(user=request.user)
+
+    # Prepare the list of feedbacks
+    feedbacks = []
+    for feedback in user_feedbacks:
+        user_feedback = {
+            'feedback_type': dict(Feedback.FEEDBACK_TYPE_CHOICES).get(feedback.feedback_type, 'Unknown'),
+            'feedback_message': feedback.message,
+            'feedback_date': feedback.created_at,
+            'feedback_response': feedback.response
+        }
+        feedbacks.append(user_feedback)
+    
+    # Render the feedbacks to the template
+    return render(request, 'feedback.html', {'feedbacks': feedbacks})
+
+
+@login_required
+def send_feedback(request):
+    if request.method == 'POST':
+        feedback_type = request.POST.get('feedback_type')
+        message = request.POST.get('message')
+        user = request.user  
+        
+        # Create and save the feedback instance
+        feedback = Feedback.objects.create(
+            user=user,
+            feedback_type=feedback_type,
+            message=message
+        )
+        messages.success(request, 'Thank you for your feedback!')
+
+    return redirect('feedback_view')
+
+@login_required
+def update_location(request):
+    if request.method == 'POST':
+        country = request.POST.get('country')
+        city = request.POST.get('city')
+        barangay = request.POST.get('barangay')
+        
+        location = f'{country}, {city}, {barangay}'
+        user_profile = request.user.userprofile
+        user_profile.location = location
+        user_profile.save()
+        
+        return redirect('profile', request.user.id)  
+
+    return render(request, 'profile.html')
 
 @login_required
 def logout_view(request):

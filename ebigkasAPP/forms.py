@@ -8,9 +8,10 @@ class AddFriendForm(forms.Form):
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
-        fields = ['profile_picture']
+        fields = ['profile_picture', 'location']
 
 class UserForm(forms.ModelForm):
     class Meta:
+
         model = User
         fields = ['first_name', 'last_name']

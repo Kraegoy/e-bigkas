@@ -15,6 +15,8 @@ class UserProfile(models.Model):
     profile_picture = models.ImageField(upload_to='profile_pics', default='profile_pics/default.png')
     newUser = models.BooleanField(default=True)
     status = models.CharField(max_length=10, default='offline') 
+    location = models.CharField(max_length=200, null=True)
+    bio = models.CharField(max_length=100, null=True)
 
     def __str__(self):
         return f'Profile of {self.user.username}'

@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
     <link rel="stylesheet" type="text/css" href="{% static 'styles/admin.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'styles/styles.css' %}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
 
     <title>Sign Language Detection</title>
@@ -52,19 +53,22 @@
 
                     <!-- Form Container initially hidden -->
                     <div id="form-container">
-                        <form method="post" action="{% url 'add_slideshow' %}" enctype="multipart/form-data">
-                        {% csrf_token %}
-
-                        <label for="description">Description (optional):</label>
-                        <textarea name="description"></textarea>
-
-                        <label for="image">Image:</label>
-                        <input type="file" name="image" required>
-
-                        <label for="is_active">Is Active:</label>
-                        <input type="checkbox" name="is_active">
-
-                        <button type="submit">Add Slideshow</button>
+                        <form method="post" action="{% url 'add_slideshow' %}" enctype="multipart/form-data" class="add-slideshow-form">
+                            {% csrf_token %}
+                        
+                            <label for="description">Description (optional):</label>
+                            <textarea name="description"></textarea>
+                        
+                            <label for="image">Image:</label>
+                            <input type="file" name="image" id="image-input" required>
+                        
+                            <!-- Image preview element -->
+                            <img id="image-preview" class="slideshow-image-preview" alt="Image Preview" />
+                        
+                            <label for="is_active">Is Active:</label>
+                            <input type="checkbox" name="is_active">
+                        
+                            <button type="submit">Add Slideshow</button>
                         </form>
 
                         {% if messages %}
@@ -79,13 +83,30 @@
             </div>
 
             <div class="admin-top2">
+                <div class="map-container">
+                    <h2>Our Systems Across Locations</h2>
+                    <div>
+                        {{ map_html|safe }}
+                    </div>
+                </div>
             </div>
+
             <div class="admin-top3">
             </div>
         </div>
 
     </div>
 
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([12.8797, 121.7740], 6);
+
+        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=YOUR_MAPBOX_ACCESS_TOKEN', {
+            attribution: '© Mapbox © OpenStreetMap contributors',
+            maxZoom: 18,
+            id: 'mapbox/dark-v10',  // Use 'mapbox/light-v10' for a lighter style
+        }).addTo(map);
+    </script>
 
 <script>
     // Data passed from Django view
@@ -113,22 +134,22 @@
                         unit: 'day'
                     },
                     grid: {
-                        color: 'white', // Color of the vertical grid lines
+                        color: 'rgba(255, 255, 255, 0.2)', 
                         lineWidth: 1,   // Width of the vertical grid lines
                     },
                     border: {
-                        color: 'white', // Color of the x-axis line
+                        color: 'rgba(255, 255, 255, 0.2)', // Color of the x-axis line
                         lineWidth: 1,   // Width of the x-axis line
                     }
                 },
                 y: {
                     beginAtZero: true,
                     grid: {
-                        color: 'white', // Color of the horizontal grid lines
+                        color: 'rgba(255, 255, 255, 0.2)', // Color of the horizontal grid lines
                         lineWidth: 1,   // Width of the horizontal grid lines
                     },
                     border: {
-                        color: 'white', // Color of the y-axis line
+                        color: 'rgba(255, 255, 255, 0.2)', // Color of the y-axis line
                         lineWidth: 1,   // Width of the y-axis line
                     }
                 }
@@ -136,7 +157,7 @@
             plugins: {
                 legend: {
                     labels: {
-                        color: 'white' // Color of the legend text
+                        color: 'rgba(255, 255, 255, 0.8)' // Color of the legend text
                     }
                 }
             }
@@ -169,22 +190,22 @@
                             unit: 'day'
                         },
                         grid: {
-                            color: 'white', // Color of the vertical grid lines
+                            color: 'rgba(255, 255, 255, 0.2)', // Color of the vertical grid lines
                             lineWidth: 1,   // Width of the vertical grid lines
                         },
                         border: {
-                            color: 'white', // Color of the x-axis line
+                            color: 'rgba(255, 255, 255, 0.2)', // Color of the x-axis line
                             lineWidth: 1,   // Width of the x-axis line
                         }
                     },
                     y: {
                         beginAtZero: true,
                         grid: {
-                            color: 'white', // Color of the horizontal grid lines
+                            color: 'rgba(255, 255, 255, 0.2)', // Color of the horizontal grid lines
                             lineWidth: 1,   // Width of the horizontal grid lines
                         },
                         border: {
-                            color: 'white', // Color of the y-axis line
+                            color: 'rgba(255, 255, 255, 0.2)', // Color of the y-axis line
                             lineWidth: 1,   // Width of the y-axis line
                         }
                     }
@@ -192,7 +213,7 @@
                 plugins: {
                     legend: {
                         labels: {
-                            color: 'white' // Color of the legend text
+                            color: 'rgba(255, 255, 255, 0.8)' // Color of the legend text
                         }
                     }
                 }
@@ -274,6 +295,25 @@
                 formContainer.style.display = 'none';
                 adminOverlay.style.display = 'none';
             });
+        });
+        
+        document.getElementById('image-input').addEventListener('change', function (event) {
+            const imagePreview = document.getElementById('image-preview');
+            const file = event.target.files[0];
+        
+            if (file) {
+                const reader = new FileReader();
+        
+                reader.onload = function (e) {
+                    imagePreview.src = e.target.result; 
+                    imagePreview.style.display = 'block';
+                };
+        
+                reader.readAsDataURL(file);
+            } else {
+                imagePreview.style.display = 'none'; // Hide the image preview if no file is selected
+                imagePreview.src = ''; // Clear the source
+            }
         });
         
 

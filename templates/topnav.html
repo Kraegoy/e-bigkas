@@ -1,477 +1,626 @@
 {% load static %}
 
+<head>
+  <meta name="csrf-token" content="{% csrf_token %}" />
+</head>
 
 <div class="home-nav">
-    <div class="search-bar-container">
-        <div class="search-bar">
-            <form action="{% url 'search_users' %}" method="GET" onsubmit="adjustPadding()">
-                <input type="text" name="query" placeholder="Add user...">
-            </form>
-
-
-            
-            <div class="user-holder-container" id="user-holder-container">
-                    {% if no_results %}
-                    <p style="color: wheat; text-align:center; margin-top: 2em;">Ooopss.. the user does not exist.</p>
-                    {% else %}
-                    {% for user in users %}
-                    <div class="friend">
-                        <div class="user-holder">{{ user.username }}</div>
-
-                        {% if current_user == user %}
-                       
-                        {% elif user.id in user_friend_ids %}
-                                <i class="fas fa-user-friends"></i>
-                        {% else %}
-                            <form method="post" action="{% url 'add_friend' friend_id=user.id %}">
-                                {% csrf_token %}
-                                {{ form }}
-                                <input type="hidden" name="friend_id" value="{{ user.id }}">
-                                <button type="submit" class="addfriend">
-                                    <i class="fas fa-user-plus"></i>
-                                </button>
-                            </form>
-                            {% if error %}
-                                <p>{{ error }}</p>
-                            {% endif %}
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                    {% endif %}
-
-            </div>
-        </div>
-    </div> 
-
-    <div class="parent-icon-container">
-
-        <div class="icon-container">
-            <div class="friend-request" id="friend-request" onclick="showFriendRequests()"> 
-                <i class="fas fa-user-friends" ></i>
-            </div>
-
-            <div class="pending-friendships-dropdown" id="pending-friendships-dropdown">
-                <div class="pending-friendships-text" id="pending-friendships-text">Friend requests</div>
-                <!-- friends' pending friendships will be dynamically add here -->
-            </div>
-
-            <div class="friend-message" id="friend-message" onclick="showMessageDropdown()"> 
-                <i class="fas fa-envelope"></i>
-            </div>
-
-            <div class="message-dropdown1" id="message-dropdown">
-                <div class="chats-text">Chats</div>
-                <!-- friends' message will be dynamically add here -->
-            </div>
-                  
-
-            <div class="profile-menu" onclick="showDropdown()">
-            <img src="{{ user.userprofile.profile_picture.url }}" alt="Profile Picture" id="profile-menu">
-            </div>
-
-            <div class="menu-dropdown" id="menu-dropdown">
-                <div class="drop-profile">
-                    <i class="fas fa-user"></i>
-                    <a href="{% url 'profile' %}" id="profile" class="drop-profile">Profile</a>
-                </div> 
-
-                <div class="drop-support">
-                    <i class="fas fa-life-ring"></i>
-                    <a href="#" id="support" class="drop-support">Support</a>
-                </div> 
-
-                <div class="drop-feedback">
-                    <i class="fas fa-comment-dots"></i>
-                    <a href="#" id="feedback" class="drop-feedback">Feedback</a>
-                </div> 
-
-                <div class="drop-settings">
-                    <i class="fas fa-cog"></i>
-                    <a href="#" id="settings" class="drop-settings">Settings</a>
-                </div>
-
-                <div class="drop-logout" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <a href="{% url 'logout' %}" id="logout" class="drop-logout">Logout</a>
-                </div> 
-
-            </div>
-
-
-        </div>
-    </div>
+  <div class="search-bar-container">
     
+    <div class="search-container-top-nav">
+      <input type="text" id="search-input-top-nav" class="search-input-top-nav" placeholder="Search users..." />
+      <div id="search-results" style="display: none"></div>
+    </div>
+
+  </div>
+
+  <div class="parent-icon-container">
+    <div class="icon-container">
+      <div
+        class="friend-request"
+        id="friend-request"
+        onclick="showFriendRequests()"
+      >
+        <i class="fas fa-user-friends"></i>
+      </div>
+
+      <div
+        class="pending-friendships-dropdown"
+        id="pending-friendships-dropdown"
+      >
+        <div class="pending-friendships-text" id="pending-friendships-text">
+          Friend requests
+        </div>
+        <!-- friends' pending friendships will be dynamically add here -->
+      </div>
+
+      <div
+        class="friend-message"
+        id="friend-message"
+        onclick="showMessageDropdown()"
+      >
+        <i class="fas fa-envelope"></i>
+      </div>
+
+      <div class="message-dropdown1" id="message-dropdown">
+        <div class="chats-text">Chats</div>
+        <!-- friends' message will be dynamically add here -->
+      </div>
+
+      <div class="profile-menu" onclick="showDropdown()">
+        <img
+          src="{{ user.userprofile.profile_picture.url }}"
+          alt="Profile Picture"
+          id="profile-menu"
+        />
+      </div>
+
+      <div class="menu-dropdown" id="menu-dropdown">
+        <div class="drop-profile">
+          <i class="fas fa-user"></i>
+          <a
+            href="{% url 'profile' request.user.id %}"
+            id="profile"
+            class="drop-profile"
+            >Profile</a
+          >
+        </div>
+
+        <div class="drop-support">
+          <i class="fas fa-life-ring"></i>
+          <a href="#" id="support" class="drop-support">Support</a>
+        </div>
+
+        <div class="drop-feedback">
+          <i class="fas fa-comment-dots"></i>
+          <a href="{% url 'feedback_view' %}" id="feedback" class="drop-feedback">Feedback</a>
+        </div>
+
+        <div class="drop-settings">
+          <i class="fas fa-cog"></i>
+          <a href="#" id="settings" class="drop-settings">Settings</a>
+        </div>
+
+        <div class="drop-logout" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          <a href="{% url 'logout' %}" id="logout" class="drop-logout"
+            >Logout</a
+          >
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
-
 <script>
+  const loggedInUserIdTopnav = sessionStorage.getItem("loggedInUserId");
 
-    const userHolderConatiner = document.getElementById('user-holder-container');
-    const dropdown = document.getElementById('menu-dropdown');
-    const message_dropdown = document.getElementById('message-dropdown');
-    const pendingDropdownContainer = document.getElementById('pending-friendships-dropdown');
-    const envelope = document.getElementById('friend-message');
-    const friendRequest = document.getElementById('friend-request');
-    let toggleDrop = true;
-    let toggleMessageDrop = true;
-    let toggleFriendRequest = true;
+  const baseUrlTopNav = "{% url 'profile' 0 %}".replace("/0/", "/"); // Remove the placeholder part to avoid extra slashes
 
-    function showMessageDropdown(){
-
-        if(toggleMessageDrop){
-            if(toggleFriendRequest == false){
-                pendingDropdownContainer.style.display = 'none';
-                toggleFriendRequest = true;
-                friendRequest.style.boxShadow = 'none'; 
-                friendRequest.classList.remove('active');
-
+  document.getElementById("search-input-top-nav")
+    .addEventListener("input", function () {
+      const query = this.value;
+      if (query.length > 1) {
+        // Start searching after 3 characters
+        fetch(`/search/?query=${encodeURIComponent(query)}`)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
             }
-            loadFriendsConversations();
-            message_dropdown.style.display = 'block';
-            envelope.style.boxShadow = '-1px -2px 20px 4px wheat'; 
+            return response.json();
+          })
+          .then((data) => {
+            const resultsContainer = document.getElementById("search-results");
+            resultsContainer.innerHTML = ""; // Clear previous results
+            if (data.users.length > 0) {
+              data.users.forEach((user) => {
+                const userElement = document.createElement("div");
+                userElement.classList.add("search-result");
 
-            toggleMessageDrop = false;
-            envelope.classList.add('active');
-            dropdown.style.display = 'none';
-            toggleDrop = true;
-        }
-        else{
-            message_dropdown.style.display = 'none';
-            toggleMessageDrop = true;
-            envelope.classList.remove('active');
-            envelope.style.boxShadow = 'none'; 
+                const serached_user_info = document.createElement("div");
+                serached_user_info.classList.add("serached-user-info");
 
+                // Construct the profile URL
+                const profileUrl = `${baseUrlTopNav}${user.user_id}/`; // Ensure URL format is correct
+                const view_profile = document.createElement("a");
+                view_profile.classList.add("top-nav-view-profile");
+                view_profile.href = profileUrl;
 
-        }
-    }
+                // Create user profile picture
+                const profilePic = document.createElement("img");
+                profilePic.src =
+                  user.profile_picture || "/static/default-profile-pic.jpg";
+                profilePic.alt = `${user.username}'s profile picture`;
+                profilePic.style.width = "30px";
+                profilePic.style.height = "30px";
+                profilePic.style.borderRadius = "50%";
 
- 
+                // Create user name
+                const username = document.createElement("span");
+                username.textContent = user.username;
 
-    function adjustPadding(){
-        userHolderConatiner.style.display = 'block';
-    }
+                serached_user_info.appendChild(profilePic);
+                serached_user_info.appendChild(username);
 
-    function showDropdown(){
-        if(toggleDrop){
-            dropdown.style.display = 'block';
-            toggleDrop = false;
-            pendingDropdownContainer.style.display = 'none';
-            message_dropdown.style.display = 'none';
-            envelope.style.boxShadow = 'none'; 
-            toggleMessageDrop = true;
-            friendRequest.style.boxShadow = 'none'; 
-            friendRequest.classList.remove('active');
-            envelope.classList.remove('active');
-        }
-        else{
-            dropdown.style.display = 'none';
-            toggleDrop = true;
+                // Append serached_user_info to the view_profile link
+                view_profile.appendChild(serached_user_info);
 
-        }
-    }
+                // Create form if the user is not a friend and is not the logged-in user
+                if (!user.is_friend && user.user_id != loggedInUserIdTopnav) {
+                  const form = document.createElement("form");
+                  form.method = "post";
+                  form.action = `/add_friend/${user.user_id}/`;
 
-    function logout(){
-        socket.send(JSON.stringify({
-            type: 'friend_status',
-            loggedInUserID: sessionStorage.getItem('loggedInUserId'),
-            loggedInUsername: sessionStorage.getItem('loggedInUsername'),
-            status: 'offline'
-        }));
-        sessionStorage.clear();
-    }
+                  // Create CSRF token input
+                  const csrfTokenInput = document.createElement("input");
+                  csrfTokenInput.type = "hidden";
+                  csrfTokenInput.name = "csrfmiddlewaretoken";
+                  csrfTokenInput.value = getCsrfToken();
 
-    function formatDate(timestamp) {
-        const date = new Date(timestamp);
-        const today = new Date();
-        const diff = today - date;
-        const oneDay = 24 * 60 * 60 * 1000; // milliseconds in a day
-        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    
-        if (diff < oneDay && date.getDate() === today.getDate()) {
-            // If within today, show hours
-            return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-        } else if (diff < 7 * oneDay) {
-            // If within the current week, show day of the week
-            return dayNames[date.getDay()];
-        } else {
-            // Otherwise, show the date (month and day)
-            return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-        }
-    }
-    
-    // Function to truncate text and add ellipsis
-        function truncateText(text, maxLength) {
-            if (text.length > maxLength) {
-                return text.substring(0, maxLength) + '...';
+                  // Create friend ID input
+                  const friendIdInput = document.createElement("input");
+                  friendIdInput.type = "hidden";
+                  friendIdInput.name = "friend_id";
+                  friendIdInput.value = user.user_id;
+
+                  // Create submit button
+                  const button = document.createElement("button");
+                  button.type = "submit";
+                  button.classList.add("addfriend");
+
+                  // Add icon to the button
+                  const icon = document.createElement("i");
+                  icon.classList.add("fas", "fa-user-plus");
+                  button.appendChild(icon);
+
+                  // Append inputs and button to the form
+                  form.appendChild(csrfTokenInput);
+                  form.appendChild(friendIdInput);
+                  form.appendChild(button);
+
+                  form.addEventListener("submit", function (event) {
+                    event.preventDefault(); // Prevent default form submission
+
+                    const formData = new FormData(form);
+
+                    fetch(form.action, {
+                      method: "POST",
+                      headers: {
+                        "X-CSRFToken": getCsrfToken(),
+                      },
+                      body: formData,
+                    })
+                      .then((response) => {
+                        if (!response.ok) {
+                          throw new Error("Network response was not ok");
+                        }
+                        return response.json();
+                      })
+                      .then((data) => {
+                        if (data.success) {
+                          button.disabled = true;
+                          button.style.fontSize = "0.9em";
+                          button.innerText = "Sent";
+                        } else {
+                          console.error("Failed to add friend:", data.error);
+                        }
+                      })
+                      .catch((error) => {
+                        console.error(
+                          "There was a problem with the fetch operation:",
+                          error
+                        );
+                      });
+                  });
+
+                  userElement.appendChild(form);
+                }
+
+                // Append the view_profile link (which contains serached_user_info) to the user element
+                userElement.appendChild(view_profile);
+
+                resultsContainer.appendChild(userElement);
+              });
+              resultsContainer.style.display = "block";
             } else {
-                return text;
+              resultsContainer.innerHTML =
+                '<div class="search-result">No users found.</div>';
+              resultsContainer.style.display = "block";
             }
-        }
+          })
+          .catch((error) => {
+            console.error(
+              "There was a problem with the fetch operation:",
+              error
+            );
+          });
+      } else {
+        document.getElementById("search-results").style.display = "none";
+      }
+    });
 
-    function showFriendRequests(){
-        if(toggleFriendRequest){
+  function getCsrfToken() {
+    const tokenElement = document.querySelector(
+      'input[name="csrfmiddlewaretoken"]'
+    );
+    return tokenElement ? tokenElement.value : "";
+  }
 
-            if(toggleMessageDrop == false){
-                message_dropdown.style.display = 'none';
-                toggleMessageDrop = true;
-                envelope.classList.remove('active');
-                envelope.style.boxShadow = 'none'; 
-                
-            }
-            loadFriendRequests();
-            pendingDropdownContainer.style.display = 'block';
-            toggleFriendRequest = false;
-            friendRequest.style.boxShadow = '-1px -2px 20px 4px wheat'; 
-            friendRequest.classList.add('active');
-            dropdown.style.display = 'none';
-        }
-        else{
-            pendingDropdownContainer.style.display = 'none';
-            toggleFriendRequest = true;
-            friendRequest.style.boxShadow = 'none'; 
-            friendRequest.classList.remove('active');
+  const userHolderConatiner = document.getElementById("user-holder-container");
+  const dropdown = document.getElementById("menu-dropdown");
+  const message_dropdown = document.getElementById("message-dropdown");
+  const pendingDropdownContainer = document.getElementById(
+    "pending-friendships-dropdown"
+  );
+  const envelope = document.getElementById("friend-message");
+  const friendRequest = document.getElementById("friend-request");
+  let toggleDrop = true;
+  let toggleMessageDrop = true;
+  let toggleFriendRequest = true;
 
-        }
+  function showMessageDropdown() {
+    if (toggleMessageDrop) {
+      if (toggleFriendRequest == false) {
+        pendingDropdownContainer.style.display = "none";
+        toggleFriendRequest = true;
+        friendRequest.style.boxShadow = "none";
+        friendRequest.classList.remove("active");
+      }
+      loadFriendsConversations();
+      message_dropdown.style.display = "block";
+      envelope.style.boxShadow = "-1px -2px 20px 4px wheat";
+
+      toggleMessageDrop = false;
+      envelope.classList.add("active");
+      dropdown.style.display = "none";
+      toggleDrop = true;
+    } else {
+      message_dropdown.style.display = "none";
+      toggleMessageDrop = true;
+      envelope.classList.remove("active");
+      envelope.style.boxShadow = "none";
     }
-    
+  }
 
-    function loadFriendRequests(){
-        console.log('showFriendRequests');
-        fetch('/pending_friendships_list/')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const pendingDropdown = document.getElementById('pending-friendships-dropdown');
-                    const pendingFriendshipsText = document.getElementById('pending-friendships-text');
-             
-                    pendingDropdown.innerHTML = '';
-                    pendingDropdown.appendChild(pendingFriendshipsText);
+  function adjustPadding() {
+    userHolderConatiner.style.display = "block";
+  }
 
-                    data.pending_user_info.forEach(friend_request => {
-                        const userPendingRequestContainer = document.createElement('div');
-                        const userPendingRequest = document.createElement('div');
-                  
-                        userPendingRequestContainer.classList.add('user-pending-request-container');
-                        userPendingRequest.classList.add('user-pending-request');
-                        console.log(friend_request);
-                        const profilepic = document.createElement('img');
-                        profilepic.src = friend_request.profile_picture;
-                        profilepic.classList.add('user-pending-profile-pic');
+  function showDropdown() {
+    if (toggleDrop) {
+      dropdown.style.display = "block";
+      toggleDrop = false;
+      pendingDropdownContainer.style.display = "none";
+      message_dropdown.style.display = "none";
+      envelope.style.boxShadow = "none";
+      toggleMessageDrop = true;
+      friendRequest.style.boxShadow = "none";
+      friendRequest.classList.remove("active");
+      envelope.classList.remove("active");
+    } else {
+      dropdown.style.display = "none";
+      toggleDrop = true;
+    }
+  }
 
-                        const actionConatiner = document.createElement('div');
-                        const acceptInviteButton = document.createElement('div');
-                        const declineInviteButton = document.createElement('div');
+  function logout() {
+    socket.send(
+      JSON.stringify({
+        type: "friend_status",
+        loggedInUserID: sessionStorage.getItem("loggedInUserId"),
+        loggedInUsername: sessionStorage.getItem("loggedInUsername"),
+        status: "offline",
+      })
+    );
+    sessionStorage.clear();
+  }
 
-                        actionConatiner.classList.add('action-button-container');
-                        acceptInviteButton.classList.add('accept-invite-button');
-                        declineInviteButton.classList.add('decline-invite-button');
-                        acceptInviteButton.textContent = '✓';
-                        declineInviteButton.textContent = '✗';
+  function formatDate(timestamp) {
+    const date = new Date(timestamp);
+    const today = new Date();
+    const diff = today - date;
+    const oneDay = 24 * 60 * 60 * 1000; // milliseconds in a day
+    const dayNames = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
 
-                       
-                        const friendRequestUsername = document.createElement('div');
-                        friendRequestUsername.classList.add('friend-request-info');
-                        friendRequestUsername.textContent = friend_request.username;
+    if (diff < oneDay && date.getDate() === today.getDate()) {
+      // If within today, show hours
+      return date.toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit",
+      });
+    } else if (diff < 7 * oneDay) {
+      // If within the current week, show day of the week
+      return dayNames[date.getDay()];
+    } else {
+      // Otherwise, show the date (month and day)
+      return date.toLocaleDateString([], { month: "short", day: "numeric" });
+    }
+  }
 
-                        actionConatiner.appendChild(declineInviteButton);
-                        actionConatiner.appendChild(acceptInviteButton);
+  // Function to truncate text and add ellipsis
+  function truncateText(text, maxLength) {
+    if (text.length > maxLength) {
+      return text.substring(0, maxLength) + "...";
+    } else {
+      return text;
+    }
+  }
 
-                        userPendingRequest.appendChild(profilepic);
-                        userPendingRequest.appendChild(friendRequestUsername);
-                        userPendingRequest.appendChild(actionConatiner);
-                        userPendingRequestContainer.appendChild(userPendingRequest);
-                        pendingDropdown.appendChild(userPendingRequestContainer);
+  function showFriendRequests() {
+    if (toggleFriendRequest) {
+      if (toggleMessageDrop == false) {
+        message_dropdown.style.display = "none";
+        toggleMessageDrop = true;
+        envelope.classList.remove("active");
+        envelope.style.boxShadow = "none";
+      }
+      loadFriendRequests();
+      pendingDropdownContainer.style.display = "block";
+      toggleFriendRequest = false;
+      friendRequest.style.boxShadow = "-1px -2px 20px 4px wheat";
+      friendRequest.classList.add("active");
+      dropdown.style.display = "none";
+    } else {
+      pendingDropdownContainer.style.display = "none";
+      toggleFriendRequest = true;
+      friendRequest.style.boxShadow = "none";
+      friendRequest.classList.remove("active");
+    }
+  }
 
+  function loadFriendRequests() {
+    console.log("showFriendRequests");
+    fetch("/pending_friendships_list/")
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          const pendingDropdown = document.getElementById(
+            "pending-friendships-dropdown"
+          );
+          const pendingFriendshipsText = document.getElementById(
+            "pending-friendships-text"
+          );
 
-                        acceptInviteButton.addEventListener('click', function() {
-                            fetch(`/accept_friend_request/${friend_request.friendship_id}/`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRFToken': getCookie('csrftoken') 
-                                }
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    console.log('Friend request accepted successfully');
-                                    showFriendRequests();
-                                    friends_list()
-                                }
-                            })
-                            .catch(error => console.error('Error:', error));
-                        });
+          pendingDropdown.innerHTML = "";
+          pendingDropdown.appendChild(pendingFriendshipsText);
 
-                        declineInviteButton.addEventListener('click', function() {
-                            fetch(`/decline_friend_request/${friend_request.friendship_id}/`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRFToken': getCookie('csrftoken') 
-                                }
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    console.log('Friend request declined successfully');
-                                    showFriendRequests();
-                                }
-                            })
-                            .catch(error => console.error('Error:', error));
-                        });
+          data.pending_user_info.forEach((friend_request) => {
+            const userPendingRequestContainer = document.createElement("div");
+            const userPendingRequest = document.createElement("div");
 
+            userPendingRequestContainer.classList.add(
+              "user-pending-request-container"
+            );
+            userPendingRequest.classList.add("user-pending-request");
+            console.log(friend_request);
+            const profilepic = document.createElement("img");
+            profilepic.src = friend_request.profile_picture;
+            profilepic.classList.add("user-pending-profile-pic");
 
-                    });
+            const actionConatiner = document.createElement("div");
+            const acceptInviteButton = document.createElement("div");
+            const declineInviteButton = document.createElement("div");
 
+            actionConatiner.classList.add("action-button-container");
+            acceptInviteButton.classList.add("accept-invite-button");
+            declineInviteButton.classList.add("decline-invite-button");
+            acceptInviteButton.textContent = "✓";
+            declineInviteButton.textContent = "✗";
 
+            const friendRequestUsername = document.createElement("div");
+            friendRequestUsername.classList.add("friend-request-info");
+            friendRequestUsername.textContent = friend_request.username;
+
+            actionConatiner.appendChild(declineInviteButton);
+            actionConatiner.appendChild(acceptInviteButton);
+
+            userPendingRequest.appendChild(profilepic);
+            userPendingRequest.appendChild(friendRequestUsername);
+            userPendingRequest.appendChild(actionConatiner);
+            userPendingRequestContainer.appendChild(userPendingRequest);
+            pendingDropdown.appendChild(userPendingRequestContainer);
+
+            acceptInviteButton.addEventListener("click", function () {
+              fetch(`/accept_friend_request/${friend_request.friendship_id}/`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-CSRFToken": getCookie("csrftoken"),
+                },
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  if (data.success) {
+                    console.log("Friend request accepted successfully");
+                    showFriendRequests();
+                    friends_list();
+                  }
+                })
+                .catch((error) => console.error("Error:", error));
+            });
+
+            declineInviteButton.addEventListener("click", function () {
+              fetch(
+                `/decline_friend_request/${friend_request.friendship_id}/`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken"),
+                  },
                 }
-            })
-            .catch(error => console.error('Error:', error));
-    }
-    
-    let ako = sessionStorage.getItem('loggedInUserId');
-    function loadFriendsConversations() {
-        fetch('/friends_conversations/')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const messageDropdown = document.getElementById('message-dropdown');
-
-                     // Clear existing content except the 'chats-text' div
-                    const existingChatsText = messageDropdown.querySelector('.chats-text');
-                    messageDropdown.innerHTML = '';
-                    messageDropdown.appendChild(existingChatsText);
-    
-                    // Sort friends based on the timestamp of their last message (latest first)
-                    data.friends.sort((a, b) => {
-                        if (a.last_message && b.last_message) {
-                            return new Date(b.last_message.timestamp) - new Date(a.last_message.timestamp);
-                        } else if (a.last_message && !b.last_message) {
-                            return -1; // A has a message, prioritize A
-                        } else if (!a.last_message && b.last_message) {
-                            return 1; // B has a message, prioritize B
-                        } else {
-                            return 0; // Both have no messages (shouldn't happen if filtering in backend)
-                        }
-                    });
-    
-                    data.friends.forEach(friend => {
-                        if (!friend.last_message) {
-                            return; // Skip this friend if there's no last message
-                        }
-    
-                        const friendMessage = document.createElement('div');
-                        friendMessage.classList.add('dropdown-messages');
-    
-                        const profileImg = document.createElement('img');
-                        profileImg.src = friend.profile_picture;
-                        profileImg.alt = 'Profile Picture';
-                        profileImg.classList.add('sender-profile');
-                        
-                        // Check if friend is online and add status indicator
-                        if (friend.status == "online") {
-                            profileImg.style.position = 'relative'; // Ensure profileImg has relative positioning for absolute positioning of status indicator
-                            const statusIndicator = document.createElement('div');
-                            statusIndicator.classList.add('status-indicator');
-                            friendMessage.appendChild(statusIndicator);
-                        }
-    
-                        const messageDetails = document.createElement('div');
-                        messageDetails.classList.add('message-details');
-    
-                        const sender = document.createElement('div');
-                        sender.classList.add('message-sender');
-                        sender.textContent = friend.username;
-
-                        const unread_count = document.createElement('div');
-                        unread_count.classList.add('unread-count');
-                        unread_count.textContent = friend.unread_count;
-
-                        if(friend.unread_count > 0){
-                            unread_count.style.display = 'block';
-                        }
-                        else{
-                            unread_count.style.display = 'none';
-                        }
-
-                        const content = document.createElement('span');
-                        content.classList.add('message-content');
-                       
-                        
-                        // Check if the logged-in user is the sender
-                        if (friend.last_message.sender == ako) {
-                            content.textContent = `You: ${truncateText(friend.last_message.content, 9)}`;
-                        } else {
-                            content.textContent = truncateText(friend.last_message.content, 11);
-                        }
-                        
-                        const loggedInUserID_for_displaychat1 = sessionStorage.getItem('loggedInUserId');
-                        if(loggedInUserID_for_displaychat1 > friend.id){
-                            conversation_name = `${loggedInUserID_for_displaychat1} and ${friend.id}`;
-                        }
-                        else{
-                            conversation_name = `${friend.id} and ${loggedInUserID_for_displaychat1}`;
-                        }
-
-                        friendMessage.addEventListener('click', function() {
-                            displaychat1(friend.id, friend.username);
-                            showMessageDropdown();
-                            reset_unread_count(conversation_name);
-                        });
-
-                        const timestamp = document.createElement('span');
-                        timestamp.classList.add('message-timestamp');
-                        timestamp.textContent = formatDate(friend.last_message.timestamp);
-    
-                        messageDetails.appendChild(sender);
-                        messageDetails.appendChild(content);
-                        messageDetails.appendChild(timestamp);
-    
-                        friendMessage.appendChild(profileImg);
-                        friendMessage.appendChild(messageDetails);
-                        friendMessage.appendChild(unread_count);
-
-    
-                        messageDropdown.appendChild(friendMessage);
-                    });
-                }
-            })
-            .catch(error => console.error('Error:', error));
-    }
-        
-    
-    function reset_unread_count(conversation_name) {
-        fetch(`/reset_unread_count/${encodeURIComponent(conversation_name)}/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken') 
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                console.log('Unread count reset successfully');
-                // Optionally refresh the messages or UI
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    }
-
-    // Function to get the CSRF token from cookies
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
+              )
+                .then((response) => response.json())
+                .then((data) => {
+                  if (data.success) {
+                    console.log("Friend request declined successfully");
+                    showFriendRequests();
+                  }
+                })
+                .catch((error) => console.error("Error:", error));
+            });
+          });
         }
-        return cookieValue;
+      })
+      .catch((error) => console.error("Error:", error));
+  }
+
+  let ako = sessionStorage.getItem("loggedInUserId");
+  function loadFriendsConversations() {
+    fetch("/friends_conversations/")
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          const messageDropdown = document.getElementById("message-dropdown");
+
+          // Clear existing content except the 'chats-text' div
+          const existingChatsText =
+            messageDropdown.querySelector(".chats-text");
+          messageDropdown.innerHTML = "";
+          messageDropdown.appendChild(existingChatsText);
+
+          // Sort friends based on the timestamp of their last message (latest first)
+          data.friends.sort((a, b) => {
+            if (a.last_message && b.last_message) {
+              return (
+                new Date(b.last_message.timestamp) -
+                new Date(a.last_message.timestamp)
+              );
+            } else if (a.last_message && !b.last_message) {
+              return -1; // A has a message, prioritize A
+            } else if (!a.last_message && b.last_message) {
+              return 1; // B has a message, prioritize B
+            } else {
+              return 0; // Both have no messages (shouldn't happen if filtering in backend)
+            }
+          });
+
+          data.friends.forEach((friend) => {
+            if (!friend.last_message) {
+              return; // Skip this friend if there's no last message
+            }
+
+            const friendMessage = document.createElement("div");
+            friendMessage.classList.add("dropdown-messages");
+
+            const profileImg = document.createElement("img");
+            profileImg.src = friend.profile_picture;
+            profileImg.alt = "Profile Picture";
+            profileImg.classList.add("sender-profile");
+
+            // Check if friend is online and add status indicator
+            if (friend.status == "online") {
+              profileImg.style.position = "relative"; // Ensure profileImg has relative positioning for absolute positioning of status indicator
+              const statusIndicator = document.createElement("div");
+              statusIndicator.classList.add("status-indicator");
+              friendMessage.appendChild(statusIndicator);
+            }
+
+            const messageDetails = document.createElement("div");
+            messageDetails.classList.add("message-details");
+
+            const sender = document.createElement("div");
+            sender.classList.add("message-sender");
+            sender.textContent = friend.username;
+
+            const unread_count = document.createElement("div");
+            unread_count.classList.add("unread-count");
+            unread_count.textContent = friend.unread_count;
+
+            if (friend.unread_count > 0) {
+              unread_count.style.display = "block";
+            } else {
+              unread_count.style.display = "none";
+            }
+
+            const content = document.createElement("span");
+            content.classList.add("message-content");
+
+            // Check if the logged-in user is the sender
+            if (friend.last_message.sender == ako) {
+              content.textContent = `You: ${truncateText(
+                friend.last_message.content,
+                9
+              )}`;
+            } else {
+              content.textContent = truncateText(
+                friend.last_message.content,
+                11
+              );
+            }
+
+            const loggedInUserID_for_displaychat1 =
+              sessionStorage.getItem("loggedInUserId");
+            if (loggedInUserID_for_displaychat1 > friend.id) {
+              conversation_name = `${loggedInUserID_for_displaychat1} and ${friend.id}`;
+            } else {
+              conversation_name = `${friend.id} and ${loggedInUserID_for_displaychat1}`;
+            }
+
+            friendMessage.addEventListener("click", function () {
+              displaychat1(friend.id, friend.username);
+              showMessageDropdown();
+              reset_unread_count(conversation_name);
+            });
+
+            const timestamp = document.createElement("span");
+            timestamp.classList.add("message-timestamp");
+            timestamp.textContent = formatDate(friend.last_message.timestamp);
+
+            messageDetails.appendChild(sender);
+            messageDetails.appendChild(content);
+            messageDetails.appendChild(timestamp);
+
+            friendMessage.appendChild(profileImg);
+            friendMessage.appendChild(messageDetails);
+            friendMessage.appendChild(unread_count);
+
+            messageDropdown.appendChild(friendMessage);
+          });
+        }
+      })
+      .catch((error) => console.error("Error:", error));
+  }
+
+  function reset_unread_count(conversation_name) {
+    fetch(`/reset_unread_count/${encodeURIComponent(conversation_name)}/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie("csrftoken"),
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          console.log("Unread count reset successfully");
+          // Optionally refresh the messages or UI
+        }
+      })
+      .catch((error) => console.error("Error:", error));
+  }
+
+  // Function to get the CSRF token from cookies
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === name + "=") {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
     }
-        
+    return cookieValue;
+  }
 </script>

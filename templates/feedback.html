@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'styles/styles.css' %}">
+
+    <title>Sign Language Detection</title>
+</head>
+
+
+<body>
+<div class="container feedback-container-container">
+        {% include 'nav.html' %}
+        {% include 'topnav.html' %}
+
+        <div class="feedback-ultra-container">
+            {% if messages %}
+                <div class="messages-feedback">
+                    {% for message in messages %}
+                        <div class="alert alert-success">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <div class="feedback-container">
+                <div class="feedback-form">
+                    <div class="feedback-form-header">Help us improve e-Bgikas</div>
+                    <hr> <br>
+                    <form class="feedback-inputs" method="POST" action="{% url 'send_feedback' %}">
+                        {% csrf_token %}
+                        
+                        <!-- Feedback Type -->
+                        <label for="feedback_type">How can we improve?</label>
+                        <select id="feedback_type" name="feedback_type" required>
+                            <option value="" disabled selected style="display: none;">Choose an area</option>
+                            <option value="bug">Bug Report</option>
+                            <option value="feature">Feature Request</option>
+                            <option value="comment">General Comment</option>
+                            <option value="complaint">Complaint</option>
+                        </select>
+            
+                        <!-- Message -->
+                        <label for="message">Details:</label>
+                        <textarea id="message" name="message" rows="4" required></textarea>
+                        
+                        <!-- Submit Button -->
+                        <button type="submit">Submit Feedback</button>
+                    </form>
+                </div>
+
+                <div class="my-feedbacks-history">
+                    <p class="your-feedbacks-header">Your feedbacks </p>
+                    <hr class="feedback-hr">
+                    <div class="my-feedback">
+
+                        {% if feedbacks %}
+                                {% for feedback in feedbacks %}
+
+                                        <div class="feedback-item">
+                                            <div class="feedback-item-content">
+                                                <span class="feedback-type"> {{ feedback.feedback_type }}: </span>
+                                                <span class="feedback-message"> {{ feedback.feedback_message }} </span>
+                                            </div>
+                                            <p class="feedback-date">{{ feedback.feedback_date }} </p>
+                                            <div class="view-response">view</div>
+                                        </div>
+                                
+                                {% endfor %}
+                        {% else %}
+                            <p>No feedback found.</p>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        
+</div>
+</body>
+
+</html>

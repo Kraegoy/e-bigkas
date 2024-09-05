@@ -5,3 +5,5 @@ django
 channels
 happytransformer
 daphne
+folium
+geopy

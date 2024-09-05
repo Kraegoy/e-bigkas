@@ -34,7 +34,7 @@ footer{
 
 .menu-opened {
   transform: translateX(-50%);
-  transition: transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1); /* Custom easing function */
+  transition: all 0.5s cubic-bezier(0.22, 0.61, 0.36, 1); /* Custom easing function */
   z-index: 1000;
 }
 
@@ -117,7 +117,7 @@ overflow-y: hidden; /* Remove vertical scroll */
   margin-right: -1em;
   width: 100%;
   height: 100%;
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
   position: relative;
   z-index: 2; /* Ensure it's above main content when open */
   overflow-y: scroll; /* Add vertical scroll */ 
@@ -147,7 +147,7 @@ overflow-y: hidden; /* Remove vertical scroll */
   text-align: center;
   height: 100%;
   background: linear-gradient(to bottom,#000000e6, #0000006f);
-  transition: margin-left 0.3s ease;
+  transition: all 0.3s ease;
   z-index: 0; /* Ensure it's below the left-nav when open */
   min-width: 150%;
   transform: translateX(-40%); 
@@ -181,7 +181,7 @@ overflow-y: hidden; /* Remove vertical scroll */
   position: absolute;
   bottom: 0; 
   left: 0;
-  transition: margin-left 0.3s ease;
+  transition: all 0.3s ease;
   margin-left: 30px;
 }
 
@@ -263,7 +263,7 @@ overflow-y: hidden; /* Remove vertical scroll */
   transform: translateX(220%);
   border: 1px solid;
   border-radius: 1em;
-  transition: margin-left 0.1s linear;
+  transition: all 0.3s ease;
 }
 
 
@@ -325,6 +325,8 @@ overflow-y: hidden; /* Remove vertical scroll */
   left: 41%;
   overflow-x: hidden;
   color: white;
+  transition: all 0.3s ease;
+
 }
 
 
@@ -332,6 +334,8 @@ overflow-y: hidden; /* Remove vertical scroll */
   display: flex;
   width: 100%;
   height: 350px;
+  transition: all 0.3s ease;
+
 }
 
 .news, .history{
@@ -341,6 +345,8 @@ overflow-y: hidden; /* Remove vertical scroll */
   border: 1px solid #4f4f4f;
   position: relative;
   border-radius: 20px;
+  transition: all 0.3s ease;
+
 }
 
 .below-content{
@@ -348,6 +354,8 @@ overflow-y: hidden; /* Remove vertical scroll */
   width: 100%;
   height: 350px;
   margin-top: 1em;
+  transition: all 0.3s ease;
+
 }
 
  .bottom2, .bottom3{
@@ -358,6 +366,7 @@ overflow-y: hidden; /* Remove vertical scroll */
 
 }
 .bottom1{
+  transition: all 0.3s ease;
   width: 250px;
   padding: 1em;
   margin: 0.5em;
@@ -378,7 +387,7 @@ overflow-y: hidden; /* Remove vertical scroll */
   border: none; /* Remove the default button border */
   border-radius: 8px; /* Add rounded corners */
   cursor: pointer; /* Add a pointer cursor on hover */
-  transition: background-color 0.3s ease; /* Smooth color transition on hover */
+  transition: all 0.3s ease;
   margin-bottom: 10px;
 }
 
@@ -420,7 +429,7 @@ overflow-y: hidden; /* Remove vertical scroll */
   background-color: #8a8989;
   font-weight: bold;
   box-shadow: inset 2px 5px 10px rgba(0,0,0,0.3);
-  transition: .4s;
+  transition: all 0.3s ease;
   border-radius: 5px;
 }
 
@@ -433,7 +442,7 @@ overflow-y: hidden; /* Remove vertical scroll */
   left: 0.3em;
   bottom: 0.3em;
   background-color: rgb(11, 11, 11);
-  transition: .4s;
+  transition: all 0.3s ease;
 }
 
 input:checked + .slider {
@@ -481,7 +490,7 @@ input:checked + .slider:before {
   position: fixed;
   bottom: 175px;
   margin-left: 37%;
-  transition: margin-left 0.3s ease;
+  transition: all 0.3s ease;
 }
 :root {
   --shaddow:0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -1px rgba(0,0,0,0.06);
@@ -508,7 +517,7 @@ input:checked + .slider:before {
   height: 78%;
   width: 95%;
   margin-left: 78.5%;
-  transition: margin-left 0.3s ease;
+  transition: all 0.3s ease;
   object-fit: cover;
 
 }
@@ -522,7 +531,7 @@ input:checked + .slider:before {
   margin: 2px;
   background-color: rgb(66, 66, 68);
   margin-top: 2em;
-  transition: margin-right 0.3s ease;
+  transition: all 0.3s ease;
   display: block;
 
 
@@ -650,7 +659,7 @@ border-radius: 1.5em;
 .all-friend{
   display: block;
   margin-left: 0;
-  transition: margin-left 0.6s ease;
+  transition: all 0.3s ease;
 }
 .friend-container{
   padding: 1.5em;
@@ -660,7 +669,7 @@ border-radius: 1.5em;
   background-color: rgb(42, 42, 41);
   margin-left: 2em;
   box-shadow: 0 5px 10px rgba(41, 27, 1, 0.558);
-  transition: margin-left 0.5s ease;
+  transition: all 0.3s ease;
 
 }
 
@@ -684,8 +693,7 @@ border-radius: 1.5em;
 
 .friend-list:hover, .friend-container:hover{
 cursor: pointer;
-border-color: wheat;
-color: wheat;
+border-color: rgba(245, 222, 179, 0.359);
 
 }
 /* Style for the scrollbar track */
@@ -713,27 +721,13 @@ background-color: #000000;
 background-color: rgba(245, 222, 179, 0.765); 
 }
 
-.video-call-button{
-  background-color: rgba(245, 222, 179, 0.851); 
-  color: #FFFFFF;
-  min-width: 50%;
-  padding: 7px;
-  border: none; 
-  border-radius: 8px; /* Add rounded corners */
-  cursor: pointer; 
-  transition: background-color 0.3s ease; 
-  margin-right: 0.5em;
-}
+
 .form-vidcall{
   margin-left: auto;
+  display: flex;
 }
 
-  .video-call-button:hover{
-    background-color: wheat; 
-    box-shadow: 0 5px 10px rgba(1, 32, 41, 0.558);
-  min-width:41.5%;
-  cursor: pointer;
-}
+
 .friends-header{
   position: sticky;
   color: wheat;
@@ -750,7 +744,7 @@ background-color: rgba(245, 222, 179, 0.765);
   border-radius: 0.2em;
   color: whitesmoke;
   box-shadow: 0;
-  transition: margin-left 0.2s ease;
+  transition: all 0.3s ease;
   max-height: 2em;
 
 }
@@ -781,6 +775,7 @@ background-color: rgba(245, 222, 179, 0.765);
 }
 .friend-container {
   margin-left: -5em;
+  cursor: default;
 
 }
 .friend-username{
@@ -788,11 +783,12 @@ background-color: rgba(245, 222, 179, 0.765);
 
 }
 
+
 }
 @media screen and (max-width:1000px) {
 .friend-container {  /* from room.html */
   margin-left: -5em;
-  transition: margin-right 0.3s ease;
+  transition: all 0.3s ease;
 
 }
 .friend-username{  /* from room.html */
@@ -801,12 +797,12 @@ background-color: rgba(245, 222, 179, 0.765);
 }
 .video-container{  /* from room.html */
   height: 30%;
-  transition: margin-right 0.3s ease;
+  transition: all 0.3s ease;
 
 }
 #controls-wrapper{  /* from room.html */
   transform: translateY(-100%);
-  transition: margin-left 0.3s ease;
+  transition: all 0.3s ease;
 
 }
 
@@ -849,6 +845,12 @@ border-radius: 0.2em;
 
 .user-holder {
 margin-right: 10px; /* Adjust spacing between user name and button */
+display: flex;
+}
+.profile-picture-topnav{
+  height: 50px;
+  width: 50px;
+  border-radius: 50%;
 }
 
 
@@ -875,7 +877,7 @@ margin-right: 10px; /* Adjust spacing between user name and button */
   border: none; 
   border-radius: 8px; /* Add rounded corners */
   cursor: pointer; 
-  transition: background-color 0.3s ease; 
+  transition: all 0.3s ease;
   margin-right: 0.4em;
   font-weight: bolder;
   width: 2.5em;
@@ -1231,6 +1233,27 @@ max-height: 5em;
 overflow-y: auto; 
 }
 
+.action-button{
+  margin: 1px;
+  font-size: 1em;
+  color: black;
+  background-color: wheat;
+  padding: 5px;
+  border-radius: 15px;
+}
+
+.action-button:last-child{
+  margin-right: -5px;
+}
+
+
+.action-button:hover{
+  color: wheat;
+  scale: 1.5;
+  background-color: black;
+  border: 1px solid white;
+
+}
 
 .chat-here::placeholder {
 color: white; /* Change placeholder color to white */
@@ -1373,6 +1396,12 @@ margin-left: -5px;
 .friend-username-div{
 margin-left: 4px;
 padding: 0;
+max-width: 60%;
+overflow: hidden;          
+text-overflow: ellipsis;     
+white-space: nowrap;
+text-decoration: none;
+color: white;
 }
 
 .hangup_overlay{
@@ -1507,7 +1536,7 @@ height: 45px;
 border-radius: 50%;
 border: 1px solid black;
 margin-left: 2em;
-transition: margin-left 0.7s ease;
+transition: all 0.3s ease;
 z-index: 10000;
 }
 
@@ -1519,7 +1548,7 @@ font-weight: bolder;
 cursor: default;
 font-family:Georgia, 'Times New Roman', Times, serif;
 margin-left: 0.5em;
-transition: margin-left 0.7s ease;
+transition: all 0.3s ease;
 text-decoration: none;
 cursor: pointer;
 }
@@ -1850,7 +1879,7 @@ margin: 0 2px;
 background-color: #bbb;
 border-radius: 50%;
 display: inline-block;
-transition: background-color 0.6s ease;
+transition: all 0.3s ease;
 }
 
 
@@ -1869,4 +1898,272 @@ to {opacity: 1}
 /* On smaller screens, decrease text size */
 @media only screen and (max-width: 300px) {
 .text {font-size: 11px}
+}
+
+.searched-user{
+  color: white;
+  text-decoration: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.search-container-top-nav{
+  margin-left: 15em;
+}
+
+.search-input-top-nav{
+  background-color: #2c2c2c; 
+  border: 1px solid #444; 
+  color: #e0e0e0;
+  padding: 5px; 
+  border-radius: 4px; 
+  font-size: 1em; 
+  outline: none; 
+  width: 200px;
+  transition: border-color 0.3s ease, background-color 0.3s ease; 
+}
+
+.search-input-top-nav:focus {
+  border-color: rgba(245, 222, 179, 0.656);
+  background-color: #3a3a3a; 
+}
+
+.search-input-top-nav::placeholder {
+  color: #777; /* Lighter color for placeholder text */
+}
+
+/* Dark Theme Input - Disabled State */
+.search-input-top-nav:disabled {
+  background-color: #333; /* Slightly darker background for disabled input */
+  color: #555; /* Darker text color */
+  border-color: #555; /* Subtle border color */
+  cursor: not-allowed; /* Indicate that it's not interactive */
+}
+
+.search-results {
+  border: 1px solid #cccccc8f;
+  background-color: #1a1a1a;
+  z-index: 1000;
+  max-height: 300px;
+  width: 250px;
+}
+
+#search-results{
+  position: absolute;
+  background-color: black;
+  padding: 5px;
+  border-radius: 0 20px 10px 10px; /* top-left, top-right, bottom-right, bottom-left */
+  border: 1px solid grey;
+}
+
+.search-result {
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: white;
+  background-color: black;
+  padding: 3px;
+  margin: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.571);
+  position: relative;
+  width: 200px;
+  border-radius: 20px;
+
+}
+
+.search-result form{
+  position: absolute;
+  right: 5px;
+  cursor: pointer;
+}
+
+.addfriend{
+  cursor: pointer;
+  color: wheat;
+  background: none;
+  border: none;
+  font-size: 1.2em;
+}
+.addfriend:hover{
+  color: white;
+}
+.search-result img {
+  margin-right: 8px;
+}
+
+.serached-user-info{
+  display: flex;
+  align-items: center;
+}
+
+.serached-user-info:hover{
+  font-weight: bold;
+}
+
+.top-nav-view-profile{
+  text-decoration: none;
+  color: white;
+}
+
+
+
+
+.feedback-container-container{
+  background-color: #0b0b0b;
+}
+
+.feedback-ultra-container{
+  width: 85%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+}
+
+.feedback-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.2em;
+  width: 90%;
+}
+
+.feedback-form {
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 40%;
+  margin-right: 2em;
+
+}
+
+.feedback-form-header {
+  font-size: 1.5em;
+  margin-bottom: 20px;
+  text-align: center;
+  color: white;
+}
+
+.feedback-inputs label {
+  font-weight: bold;
+  margin-top: 10px;
+  display: block;
+  color: rgb(213, 213, 213);
+}
+
+.feedback-inputs select,
+.feedback-inputs textarea {
+  width: 80%;
+  padding: 10px;
+  margin-top: 5px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(128, 128, 128, 0.513);
+  border-radius: 4px;
+  color: white;
+  background-color: #292929;
+  resize: none;
+}
+
+.feedback-inputs button {
+  width: 50%;
+  padding: 10px;
+  background-color: #2c2c2c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.feedback-inputs button:hover {
+  background-color: black;
+  border: 1px solid grey;
+}
+
+
+.my-feedbacks-history{
+  height: 70%;
+  width: 70%;
+  border: 1px solid #2c2c2c;
+  color: white;
+  border-radius: 10px;
+}
+
+.messages-feedback{
+  color: white;
+  padding: 1em;
+  position: absolute;
+  top: 5em;
+  left: 20%;
+  border-radius: 10px;
+  background-color: #007300d0;
+  animation: fadeOut 4s ease-out forwards;
+
+}
+
+@keyframes fadeOut {
+  0% {
+      opacity: 1;
+  }
+  100% {
+      opacity: 0.5;
+      display: none; /* Optional: hides the element completely */
+  }
+}
+
+.feedback-item{
+  position: relative;
+  background-color: #1d1d1d;
+  margin: 5px;
+  padding: 5px;
+  border: 1px solid #2c2c2c;
+  border-radius: 8px;
+  height: 3em;
+  font-size: 0.9em;
+  display: flex;
+}
+
+.feedback-item-content{
+  width: 90%;
+}
+
+.view-response{
+  align-self: center;
+  width: 10%;
+  justify-self: center;
+  text-align: end;
+  padding: 1em;
+  font-size: 0.9em;
+  color: wheat;
+  cursor: pointer;
+}
+
+.feedback-type{
+  color: wheat;
+}
+
+.feedback-message{
+  color: rgb(212, 210, 210);
+}
+
+.feedback-date{
+  font-size: 0.7em;
+  padding: 0;
+  position: absolute;
+  bottom: 0;
+  color: rgb(212, 210, 210);
+}
+
+.your-feedbacks-header{
+  padding-left: 1em;
+}
+
+.feedback-hr{
+  border-color: #111111b9;
+}
+
+.my-feedback{
+  overflow-y: scroll;
+  height: 85%;
 }

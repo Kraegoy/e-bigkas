@@ -10,281 +10,281 @@
 </head>
 
 <style>
-    .tutorial{
-        width: 20%;
-        height: 15%;
-        margin-left: 53em;
-        margin-top: 2em;
+        .tutorial{
+            width: 20%;
+            height: 15%;
+            margin-left: 53em;
+            margin-top: 2em;
+        }
+        .video-container1 {
+            overflow-y: auto;
+            max-width: 52%;
+            height: 90%;
+            max-height: 500px;
+            margin-left: -8em;
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            flex-grow: 1; /* Allow container to grow and fill available space */
+            background-color: rgba(0, 0, 0, 0.312);
+            border-radius: 10px;
+            padding: 1.5em;
+        }
+        
+        /* Style for the scrollbar track */
+    .video-container1::-webkit-scrollbar, .sent-actions::-webkit-scrollbar {
+    width: 0.4em;
     }
-    .video-container1 {
-        overflow-y: auto;
-        max-width: 52%;
-        height: 90%;
-        max-height: 500px;
-        margin-left: -8em;
-        position: relative;
-        display: flex;
-        flex-wrap: wrap;
-        flex-grow: 1; /* Allow container to grow and fill available space */
-        background-color: rgba(0, 0, 0, 0.312);
-        border-radius: 10px;
-        padding: 1.5em;
-    }
-    
-    /* Style for the scrollbar track */
-.video-container1::-webkit-scrollbar, .sent-actions::-webkit-scrollbar {
-  width: 0.4em;
-}
 
 
-/* Style for the scrollbar thumb */
-.video-container1::-webkit-scrollbar-thumb, .sent-actions::-webkit-scrollbar {
-  background-color: wheat; 
-  border-radius: 5px; 
-}
+    /* Style for the scrollbar thumb */
+    .video-container1::-webkit-scrollbar-thumb, .sent-actions::-webkit-scrollbar {
+    background-color: wheat; 
+    border-radius: 5px; 
+    }
 
-/* Style for the scrollbar track on hover */
-.video-container1::-webkit-scrollbar-track:hover , .sent-actions::-webkit-scrollbar{
-  background-color: #000000; 
-}
+    /* Style for the scrollbar track on hover */
+    .video-container1::-webkit-scrollbar-track:hover , .sent-actions::-webkit-scrollbar{
+    background-color: #000000; 
+    }
 
-/* Style for the scrollbar thumb on hover */
-.video-container1::-webkit-scrollbar-thumb:hover , .sent-actions::-webkit-scrollbar {
-  background-color: rgba(245, 222, 179, 0.765); 
-}
-    
-    
-    .video-list {
-        width: auto;
-        display: flex;
-        transition: transform 0.5s ease-in-out;
+    /* Style for the scrollbar thumb on hover */
+    .video-container1::-webkit-scrollbar-thumb:hover , .sent-actions::-webkit-scrollbar {
+    background-color: rgba(245, 222, 179, 0.765); 
     }
-    
-    .video-card1 {
-        display: flex;
-        flex-wrap: wrap; 
-        width: 220px; 
-        color: wheat;
-        height: 5%;
-        background-color: black;
-        margin: 2px;
-        cursor: pointer;
-        border-radius: 5px;
-    }
-    .video-card1:hover{
-        background-color: rgb(113, 113, 113);
-        color: black;
-    }
-    
-    .folder-name {
-        flex-grow: 1; /* Allow the folder name to grow */
-    }
-    
-    h4 {
-        color: rgba(245, 222, 179, 0.908);
-        cursor: pointer;
-        text-transform: capitalize;
-    }
-    
-    .video-item {
-        flex: 0 0 auto;
-        margin: 10px;
-        width: 40%;
-        height: 100%;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Add box shadow */
+        
+        
+        .video-list {
+            width: auto;
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+        
+        .video-card1 {
+            display: flex;
+            flex-wrap: wrap; 
+            width: 220px; 
+            color: wheat;
+            height: 5%;
+            background-color: black;
+            margin: 2px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .video-card1:hover{
+            background-color: rgb(113, 113, 113);
+            color: black;
+        }
+        
+        .folder-name {
+            flex-grow: 1; /* Allow the folder name to grow */
+        }
+        
+        h4 {
+            color: rgba(245, 222, 179, 0.908);
+            cursor: pointer;
+            text-transform: capitalize;
+        }
+        
+        .video-item {
+            flex: 0 0 auto;
+            margin: 10px;
+            width: 40%;
+            height: 100%;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Add box shadow */
 
-    }
-    .video-item::-webkit-media-controls {
-        display: flex !important;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    .video-item::-webkit-media-controls-play-button {
-        display: block !important;
-        margin: auto;
-    }
-    
-    .video-item::-webkit-media-controls-volume-slider {
-        display: none !important;
-    }
-    .overlay {
-        display: none; 
-        position: fixed; 
-        z-index: 11111; 
-        top: 0; 
-        left: 0; 
-        width: 100%; 
-        height: 100%; 
-        background-color: rgba(0, 0, 0, 0.5); 
-      }
-    
-    .videoModal {
-        display: none; 
-        position: fixed; 
-        z-index: 111111;
-        left: 55%; 
-        top: 50%; 
-        transform: translate(-50%, -50%); 
-        width: 70%; 
-        height: 90%; 
-        overflow-y: auto;
-        overflow-x: hidden; 
-        background-color: black; 
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add shadow for depth */
+        }
+        .video-item::-webkit-media-controls {
+            display: flex !important;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .video-item::-webkit-media-controls-play-button {
+            display: block !important;
+            margin: auto;
+        }
+        
+        .video-item::-webkit-media-controls-volume-slider {
+            display: none !important;
+        }
+        .overlay {
+            display: none; 
+            position: fixed; 
+            z-index: 11111; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(0, 0, 0, 0.5); 
+        }
+        
+        .videoModal {
+            display: none; 
+            position: fixed; 
+            z-index: 111111;
+            left: 55%; 
+            top: 50%; 
+            transform: translate(-50%, -50%); 
+            width: 70%; 
+            height: 90%; 
+            overflow-y: auto;
+            overflow-x: hidden; 
+            background-color: black; 
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add shadow for depth */
 
-      }
-      .PS, .PS1{
-        color: rgba(188, 188, 188, 0.776);
-        text-align: left;
-        padding: 1em;
-    }
-      
-      
-      .videoModal-content {
-     
-        background-color: #rgb(25 25 25);
-        padding: 20px;
-        border: 1px solid #888;
-        width: 80%;
-        max-width: 600px;
+        }
+        .PS, .PS1{
+            color: rgba(188, 188, 188, 0.776);
+            text-align: left;
+            padding: 1em;
+        }
+        
+        
+        .videoModal-content {
+        
+            background-color: #rgb(25 25 25);
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
 
-      }
-      
-      .close {
-        color: wheat;
-        float: right;
-        font-size: 2em;
-        font-weight: bold;
-        padding: 5px;
-        margin-right: 10px;
+        }
+        
+        .close {
+            color: wheat;
+            float: right;
+            font-size: 2em;
+            font-weight: bold;
+            padding: 5px;
+            margin-right: 10px;
 
-      }
-      .modal-content1 {
-        background-color:rgb(29 29 29);
-        box-shadow: 0 10px 18px rgba(2, 1, 0, 0.558);
-        margin-bottom: 0;
-        border: 1px solid #313030;
-        width: 100%;
-        height: 77%;
-        text-align: center;
-        border-radius: 0.8em;
-        color: rgb(247, 237, 218);
-    
-      }
-      .close:hover,
-      .close:focus {
-        color: red;
-        text-decoration: none;
-        cursor: pointer;
-      }
-      
-    
-      .button {
-        line-height: 1;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: .75rem;
-        background-color: var(--clr);
-        color: #fff;
-        border-radius: 10rem;
-        font-weight: 600;
-        padding: .75rem 1.5rem;
-        padding-left: 20px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        transition: background-color .3s;
-        cursor: pointer;
-      }
-      
-      .button__icon-wrapper {
-        flex-shrink: 0;
-        width: 25px;
-        height: 25px;
-        position: relative;
-        color: var(--clr);
-        background-color: #fff;
-        border-radius: 50%;
-        display: grid;
-        place-items: center;
-        overflow: hidden;
-      }
-      
-      .button:hover {
-        background-color: rgb(51, 150, 255);
-      }
-      
-      .button:hover .button__icon-wrapper {
-        color: #000;
-      }
-      
-      .button__icon-svg--copy {
-        position: absolute;
-        transform: translate(-150%, 150%);
-      }
-      
-      .button:hover .button__icon-svg:first-child {
-        transition: transform .3s ease-in-out;
-        transform: translate(150%, -150%);
-      }
-      
-      .button:hover .button__icon-svg--copy {
-        transition: transform .3s ease-in-out .1s;
-        transform: translate(0);
-      }
+        }
+        .modal-content1 {
+            background-color:rgb(29 29 29);
+            box-shadow: 0 10px 18px rgba(2, 1, 0, 0.558);
+            margin-bottom: 0;
+            border: 1px solid #313030;
+            width: 100%;
+            height: 77%;
+            text-align: center;
+            border-radius: 0.8em;
+            color: rgb(247, 237, 218);
+        
+        }
+        .close:hover,
+        .close:focus {
+            color: red;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        
+        .button {
+            line-height: 1;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: .75rem;
+            background-color: var(--clr);
+            color: #fff;
+            border-radius: 10rem;
+            font-weight: 600;
+            padding: .75rem 1.5rem;
+            padding-left: 20px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: background-color .3s;
+            cursor: pointer;
+        }
+        
+        .button__icon-wrapper {
+            flex-shrink: 0;
+            width: 25px;
+            height: 25px;
+            position: relative;
+            color: var(--clr);
+            background-color: #fff;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+        }
+        
+        .button:hover {
+            background-color: rgb(51, 150, 255);
+        }
+        
+        .button:hover .button__icon-wrapper {
+            color: #000;
+        }
+        
+        .button__icon-svg--copy {
+            position: absolute;
+            transform: translate(-150%, 150%);
+        }
+        
+        .button:hover .button__icon-svg:first-child {
+            transition: transform .3s ease-in-out;
+            transform: translate(150%, -150%);
+        }
+        
+        .button:hover .button__icon-svg--copy {
+            transition: transform .3s ease-in-out .1s;
+            transform: translate(0);
+        }
 
-      .form {
-        --width-of-input: 98%;
-        --border-height: 1px;
-        --border-before-color: rgba(221, 221, 221, 0.39);
-        --border-after-color: #5891ff;
-        --input-hovered-color: #4985e01f;
-        position: relative;
-        width: var(--width-of-input);
-       }
-       /* styling of Input */
-       .input {
-        color: #fff;
-        font-size: 0.9rem;
-        background-color: transparent;
-        width: 100%;
-        box-sizing: border-box;
-        padding-inline: 0.5em;
-        padding-block: 0.7em;
-        border: none;
-        border-bottom: var(--border-height) solid var(--border-before-color);
-       }
-       /* styling of animated border */
-       .input-border {
-        position: absolute;
-        background: var(--border-after-color);
-        width: 0%;
-        height: 2px;
-        bottom: 0;
-        left: 0;
-        transition: 0.3s;
-       }
-       /* Hover on Input */
-       input:hover {
-        background: var(--input-hovered-color);
-       }
-       
-       input:focus {
-        outline: none;
-       }
-       /* here is code of animated border */
-       input:focus ~ .input-border {
-        width: 100%;
-       }
-       /* === if you want to do animated border on typing === */
-       /* remove input:focus code and uncomment below code */
-       /* input:valid ~ .input-border{
-         width: 100%;
-       } */
-    
+        .form {
+            --width-of-input: 98%;
+            --border-height: 1px;
+            --border-before-color: rgba(221, 221, 221, 0.39);
+            --border-after-color: #5891ff;
+            --input-hovered-color: #4985e01f;
+            position: relative;
+            width: var(--width-of-input);
+        }
+        /* styling of Input */
+        .input {
+            color: #fff;
+            font-size: 0.9rem;
+            background-color: transparent;
+            width: 100%;
+            box-sizing: border-box;
+            padding-inline: 0.5em;
+            padding-block: 0.7em;
+            border: none;
+            border-bottom: var(--border-height) solid var(--border-before-color);
+        }
+        /* styling of animated border */
+        .input-border {
+            position: absolute;
+            background: var(--border-after-color);
+            width: 0%;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            transition: 0.3s;
+        }
+        /* Hover on Input */
+        input:hover {
+            background: var(--input-hovered-color);
+        }
+        
+        input:focus {
+            outline: none;
+        }
+        /* here is code of animated border */
+        input:focus ~ .input-border {
+            width: 100%;
+        }
+        /* === if you want to do animated border on typing === */
+        /* remove input:focus code and uncomment below code */
+        /* input:valid ~ .input-border{
+            width: 100%;
+        } */
+        
 </style>
 <body>
 

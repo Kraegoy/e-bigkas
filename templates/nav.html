@@ -106,8 +106,12 @@
             <header>
             
                 <div id="current-user-profilepic">
-                 <a  href="{% url 'profile' %}">  <img src="{{ user.userprofile.profile_picture.url }}" alt="Profile Picture" id="user-profilePic"> </a>
-                    <p class="loggedinUser" id="loggedinUser"><a href="{% url 'profile' %}" class="loggedinUser" >{{ request.user.username }}</a>
+                 <a  href="{% url 'profile' request.user.id %}">  
+                    <img src="{{ user.userprofile.profile_picture.url }}" alt="Profile Picture" id="user-profilePic"> 
+                </a>
+                    <p class="loggedinUser" id="loggedinUser">
+                        <a href="{% url 'profile' request.user.id %}" class="loggedinUser" >{{ request.user.username }}</a>
+                    </p>
                 </div>
                 <div id="current-user-id" data-user-id="{{ request.user.id }}"></div>
 
@@ -125,8 +129,10 @@
                     <a href="{% url 'home' %}" class="nav-home"><i class="fas fa-home" style="margin-right: 1em"></i> Home</a>
                 </div>
 
-                <p class="friends-header"> <i class="fas fa-users" style="margin-right: 0.8em"></i>
-                     Friends:</p>
+                <p class="friends-header">
+                     <i class="fas fa-users" style="margin-right: 0.8em"></i>
+                     Friends:
+                </p>
                 <div class="friend-list">
                     <div id="friends-list">
                         <!-- Friends will be dynamically added here -->
@@ -135,43 +141,17 @@
                 </div>
 
                 <div class="nav-help">
-                    <a href="{% url 'help' %}" class="nav-people">    <i class="fas fa-question" style="margin-right: 1em"></i>
-                        Help</a>
+                    <a href="{% url 'help' %}" class="nav-people">
+                        <i class="fas fa-question" style="margin-right: 1em"></i>
+                        Help
+                    </a>
                 </div>
-
-                                <!-- 
-
-                      <div class="nav-profile">
-                    <a href="{% url 'profile' %}" id="profile" class="nav-profile">Profile</a>
-                </div>
-
-              
-                <div class="nav-people">
-                    <a href="{% url 'people' %}" class="nav-people">People</a>
-                </div>
-
-                <form action="{% url 'logout' %}" method="post" onclick="logout()">
-            {% csrf_token %}
-            <button class="Btn">
-        
-                <div class="sign"><svg viewBox="0 0 512 512"><path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"></path></svg></div>
-                
-                <div class="text">Logout</div>
-            </button>       
-
-            </form>
-                -->
-
-               
+   
 
             </div>        
-            
-            
-            
-        
 
         </nav>
-</div>
+    </div>
 
 <div id="confirmationModal" class="modal">
     <div class="modal-content">
@@ -179,7 +159,7 @@
       <button id="confirmBtn">Yes</button>
       <button id="cancelBtn">No</button>
     </div>
-  </div>
+</div>
 
 
   <div class="messages-container-home">
@@ -205,15 +185,11 @@
     
 </div>
 
-</body>
-
+<script src="{% static 'JS/index.js' %}"></script>
 <script src="{% static 'JS/websocket.js' %}"></script>
 
 <script>
 
-
-
-    
 let profile1 = document.getElementById("profile")
 const loggedInUserID = sessionStorage.getItem('loggedInUserId');
 const loggedInUsername = sessionStorage.getItem('loggedInUsername');
@@ -222,68 +198,67 @@ const loggedInUsername = sessionStorage.getItem('loggedInUsername');
 
 
 const messageBox1 = document.querySelector('.messages-container-home');
-        let kkk = false; 
+let kkk = false; 
         
-        function displaychat1(friend_userID, friend_username) {
-            const loggedInUserID_for_displaychat = sessionStorage.getItem('loggedInUserId');
-            const receiver_username = document.getElementById("receiver-username")
-            kkk = !kkk; // Toggle the variable
-            messageBox1.style.display = 'block';
-            sessionStorage.setItem('receiverId', friend_userID);
-            //console.log(friend_userID);
-            //console.log(friend_username);
-            receiver_username.textContent = friend_username; 
-            const userHolderContainer = document.getElementById('user-holder-container')
-            if(userHolderContainer){
-                userHolderContainer.innerHTML = ''; // Clear the container on page load
-            }
+function displaychat1(friend_userID, friend_username) {
+    const loggedInUserID_for_displaychat = sessionStorage.getItem('loggedInUserId');
+    const receiver_username = document.getElementById("receiver-username")
+    kkk = !kkk; // Toggle the variable  
+    messageBox1.style.display = 'block';
+    sessionStorage.setItem('receiverId', friend_userID);
+    //console.log(friend_userID);
+    //console.log(friend_username);
+    receiver_username.textContent = friend_username; 
+    const userHolderContainer = document.getElementById('user-holder-container')
+    if(userHolderContainer){
+        userHolderContainer.innerHTML = ''; // Clear the container on page load
+    }
 
-            if(loggedInUserID_for_displaychat > friend_userID){
-                conversationName = `${loggedInUserID_for_displaychat} and ${friend_userID}`;
-            }
-            else{
-                conversationName = `${friend_userID} and ${loggedInUserID_for_displaychat}`;
-            }
-            sessionStorage.setItem('conversationName', conversationName);
+    if(loggedInUserID_for_displaychat > friend_userID){
+        conversationName = `${loggedInUserID_for_displaychat} and ${friend_userID}`;
+    }
+    else{
+        conversationName = `${friend_userID} and ${loggedInUserID_for_displaychat}`;
+    }
+    sessionStorage.setItem('conversationName', conversationName);
 
+    if (conversationName) {
+        //console.log("Sending request to load messages for conversation:", conversationName1);
+        socket.send(JSON.stringify({
+            type: 'load_messages',
+            conversationName: conversationName
+        }));
+    }
 
-            if (conversationName) {
-                //console.log("Sending request to load messages for conversation:", conversationName1);
-                socket.send(JSON.stringify({
-                    type: 'load_messages',
-                    conversationName: conversationName
-                }));
-            }
+    const chatInputOnFocus = document.getElementById('chat-input');
+    chatInputOnFocus.addEventListener('focus', () => {
+        console.log('Chat input focused');
+        reset_unread_count(conversationName);
+        loadFriendsConversations();
 
-            const chatInputOnFocus = document.getElementById('chat-input');
-            chatInputOnFocus.addEventListener('focus', () => {
-                console.log('Chat input focused');
-                reset_unread_count(conversationName);
-                loadFriendsConversations();
+    });
 
-            });
+    scrollToBottom();
+    reset_unread_count(conversationName);
 
-            scrollToBottom();
-            reset_unread_count(conversationName);
+}
 
-        }
+function closeChat(){
+    messageBox1.style.display = 'none';
+    kkk = !kkk; // Toggle the variable
+    scrollToBottom();
+    sessionStorage.removeItem('receiverId');
+    sessionStorage.removeItem('conversationName');
 
-        function closeChat(){
-            messageBox1.style.display = 'none';
-            kkk = !kkk; // Toggle the variable
-            scrollToBottom();
-            sessionStorage.removeItem('receiverId');
-            sessionStorage.removeItem('conversationName');
+}
 
-        }
-        
-        // Function to scroll to the bottom of the chat window
-        function scrollToBottom() {
-            const messagesContainer = document.querySelector('.messages');
-            if (messagesContainer) {
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            }
-        }
+// Function to scroll to the bottom of the chat window
+function scrollToBottom() {
+    const messagesContainer = document.querySelector('.messages');
+    if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+}
 
 
 function friends_list(){
@@ -303,7 +278,8 @@ fetch('/friends_list/')
                 return 0; // maintain order
             }
         });
-            
+
+        const baseUrl = "{% url 'profile' 0 %}".replace('/0/', '/');  // Remove the placeholder part to avoid extra slashes
         // Loop through the friends array and create list items for each friend
     data.friends.forEach(friend => {
 
@@ -319,16 +295,22 @@ fetch('/friends_list/')
 
         const listItem = document.createElement('div'); // Wrap the content in a <div>
         listItem.classList.add('friend-container');
+        
         listItem.classList.add(`${friend.username}${friend.id}`);
 
         const friend_userID = `${friend.id}`;
 
-
         listItem.appendChild(profilePictureContainer); 
 
-        const usernameSpan = document.createElement('div');
-        usernameSpan.classList.add("friend-username-div");
-        usernameSpan.textContent = `${friend.username}`; 
+        
+          // Construct the profile URL
+        const profileUrl = `${baseUrl}${friend.id}/`; // Ensure URL format is correct
+
+        // Create the link element for the username
+        const usernameSpan = document.createElement('a');
+        usernameSpan.href = profileUrl;
+        usernameSpan.textContent = friend.username; // Set the text content
+        usernameSpan.classList.add('friend-username-div'); 
 
         if (friend.status === 'online') {
             usernameSpan.style.color = '#01d601'; 
@@ -339,15 +321,11 @@ fetch('/friends_list/')
         listItem.appendChild(usernameSpan); // Append username
         const friend_username = `${friend.username}`;
 
-        
-        listItem.addEventListener("click", () => displaychat1(friend_userID, friend_username));
-
         // Create the form element for creating a room
         const createRoomForm = document.createElement('form');
         createRoomForm.classList.add('form-vidcall'); 
         createRoomForm.method = 'POST'; // Change the method to POST
         createRoomForm.action = '{% url "create_room" %}';
-        
         
         // Create a CSRF token input field
         const csrfInput = document.createElement('input');
@@ -372,32 +350,51 @@ fetch('/friends_list/')
         roomIDInput.name = 'room_id';
         roomIDInput.value = generateRoomID(); // Generate a room ID here
         
-    // Create the image for the video call button
-    const videoCallButtonImg = document.createElement('img');
-    videoCallButtonImg.src = '{% static "/images/video.svg" %}'; // Reference the static image using Django templating
-    videoCallButtonImg.alt = 'Video Call'; // Add alt text for accessibility
-    videoCallButtonImg.classList.add('video-call-button'); // Add a class for styling
+        const videoCallButtonImg = document.createElement('i');
+        videoCallButtonImg.classList.add('fas', 'fa-video'); // Font Awesome class for video icon
+        videoCallButtonImg.classList.add('action-button'); // Add a class for styling
+        
+        // Create the message icon
+        const messageButton = document.createElement('i');
+        messageButton.classList.add('fas', 'fa-comment'); // Font Awesome class for message icon
+        messageButton.classList.add('action-button'); // Add a class for styling
 
-    // Add event listener to the image for form submission
-    videoCallButtonImg.addEventListener('click', function() {
-        createRoomForm.submit(); // Submit the form when the image is clicked
+    messageButton.addEventListener('click', function() {
+        displaychat1(friend_userID, friend_username)
     });
-
+        
+  
     // Append the CSRF token input field, user ID inputs, room ID input, and image to the form
     createRoomForm.appendChild(csrfInput);
     createRoomForm.appendChild(invitingUserInput);
     createRoomForm.appendChild(invitedUserInput);
     createRoomForm.appendChild(roomIDInput);
+    createRoomForm.appendChild(messageButton);
     createRoomForm.appendChild(videoCallButtonImg);
     
     // Append the form to the list item
     listItem.appendChild(createRoomForm);
+    videoCallButtonImg.addEventListener('click', function() {
+
+            // Get the form element containing the button
+            const form = event.target.closest('form');
+            // Get the room ID from the form's input field
+            const roomID = form.querySelector('input[name="room_id"]').value;
+            // Get the invited user ID from the form
+            const invitedUserID = form.querySelector('input[name="invited_user_id"]').value;
     
+            sessionStorage.setItem('invited', 'false');
+            sessionStorage.setItem('invitedUserID', invitedUserID);
+            
+            const loggedInUserId = "{{ request.user.id }}";
+            // Pass loggedInUserId as an argument to the sendVideoCallInvitation function
+            sendVideoCallInvitation(roomID, invitedUserID, loggedInUserId);
+           createRoomForm.submit(); // Submit the form when the image is clicked
+    });
+
     // Append the list item to the friends list
     friendsList.appendChild(listItem);
 
-    // Add event listener to the username to trigger handleUsernameClick function
-    listItem.addEventListener('click', handleUsernameClick);
     });
 
     })
@@ -409,21 +406,6 @@ fetch('/friends_list/')
 friends_list()
 
 
-    function handleUsernameClick(event) {
-        // Get the form element containing the button
-        const form = event.target.closest('form');
-        // Get the room ID from the form's input field
-        const roomID = form.querySelector('input[name="room_id"]').value;
-        // Get the invited user ID from the form
-        const invitedUserID = form.querySelector('input[name="invited_user_id"]').value;
-
-        sessionStorage.setItem('invited', 'false');
-        sessionStorage.setItem('invitedUserID', invitedUserID);
-        
-        const loggedInUserId = "{{ request.user.id }}";
-        // Pass loggedInUserId as an argument to the sendVideoCallInvitation function
-        sendVideoCallInvitation(roomID, invitedUserID, loggedInUserId);
-    }
 
 
 // Function to handle messages loaded event
@@ -612,10 +594,5 @@ function removeDuplicates(text) {
     }
         
 </script>
-
-
-
-  
-
-
+</body>
 </html>
