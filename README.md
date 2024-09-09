@@ -77,5 +77,7 @@ For any inquiries or support, please contact [avilakraeg@gmail.com](mailto:avila
 This project was made possible with the support of the "Friendship of Enjoy" community and contributions from the following individuals:
 
 - Avila, Kraeg (Lead Programmer / System Analyst)
-- Esdicul, Ralph David
-- Mangguing, Sebastian
+
+ - Data collection for model: 
+    - Esdicul, Ralph David
+    - Mangguing, Sebastian

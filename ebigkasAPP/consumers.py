@@ -143,6 +143,8 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
             'sender_id': sender_id,
             'room_id': room_id
         }))
+        
+    
 
     async def process_frame_and_predict(self, sequence):
         """
@@ -443,6 +445,42 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
                         "room_id": data['room_id'],
                     }
                 )
+                
+                
+                
+            if data['type']  == 'offer':
+                # Handle offer
+                await self.channel_layer.group_send(
+                    "video_call_group",
+                    {
+                        'type': 'webrtc_offer',
+                        'sdp': data['sdp'],
+                        'sender_id': data.get('sender_id'),
+                        'room_id': data.get('room_id'),
+                    }
+                )
+            elif data['type']  == 'answer':
+                # Handle answer
+                await self.channel_layer.group_send(
+                    "video_call_group",
+                    {
+                        'type': 'webrtc_answer',
+                        'sdp': data['sdp'],
+                        'sender_id': data.get('sender_id'),
+                        'room_id': data.get('room_id'),
+                    }
+                )
+            elif data['type']  == 'ice_candidate':
+                # Handle ICE candidate
+                await self.channel_layer.group_send(
+                    "video_call_group",
+                    {
+                        'type': 'ice_candidate',
+                        'candidate': data['candidate'],
+                        'sender_id': data.get('sender_id'),
+                        'room_id': data.get('room_id'),
+                    }
+                )
             else:
                 logger.warning("Unknown message type: %s", data['type'])
         except json.JSONDecodeError as e:
@@ -470,6 +508,32 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
             logger.info("Message discarded as it matches the previous message sent within 5 seconds.")
 
 
+
+    async def webrtc_offer(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'offer',
+            'sdp': event['sdp'],
+            'sender_id': event.get('sender_id'),
+            'room_id': event.get('room_id'),
+        }))
+
+    # Send WebRTC answer to WebSocket
+    async def webrtc_answer(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'answer',
+            'sdp': event['sdp'],
+            'sender_id': event.get('sender_id'),
+            'room_id': event.get('room_id'),
+        }))
+
+    # Send ICE candidate to WebSocket
+    async def ice_candidate(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'ice_candidate',
+            'candidate': event['candidate'],
+            'sender_id': event.get('sender_id'),
+            'room_id': event.get('room_id'),
+        }))
     @database_sync_to_async
     def load_messages(self, conversation_name):
         return list(Message.objects.filter(conversation__name=conversation_name).values())
@@ -500,9 +564,3 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
             "message": message,
             "conversation_name": conversation_name 
         }))
-
-
-
-
-
-

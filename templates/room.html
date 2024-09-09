@@ -22,7 +22,8 @@
         </div>
         <div class="hangup_overlay" id="hangup_overlay">
         </div>
-        
+        <audio id="localAudio" autoplay muted></audio>
+        <audio id="remoteAudio" autoplay ></audio>
         <main class="main-content">
 
          
@@ -697,21 +698,207 @@ function sendMessage() {
 
     });
     
-    const micBtn = document.getElementById('mic-btn');
-    let x = true; 
-
-    micBtn.addEventListener('click', function onClick() {
-        if (x === true) {
-            micBtn.style.backgroundColor = 'rgb(255, 80, 80, 1)';
-            x = false;
-        } else {
-            micBtn.style.backgroundColor = 'rgba(245, 222, 179, 0.886)';
-            x = true;
-        }
-    });
 
 
+    function loadFriendsConversations() {
+        fetch("/friends_conversations/")
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              const messageDropdown = document.getElementById("message-dropdown");
     
+              // Clear existing content except the 'chats-text' div
+              const existingChatsText =
+                messageDropdown.querySelector(".chats-text");
+              messageDropdown.innerHTML = "";
+              messageDropdown.appendChild(existingChatsText);
+    
+              // Sort friends based on the timestamp of their last message (latest first)
+              data.friends.sort((a, b) => {
+                if (a.last_message && b.last_message) {
+                  return (
+                    new Date(b.last_message.timestamp) -
+                    new Date(a.last_message.timestamp)
+                  );
+                } else if (a.last_message && !b.last_message) {
+                  return -1; // A has a message, prioritize A
+                } else if (!a.last_message && b.last_message) {
+                  return 1; // B has a message, prioritize B
+                } else {
+                  return 0; // Both have no messages (shouldn't happen if filtering in backend)
+                }
+              });
+    
+              data.friends.forEach((friend) => {
+                if (!friend.last_message) {
+                  return; // Skip this friend if there's no last message
+                }
+    
+                const friendMessage = document.createElement("div");
+                friendMessage.classList.add("dropdown-messages");
+    
+                const profileImg = document.createElement("img");
+                profileImg.src = friend.profile_picture;
+                profileImg.alt = "Profile Picture";
+                profileImg.classList.add("sender-profile");
+    
+                // Check if friend is online and add status indicator
+                if (friend.status == "online") {
+                  profileImg.style.position = "relative"; // Ensure profileImg has relative positioning for absolute positioning of status indicator
+                  const statusIndicator = document.createElement("div");
+                  statusIndicator.classList.add("status-indicator");
+                  friendMessage.appendChild(statusIndicator);
+                }
+    
+                const messageDetails = document.createElement("div");
+                messageDetails.classList.add("message-details");
+    
+                const sender = document.createElement("div");
+                sender.classList.add("message-sender");
+                sender.textContent = friend.username;
+    
+                const unread_count = document.createElement("div");
+                unread_count.classList.add("unread-count");
+                unread_count.textContent = friend.unread_count;
+    
+                if (friend.unread_count > 0) {
+                  unread_count.style.display = "block";
+                } else {
+                  unread_count.style.display = "none";
+                }
+    
+                const content = document.createElement("span");
+                content.classList.add("message-content");
+    
+                // Check if the logged-in user is the sender
+                if (friend.last_message.sender == ako) {
+                  content.textContent = `You: ${truncateText(
+                    friend.last_message.content,
+                    9
+                  )}`;
+                } else {
+                  content.textContent = truncateText(
+                    friend.last_message.content,
+                    11
+                  );
+                }
+    
+                const loggedInUserID_for_displaychat1 =
+                  sessionStorage.getItem("loggedInUserId");
+                if (loggedInUserID_for_displaychat1 > friend.id) {
+                  conversation_name = `${loggedInUserID_for_displaychat1} and ${friend.id}`;
+                } else {
+                  conversation_name = `${friend.id} and ${loggedInUserID_for_displaychat1}`;
+                }
+    
+                friendMessage.addEventListener("click", function () {
+                  displaychat1(friend.id, friend.username);
+                  showMessageDropdown();
+                  reset_unread_count(conversation_name);
+                });
+    
+                const timestamp = document.createElement("span");
+                timestamp.classList.add("message-timestamp");
+                timestamp.textContent = formatDate(friend.last_message.timestamp);
+    
+                messageDetails.appendChild(sender);
+                messageDetails.appendChild(content);
+                messageDetails.appendChild(timestamp);
+    
+                friendMessage.appendChild(profileImg);
+                friendMessage.appendChild(messageDetails);
+                friendMessage.appendChild(unread_count);
+    
+                messageDropdown.appendChild(friendMessage);
+              });
+            }
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+
+
+
+
+
+
+      const micBtn = document.getElementById('mic-btn');
+      let isMicOpen = false;
+      let localStream;
+      let peerConnection;
+      
+      // WebRTC configuration
+      const configuration = { 
+          iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] // Public STUN server
+      };
+      
+      function createPeerConnection() {
+        peerConnection = new RTCPeerConnection(configuration);
+    
+        peerConnection.onicecandidate = function(event) {
+            if (event.candidate) {
+                console.log('ICE Candidate:', event.candidate);
+                socket.send(JSON.stringify({
+                    type: 'ice_candidate',
+                    candidate: event.candidate,
+                    sender_id: loggedInUserId,
+                    room_id: roomID
+                }));
+            }
+        };
+    
+        peerConnection.ontrack = function(event) {
+            console.log('Remote stream added:', event.streams[0]);
+            const remoteAudio = document.getElementById('remoteAudio');
+            remoteAudio.srcObject = event.streams[0];
+        };
+    }
+    
+    
+    async function startRecording() {
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+            document.getElementById('localAudio').srcObject = localStream;
+    
+            if (!peerConnection) createPeerConnection();
+    
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+    
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            socket.send(JSON.stringify({
+                type: 'offer',
+                sdp: offer.sdp,
+                sender_id: loggedInUserId,
+                room_id: roomID
+            }));
+        } catch (error) {
+            console.error('Error accessing audio stream:', error);
+        }
+    }
+    
+      // Stop capturing and sending audio
+      function stopRecording() {
+          if (localStream) {
+              localStream.getTracks().forEach(track => track.stop());
+          }
+          if (peerConnection) {
+              peerConnection.close();
+              peerConnection = null; // Reset peerConnection
+          }
+      }
+      
+      // Toggle microphone state
+      micBtn.addEventListener('click', async function onClick() {
+          if (isMicOpen) {
+              micBtn.style.backgroundColor = 'rgb(255, 80, 80, 1)'; // Red when muted
+              stopRecording();
+          } else {
+              micBtn.style.backgroundColor = 'rgba(245, 222, 179, 0.886)'; // Beige when unmuted
+              await startRecording();
+          }
+          isMicOpen = !isMicOpen;
+      });
+      
 
 </script>
 

@@ -94,9 +94,79 @@ socket.onclose = function(event) {
 };
 
 
+
+
+
+
+
+
+
+
+
+
+let isHandlingAnswer = false;
+let iceCandidatesQueue = [];
+
+
 socket.onmessage = function(event) {
     const message = JSON.parse(event.data);
-    console.log('Received data:', message); 
+
+
+
+    // Handle offer
+if (message.type === 'offer' && message.sender_id != loggedInUserId) {
+    if (!peerConnection) createPeerConnection();
+    peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: message.sdp }))
+        .then(() => peerConnection.createAnswer())
+        .then(answer => peerConnection.setLocalDescription(answer))
+        .then(() => {
+            socket.send(JSON.stringify({
+                type: 'answer',
+                sdp: peerConnection.localDescription.sdp,
+                sender_id: loggedInUserId,
+                room_id: roomID
+            }));
+        })
+        .catch(error => console.error('Error handling offer:', error));
+}
+
+// Handle answer
+if (message.type === 'answer' && message.sender_id != loggedInUserId) {
+    if (!peerConnection) {
+        console.log('No peer connection, ignoring answer.');
+        return;
+    }
+    if (isHandlingAnswer) {
+        console.log('Already handling an answer, ignoring new answer.');
+        return;
+    }
+    isHandlingAnswer = true;
+    peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: message.sdp }))
+        .then(() => {
+            isHandlingAnswer = false;
+            iceCandidatesQueue.forEach(candidate => peerConnection.addIceCandidate(candidate));
+            iceCandidatesQueue = [];
+        })
+        .catch(error => {
+            console.error('Error handling answer:', error);
+            isHandlingAnswer = false;
+        });
+}
+
+// Handle ICE candidates
+if (message.type === 'ice_candidate' && message.sender_id != loggedInUserId) {
+    if (!peerConnection) {
+        console.log('No peer connection, ignoring ICE candidate.');
+        return;
+    }
+    const candidate = new RTCIceCandidate(message.candidate);
+    if (peerConnection.remoteDescription) {
+        peerConnection.addIceCandidate(candidate)
+            .catch(error => console.error('Error adding ICE candidate:', error));
+    } else {
+        iceCandidatesQueue.push(candidate);
+    }
+}
 
     
 
@@ -178,10 +248,8 @@ if (message.type === 'update_profile') {
 
 if (message.type === 'message') {
     const message_convoName = message.conversation_name;
-    if(loadFriendsConversations){
         loadFriendsConversations();
 
-    }
 
     if(conversationName == message_convoName ){
         handleIncomingMessage(message.message);
@@ -193,10 +261,8 @@ if (message.type === 'messages_loaded') {
     const message_convoName = message.conversation_name;
         if(conversationName == message_convoName){
             handleMessagesLoaded(message);
-            if(loadFriendsConversations){
                 loadFriendsConversations();
         
-            }
                 } 
  } 
     

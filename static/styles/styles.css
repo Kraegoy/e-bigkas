@@ -500,7 +500,7 @@ input:checked + .slider:before {
   height: 20px;
   width: 20px;
   box-shadow: var(--shaddow);
-  background-color: rgba(245, 222, 179, 0.886);
+  background-color: rgb(255, 80, 80, 1);
   cursor: pointer;
   padding: 10px;
   border-radius: 5px;
