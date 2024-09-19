@@ -33,13 +33,9 @@
 
                     <svg class="button-down" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
                         <path fill="currentColor" d="M19.858 3.01H4.142C2.95 3.01 2 3.932 2 5.099v13.252c0 1.167.95 2.089 2.142 2.089l7.053-.001 2.923 2.873a.66.66 0 0 0 1.039-.004l2.92-2.868h.007l2.927 2.865a.66.66 0 0 0 1.04 0l2.924-2.868 7.058-.001C21.05 20.438 22 19.516 22 18.349V5.1c0-1.167-.95-2.09-2.142-2.09zM12 15.782c-1.124 0-2.04-.88-2.04-1.963 0-1.084.916-1.964 2.04-1.964s2.04.88 2.04 1.963c0 1.084-.916 1.964-2.04 1.964zm-5-6.798a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm10 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
-                    </svg>
-                    
-                    
+                    </svg> 
                 </div>
                 
-                
-
             </div>
             
                     <div id="video-streams">
@@ -47,10 +43,9 @@
                         <div class="video-container" id="user-container-1">
                             <div class="video-player" id="user-1">
                                 <div class="username-wrapper"><span class="user-name">{{ request.user.username }}</span></div>
-                                <img id="video1" style="width: 100%; ; height: 100%; position: relative; border-radius: 1.5em; ">
-                                <video id="video-video" autoplay></video>  <!-- Video element for open camera stream -->
+                                <canvas id="canvas" style="width: 100%; ; height: 100%; position: relative; border-radius: 1.5em;"></canvas>
+                                <video id="video-video" style="transform: translateY(-100.5%) scaleX(-1);"autoplay></video>  <!-- Video element for open camera stream -->
                              
-
                             </div>
                         </div>
 
@@ -62,7 +57,6 @@
 
                             </div> 
                         </div>
-                        <canvas id="canvas" style="display: none; "></canvas>
 
                     </div>
 
@@ -107,6 +101,158 @@
     </div>
 
     <script src="{% static 'JS/index.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic/holistic.js"></script>
+
+
+    <script type="module">
+        const IsInvited = sessionStorage.getItem('invited');
+        const loggedInUserId = sessionStorage.getItem('loggedInUserId');
+        const invitingUserID = sessionStorage.getItem('invitingUserID');
+        const invitedUserID = sessionStorage.getItem('invitedUserID');
+    
+        const cameraBtn = document.getElementById('camera-btn');
+        const leftNav = document.querySelector('.nav-container');
+        const bottomContent = document.querySelector('.bottom-content');
+        const videoContainer = document.querySelector('.video-container');
+        const videStreams = document.querySelector('#video-streams');
+        const controlsWrapper = document.querySelector('#controls-wrapper');
+        const videoElement = document.getElementById('video-video');
+        const canvasElement = document.getElementById('canvas');
+        const canvasCtx = canvasElement.getContext('2d');
+        const mirroredCanvas = document.createElement('canvas'); // Create a mirrored canvas
+        const mirroredCtx = mirroredCanvas.getContext('2d');
+        let isCameraOpen = false;
+    
+        function closeNav() {
+            cameraBtn.style.backgroundColor = 'rgba(245, 222, 179, 0.886)';
+            videoElement.src = '/static/images/ebigkas-logo.png'; // Adjust if using Django static files
+            leftNav.classList.add('menu-opened');
+            videoContainer.style.marginRight = '1.5em';
+            videStreams.style.marginLeft = '74%';
+            bottomContent.style.marginLeft = '-1%';
+            controlsWrapper.style.marginLeft = '33%';
+        }
+    
+        function openNav() {
+            leftNav.classList.remove('menu-opened');
+            videoContainer.style.marginRight = '2px';
+            videStreams.style.marginLeft = '78.5%';
+            bottomContent.style.marginLeft = '30px';
+            controlsWrapper.style.marginLeft = '37%';
+            cameraBtn.style.backgroundColor = 'rgb(255, 80, 80, 1)';
+        }
+    
+        function mirrorVideoFrame(videoElement) {
+            // Set dimensions for the mirrored canvas
+            mirroredCanvas.width = videoElement.videoWidth;
+            mirroredCanvas.height = videoElement.videoHeight;
+    
+            // Apply mirroring effect
+            mirroredCtx.translate(mirroredCanvas.width, 0); // Move origin to the far right
+            mirroredCtx.scale(-1, 1); // Flip horizontally
+    
+            // Draw the video frame onto the mirrored canvas
+            mirroredCtx.drawImage(videoElement, 0, 0, mirroredCanvas.width, mirroredCanvas.height);
+            
+            return mirroredCanvas;
+        }
+    
+        function sendFrame() {
+            const mirroredCanvas = mirrorVideoFrame(videoElement);
+            const frame = mirroredCanvas.toDataURL('image/jpeg'); // Get the data URL of the mirrored canvas
+            socket.send(JSON.stringify({
+                type: 'video-frame',
+                frame: frame, // Send the data URL
+                sender_id: loggedInUserId,
+                room_id: roomID
+            }));
+        }
+    
+        function onResults(results) {
+            // Save the current canvas state
+            canvasCtx.save();
+    
+            // Clear the canvas
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+    
+            // Draw the image from MediaPipe results onto the canvas
+            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+    
+            // Draw connectors
+            drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {color: '#00FF00', lineWidth: 0.1});
+            drawConnectors(canvasCtx, results.faceLandmarks, FACEMESH_TESSELATION, {color: '#C0C0C070', lineWidth: 0.1});
+            drawConnectors(canvasCtx, results.leftHandLandmarks, HAND_CONNECTIONS, {color: '#CC0000', lineWidth: 0.5});
+            drawConnectors(canvasCtx, results.rightHandLandmarks, HAND_CONNECTIONS, {color: '#00CC00', lineWidth: 0.5});
+    
+            // Draw landmarks with transparent color (to hide them)
+            drawLandmarks(canvasCtx, results.poseLandmarks, {color: 'rgba(0,0,0,0)', lineWidth: 0});
+            drawLandmarks(canvasCtx, results.faceLandmarks, {color: 'rgba(0,0,0,0)', lineWidth: 0});
+            drawLandmarks(canvasCtx, results.leftHandLandmarks, {color: 'rgba(0,0,0,0)', lineWidth: 0});
+            drawLandmarks(canvasCtx, results.rightHandLandmarks, {color: 'rgba(0,0,0,0)', lineWidth: 0});
+    
+            // Restore the canvas state
+            canvasCtx.restore();
+    
+            // If the camera is open, capture and send the frame
+            if (isCameraOpen) {
+                sendFrame();
+            }
+        }
+    
+        const holistic = new Holistic({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`
+        });
+    
+        holistic.setOptions({
+            modelComplexity: 1,
+            smoothLandmarks: true,
+            enableSegmentation: true,
+            smoothSegmentation: true,
+            refineFaceLandmarks: true,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5,
+        });
+    
+        holistic.onResults(onResults);
+    
+        const camera = new Camera(videoElement, {
+            onFrame: async () => {
+                // Apply mirroring effect before sending to MediaPipe
+                const mirroredCanvas = mirrorVideoFrame(videoElement);
+                await holistic.send({ image: mirroredCanvas });
+            },
+            width: 1280,
+            height: 720,
+        });
+    
+        cameraBtn.addEventListener('click', function() {
+            if (!isCameraOpen) { // Camera open
+                closeNav();
+                videoElement.style.display = 'none';
+                camera.start();
+            } else { // Camera close
+                openNav();
+                camera.stop();
+                setTimeout(function() {
+                    socket.send(JSON.stringify({
+                        type: 'video-frame',
+                        frame: '/static/images/ebigkas1.png', // Adjust if using Django static files
+                        sender_id: loggedInUserId,
+                        room_id: roomID
+                    }));
+                }, 100);
+            }
+            isCameraOpen = !isCameraOpen;
+        });
+    </script>
+    
+    
+    
+    
+    
 
 <script>
         const IsInvited = sessionStorage.getItem('invited');
@@ -371,98 +517,16 @@ function sendMessage() {
     var toggleButton = document.getElementById('toggleButton');
     var speakButton = document.getElementById('speakButton');
 
-    const cameraBtn =  document.getElementById('camera-btn');
-    const leftNav = document.querySelector('.nav-container');
-    const checkbox = document.getElementById('checkbox');
-    const bottomContent = document.querySelector('.bottom-content');    
-    const videoContainer = document.querySelector('.video-container');    
-    const videStreams = document.querySelector('#video-streams');  
-    const controlsWrapper = document.querySelector('#controls-wrapper');    
-    const videoElement = document.getElementById('video-video');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-
-
-    cameraBtn.addEventListener('click', function() {
-
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            if (!videoElement.srcObject) {
-                // Camera is currently off, turn it on
-                cameraBtn.style.backgroundColor = 'rgba(245, 222, 179, 0.886)';
-                video.src = '{% static '/images/ebigkas-logo.png' %}';
-                leftNav.classList.add('menu-opened');
-                videoContainer.style.marginRight = '1.5em';
-                videStreams.style.marginLeft = '74%';
-                bottomContent.style.marginLeft = '-1%'
-                controlsWrapper.style.marginLeft = '33%';
-        
-
-                navigator.mediaDevices.getUserMedia({ video: true })
-                    .then(function(stream) {
-                        videoElement.srcObject = stream;
-                       videoElement.style.transform = 'translateY(-100.75%) scaleX(-1)'; // Apply both translations
-
-                        // Send the video stream frames over WebSocket
-                        const mediaRecorder = new MediaRecorder(stream);
-                        mediaRecorder.start(1); // Start recording frames every 1 ms
-
-                        mediaRecorder.ondataavailable = function(event) {
-                            if (event.data.size > 0) {
-                                // Mirror the context horizontally
-                                ctx.scale(-1, 1);
-                                
-                                // Draw the image to the canvas, with the x position adjusted to account for the mirrored context
-                                ctx.drawImage(videoElement, -canvas.width, 0, canvas.width, canvas.height);
-                                const frame = canvas.toDataURL('image/webp');
-                                socket.send(JSON.stringify({
-                                    type: 'video-frame',
-                                    frame: frame,
-                                    sender_id: loggedInUserId,
-                                    room_id: roomID
-                                }));
-                            }
-                        };
-
-                    })
-                    .catch(function(error) {
-                        console.error('Error accessing camera:', error);
-                    });
-            } else {
-                leftNav.classList.remove('menu-opened');
-                videoContainer.style.marginRight = '2px';
-                videStreams.style.marginLeft = '78.5%'; 
-                bottomContent.style.marginLeft = '30px'
-                controlsWrapper.style.marginLeft = '37%'
-                cameraBtn.style.backgroundColor = 'rgb(255, 80, 80, 1)';
-                
-                setTimeout(function() {
-                    socket.send(JSON.stringify({
-                        type: 'video-frame',
-                        frame: '{% static '/images/ebigkas1.png' %}',
-                        sender_id: loggedInUserId,
-                        room_id : roomID
-                    }));            
-                }, 100);
-
-                let stream = videoElement.srcObject;
-                let tracks = stream.getTracks();
-                
-                tracks.forEach(function(track) {
-                    track.stop();
-                });
-                
-                videoElement.srcObject = null;        
-            }
-        } else {
-            console.error('getUserMedia not supported on this browser');
-        }
-    });
-
+    
 
 
     let counter = false;
     let streaming = false;
-
+    const leftNav = document.querySelector('.nav-container');
+    const bottomContent = document.querySelector('.bottom-content');
+    const videoContainer = document.querySelector('.video-container');
+    const videStreams = document.querySelector('#video-streams');
+    const controlsWrapper = document.querySelector('#controls-wrapper');
 
 
     function toggleStream() {

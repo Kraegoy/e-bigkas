@@ -226,7 +226,6 @@ if (message.type === 'ice_candidate' && message.sender_id != loggedInUserId) {
 
     if (message.type === 'video-frame' && message.room_id == roomID) {
         const video = document.getElementById('video1');
-        console.log('Received message:', message); // Log the entire message
         const receivedImgElement = document.getElementById('video2');
         if( message.sender_id == loggedInUserId ){
             video.src = message.frame;
