@@ -43,20 +43,28 @@
                         <div class="video-container" id="user-container-1">
                             <div class="video-player" id="user-1">
                                 <div class="username-wrapper"><span class="user-name">{{ request.user.username }}</span></div>
+
+                                <video id="localVideo" style=" height: 100%; width: 100%; position: relative; border-radius: 1.5em; object-fit: cover;" autoplay muted>
+                                    <!-- Video element for open camera stream -->
+                                </video> 
+
                                 <canvas id="canvas" style="width: 100%; ; height: 100%; position: relative; border-radius: 1.5em;"></canvas>
-                                <video id="video-video" style="transform: translateY(-100.5%) scaleX(-1);"autoplay></video>  <!-- Video element for open camera stream -->
-                             
+
+
                             </div>
                         </div>
 
                         <div class="video-container" id="user-container-2">
                             <div class="video-player" id="user-2">
                                 <div class="username-wrapper"><span class="user-name">Other user</span></div> 
-                                 <!-- img element for receiving camera stream -->
-                                <img id="video2" style="width: 100%; height: 100%; position: relative; border-radius: 1.5em;">
+                                <video id="remoteVideo" style="height: 100%; width: 100%; position: relative; border-radius: 1.5em; object-fit: cover;" autoplay muted>
+                                     <!-- Video element for receiving stream -->
+                                </video>
 
                             </div> 
+
                         </div>
+
 
                     </div>
 
@@ -67,7 +75,7 @@
                     </div>
                 
                     <section id="controls-wrapper">
-                        <button id="toggleButton" class="runButton startButton" onclick="toggleStream()">Start Recognition</button>
+                        <button id="toggleButton" class="runButton startButton">Start Recognition</button>
 
                         <div class="icon-wrapper">
                             <img class="control-icon" id="mic-btn" src="{% static '/images/microphone.svg' %}" />
@@ -107,148 +115,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic/holistic.js"></script>
 
 
-    <script type="module">
-        const IsInvited = sessionStorage.getItem('invited');
-        const loggedInUserId = sessionStorage.getItem('loggedInUserId');
-        const invitingUserID = sessionStorage.getItem('invitingUserID');
-        const invitedUserID = sessionStorage.getItem('invitedUserID');
-    
-        const cameraBtn = document.getElementById('camera-btn');
-        const leftNav = document.querySelector('.nav-container');
-        const bottomContent = document.querySelector('.bottom-content');
-        const videoContainer = document.querySelector('.video-container');
-        const videStreams = document.querySelector('#video-streams');
-        const controlsWrapper = document.querySelector('#controls-wrapper');
-        const videoElement = document.getElementById('video-video');
-        const canvasElement = document.getElementById('canvas');
-        const canvasCtx = canvasElement.getContext('2d');
-        const mirroredCanvas = document.createElement('canvas'); // Create a mirrored canvas
-        const mirroredCtx = mirroredCanvas.getContext('2d');
-        let isCameraOpen = false;
-    
-        function closeNav() {
-            cameraBtn.style.backgroundColor = 'rgba(245, 222, 179, 0.886)';
-            videoElement.src = '/static/images/ebigkas-logo.png'; // Adjust if using Django static files
-            leftNav.classList.add('menu-opened');
-            videoContainer.style.marginRight = '1.5em';
-            videStreams.style.marginLeft = '74%';
-            bottomContent.style.marginLeft = '-1%';
-            controlsWrapper.style.marginLeft = '33%';
-        }
-    
-        function openNav() {
-            leftNav.classList.remove('menu-opened');
-            videoContainer.style.marginRight = '2px';
-            videStreams.style.marginLeft = '78.5%';
-            bottomContent.style.marginLeft = '30px';
-            controlsWrapper.style.marginLeft = '37%';
-            cameraBtn.style.backgroundColor = 'rgb(255, 80, 80, 1)';
-        }
-    
-        function mirrorVideoFrame(videoElement) {
-            // Set dimensions for the mirrored canvas
-            mirroredCanvas.width = videoElement.videoWidth;
-            mirroredCanvas.height = videoElement.videoHeight;
-    
-            // Apply mirroring effect
-            mirroredCtx.translate(mirroredCanvas.width, 0); // Move origin to the far right
-            mirroredCtx.scale(-1, 1); // Flip horizontally
-    
-            // Draw the video frame onto the mirrored canvas
-            mirroredCtx.drawImage(videoElement, 0, 0, mirroredCanvas.width, mirroredCanvas.height);
-            
-            return mirroredCanvas;
-        }
-    
-        function sendFrame() {
-            const mirroredCanvas = mirrorVideoFrame(videoElement);
-            const frame = mirroredCanvas.toDataURL('image/jpeg'); // Get the data URL of the mirrored canvas
-            socket.send(JSON.stringify({
-                type: 'video-frame',
-                frame: frame, // Send the data URL
-                sender_id: loggedInUserId,
-                room_id: roomID
-            }));
-        }
-    
-        function onResults(results) {
-            // Save the current canvas state
-            canvasCtx.save();
-    
-            // Clear the canvas
-            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-    
-            // Draw the image from MediaPipe results onto the canvas
-            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
-    
-            // Draw connectors
-            drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {color: '#00FF00', lineWidth: 0.1});
-            drawConnectors(canvasCtx, results.faceLandmarks, FACEMESH_TESSELATION, {color: '#C0C0C070', lineWidth: 0.1});
-            drawConnectors(canvasCtx, results.leftHandLandmarks, HAND_CONNECTIONS, {color: '#CC0000', lineWidth: 0.5});
-            drawConnectors(canvasCtx, results.rightHandLandmarks, HAND_CONNECTIONS, {color: '#00CC00', lineWidth: 0.5});
-    
-            // Draw landmarks with transparent color (to hide them)
-            drawLandmarks(canvasCtx, results.poseLandmarks, {color: 'rgba(0,0,0,0)', lineWidth: 0});
-            drawLandmarks(canvasCtx, results.faceLandmarks, {color: 'rgba(0,0,0,0)', lineWidth: 0});
-            drawLandmarks(canvasCtx, results.leftHandLandmarks, {color: 'rgba(0,0,0,0)', lineWidth: 0});
-            drawLandmarks(canvasCtx, results.rightHandLandmarks, {color: 'rgba(0,0,0,0)', lineWidth: 0});
-    
-            // Restore the canvas state
-            canvasCtx.restore();
-    
-            // If the camera is open, capture and send the frame
-            if (isCameraOpen) {
-                sendFrame();
-            }
-        }
-    
-        const holistic = new Holistic({
-            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`
-        });
-    
-        holistic.setOptions({
-            modelComplexity: 1,
-            smoothLandmarks: true,
-            enableSegmentation: true,
-            smoothSegmentation: true,
-            refineFaceLandmarks: true,
-            minDetectionConfidence: 0.5,
-            minTrackingConfidence: 0.5,
-        });
-    
-        holistic.onResults(onResults);
-    
-        const camera = new Camera(videoElement, {
-            onFrame: async () => {
-                // Apply mirroring effect before sending to MediaPipe
-                const mirroredCanvas = mirrorVideoFrame(videoElement);
-                await holistic.send({ image: mirroredCanvas });
-            },
-            width: 1280,
-            height: 720,
-        });
-    
-        cameraBtn.addEventListener('click', function() {
-            if (!isCameraOpen) { // Camera open
-                closeNav();
-                videoElement.style.display = 'none';
-                camera.start();
-            } else { // Camera close
-                openNav();
-                camera.stop();
-                setTimeout(function() {
-                    socket.send(JSON.stringify({
-                        type: 'video-frame',
-                        frame: '/static/images/ebigkas1.png', // Adjust if using Django static files
-                        sender_id: loggedInUserId,
-                        room_id: roomID
-                    }));
-                }, 100);
-            }
-            isCameraOpen = !isCameraOpen;
-        });
-    </script>
-    
+   
     
     
     
@@ -520,85 +387,13 @@ function sendMessage() {
     
 
 
-    let counter = false;
-    let streaming = false;
+    
     const leftNav = document.querySelector('.nav-container');
     const bottomContent = document.querySelector('.bottom-content');
     const videoContainer = document.querySelector('.video-container');
     const videStreams = document.querySelector('#video-streams');
     const controlsWrapper = document.querySelector('#controls-wrapper');
-
-
-    function toggleStream() {
-        // currently at stop recognition
-        if (streaming) {
-            counter = true;
-            console.log("stopping recognition")
-            toggleButton.innerText = 'Start Recognition';
-            toggleButton.classList.remove('stopButton');
-            toggleButton.classList.add('startButton');
-
-            leftNav.classList.remove('menu-opened');
-            videoContainer.style.marginRight = '2px';
-            videStreams.style.marginLeft = '78.5%'; 
-            bottomContent.style.marginLeft = '30px';
-            controlsWrapper.style.marginLeft = '37%';
-            socket.send(JSON.stringify({ 'type': 'stop_recognition' }));
-
-        } else {
-            counter = false;
-            let videoElement = document.getElementById('video-video');
-            let stream = videoElement.srcObject;
-            if (videoElement.srcObject) {
-                simulateCameraBtnClick();
-            }
-            socket.send(JSON.stringify({
-                'type': 'start_recognition',
-                'sender_id': loggedInUserId,
-                'room_id' : roomID
-            }));
-
-            toggleButton.innerText = 'Stop Recognition';
-            toggleButton.classList.remove('startButton');
-            toggleButton.classList.add('stopButton');
-
-            leftNav.classList.add('menu-opened');
-            videoContainer.style.marginRight = '1.5em';
-            videStreams.style.marginLeft = '74%';
-            bottomContent.style.marginLeft = '-1%';
-            controlsWrapper.style.marginLeft = '33%';
-        }
-        streaming = !streaming;
-    }
-
-
-    function simulateCameraBtnClick() {
-        cameraBtn.click();
-    }
-
-    // Add an event listener to send a message to the server when Enter key is pressed
-    document.addEventListener('keypress', function(event) {
-        if (event.key === 'Enter') {
-            if(counter){
-
-            streaming = true;
-            const message = {
-                type: 'stop_recognition'
-            };
-            // Send WebSocket message to server
-            //socket.send(JSON.stringify(message));
-
-        }
-
-            if(streaming && !counter){
-                // Simulate click on cameraBtn
-                streaming = true;
-                toggleButton.innerText = 'Start Recognition';
-                simulateCameraBtnClick();
-                counter = false;
-            }
-        }
-    });
+    const cameraBtn = document.getElementById('camera-btn');
 
     function typeText(element, text, index = 0) {
         if (index < text.length) {
@@ -772,8 +567,7 @@ function sendMessage() {
               const messageDropdown = document.getElementById("message-dropdown");
     
               // Clear existing content except the 'chats-text' div
-              const existingChatsText =
-                messageDropdown.querySelector(".chats-text");
+              const existingChatsText = messageDropdown.querySelector(".chats-text");
               messageDropdown.innerHTML = "";
               messageDropdown.appendChild(existingChatsText);
     
@@ -880,90 +674,401 @@ function sendMessage() {
           .catch((error) => console.error("Error:", error));
       }
 
-
-
-
-
+      const videoElement = document.getElementById('localVideo');
+      const canvasElement = document.getElementById('canvas');
+      const canvasCtx = canvasElement.getContext('2d');
+      const mirroredCanvas = document.createElement('canvas'); // Create a mirrored canvas
+      const mirroredCtx = mirroredCanvas.getContext('2d');
+      
+       
+        function closeNav() {
+          cameraBtn.style.backgroundColor = 'rgba(245, 222, 179, 0.886)';
+          videoElement.src = '/static/images/ebigkas-logo.png'; 
+          leftNav.classList.add('menu-opened');
+          videoContainer.style.marginRight = '1.5em';
+          videStreams.style.marginLeft = '74%';
+          bottomContent.style.marginLeft = '-1%';
+          controlsWrapper.style.marginLeft = '33%';
+      }
+  
+      function openNav() {
+          leftNav.classList.remove('menu-opened');
+          videoContainer.style.marginRight = '2px';
+          videStreams.style.marginLeft = '78.5%';
+          bottomContent.style.marginLeft = '30px';
+          controlsWrapper.style.marginLeft = '37%';
+          cameraBtn.style.backgroundColor = 'rgb(255, 80, 80, 1)';
+      }
+        
 
       const micBtn = document.getElementById('mic-btn');
       let isMicOpen = false;
       let localStream;
       let peerConnection;
       
-      // WebRTC configuration
-      const configuration = { 
-          iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] // Public STUN server
-      };
+     
+
+</script>
+
+
+
+
+
+<script type="module">
+    const IsInvited = sessionStorage.getItem('invited');
+    const loggedInUserId = sessionStorage.getItem('loggedInUserId');
+    const invitingUserID = sessionStorage.getItem('invitingUserID');
+    const invitedUserID = sessionStorage.getItem('invitedUserID');
+
+    const recognitionButton = document.getElementById('toggleButton')
+    const cameraBtn = document.getElementById('camera-btn');
+    const leftNav = document.querySelector('.nav-container');
+    const bottomContent = document.querySelector('.bottom-content');
+    const videoContainer = document.querySelector('.video-container');
+    const videStreams = document.querySelector('#video-streams');
+    const controlsWrapper = document.querySelector('#controls-wrapper');
+    const canvasElement = document.getElementById('canvas');
+    const canvasCtx = canvasElement.getContext('2d');
+    const mirroredCanvas = document.createElement('canvas'); // Create a mirrored canvas
+    const mirroredCtx = mirroredCanvas.getContext('2d');
+    const localVideo = document.getElementById('localVideo');
+
+    const videoElement = document.getElementById('localVideo');
+
+    let isRecognizing = false;
+
+    let isCameraOpen = false;
+
+    function closeNav() {
+        cameraBtn.style.backgroundColor = 'rgba(245, 222, 179, 0.886)';
+        videoElement.src = '/static/images/ebigkas-logo.png'; // Adjust if using Django static files
+        leftNav.classList.add('menu-opened');
+        videoContainer.style.marginRight = '1.5em';
+        videStreams.style.marginLeft = '74%';
+        bottomContent.style.marginLeft = '-1%';
+        controlsWrapper.style.marginLeft = '33%';
+    }
+
+    function openNav() {
+        leftNav.classList.remove('menu-opened');
+        videoContainer.style.marginRight = '2px';
+        videStreams.style.marginLeft = '78.5%';
+        bottomContent.style.marginLeft = '30px';
+        controlsWrapper.style.marginLeft = '37%';
+        cameraBtn.style.backgroundColor = 'rgb(255, 80, 80, 1)';
+    }
+
+    function mirrorVideoFrame(videoElement) {
+        // Set dimensions for the mirrored canvas
+        mirroredCanvas.width = videoElement.videoWidth;
+        mirroredCanvas.height = videoElement.videoHeight;
+
+        // Apply mirroring effect
+        mirroredCtx.translate(mirroredCanvas.width, 0); // Move origin to the far right
+        mirroredCtx.scale(-1, 1); // Flip horizontally
+
+        // Draw the video frame onto the mirrored canvas
+        mirroredCtx.drawImage(videoElement, 0, 0, mirroredCanvas.width, mirroredCanvas.height);
+        
+        return mirroredCanvas;
+    }
+
+         // WebRTC configuration
+         const configuration = { 
+            iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] // Public STUN server
+        };
+        
+        function createPeerConnection() {
+          peerConnection = new RTCPeerConnection(configuration);
       
-      function createPeerConnection() {
-        peerConnection = new RTCPeerConnection(configuration);
-    
-        peerConnection.onicecandidate = function(event) {
-            if (event.candidate) {
-                console.log('ICE Candidate:', event.candidate);
-                socket.send(JSON.stringify({
-                    type: 'ice_candidate',
-                    candidate: event.candidate,
-                    sender_id: loggedInUserId,
-                    room_id: roomID
-                }));
-            }
-        };
-    
-        peerConnection.ontrack = function(event) {
-            console.log('Remote stream added:', event.streams[0]);
-            const remoteAudio = document.getElementById('remoteAudio');
-            remoteAudio.srcObject = event.streams[0];
-        };
-    }
-    
-    
-    async function startRecording() {
-        try {
-            localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-            document.getElementById('localAudio').srcObject = localStream;
-    
-            if (!peerConnection) createPeerConnection();
-    
-            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-    
-            const offer = await peerConnection.createOffer();
-            await peerConnection.setLocalDescription(offer);
-            socket.send(JSON.stringify({
-                type: 'offer',
-                sdp: offer.sdp,
-                sender_id: loggedInUserId,
-                room_id: roomID
-            }));
-        } catch (error) {
-            console.error('Error accessing audio stream:', error);
-        }
-    }
-    
-      // Stop capturing and sending audio
-      function stopRecording() {
-          if (localStream) {
-              localStream.getTracks().forEach(track => track.stop());
-          }
-          if (peerConnection) {
-              peerConnection.close();
-              peerConnection = null; // Reset peerConnection
+          peerConnection.onicecandidate = function(event) {
+              if (event.candidate) {
+                  console.log('ICE Candidate:', event.candidate);
+                  socket.send(JSON.stringify({
+                      type: 'ice_candidate',
+                      candidate: event.candidate,
+                      sender_id: loggedInUserId,
+                      room_id: roomID
+                  }));
+              }
+          };
+      
+          peerConnection.ontrack = function(event) {
+              console.log('Remote stream added:', event.streams[0]);
+              const remoteAudio = document.getElementById('remoteAudio');
+              const remoteVideo = document.getElementById('remoteVideo'); 
+          
+              if (remoteAudio && event.track.kind === 'audio') {
+                  remoteAudio.srcObject = event.streams[0]; // Assign audio stream
+              }
+              
+              if (remoteVideo && event.track.kind === 'video') {
+                  remoteVideo.srcObject = event.streams[0]; // Assign video stream
+              }
+          };
+          
+      }
+      
+      
+      async function startRecordingAudio() {
+          try {
+              localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+              document.getElementById('localAudio').srcObject = localStream;
+      
+              if (!peerConnection) createPeerConnection();
+      
+              localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+      
+              const offer = await peerConnection.createOffer();
+              await peerConnection.setLocalDescription(offer);
+              socket.send(JSON.stringify({
+                  type: 'offer',
+                  sdp: offer.sdp,
+                  sender_id: loggedInUserId,
+                  room_id: roomID
+              }));
+          } catch (error) {
+              console.error('Error accessing audio stream:', error);
           }
       }
       
-      // Toggle microphone state
-      micBtn.addEventListener('click', async function onClick() {
+        // Stop capturing and sending audio
+        function stopRecordingAudio() {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+            }
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null; // Reset peerConnection
+            }
+        }
+    
+        
+        // Toggle microphone state
+        micBtn.addEventListener('click', async function onClick() {
           if (isMicOpen) {
               micBtn.style.backgroundColor = 'rgb(255, 80, 80, 1)'; // Red when muted
-              stopRecording();
+              stopRecordingAudio();
           } else {
               micBtn.style.backgroundColor = 'rgba(245, 222, 179, 0.886)'; // Beige when unmuted
-              await startRecording();
+              await startRecordingAudio();
           }
           isMicOpen = !isMicOpen;
       });
       
+      
+    
+    const maxSequenceLength = 23; // Maintain this
+    let sequence = [];
 
+    function onResults(results) {
+        // Save the current canvas state
+        
+        // Clear the canvas efficiently
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+    
+        // Draw the image from MediaPipe results onto the canvas
+        canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+    
+        // Only draw connectors and landmarks if isRecognizing is true
+        if (isRecognizing) {
+            drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {color: '#00FF00', lineWidth: 0.1});
+            drawConnectors(canvasCtx, results.faceLandmarks, FACEMESH_TESSELATION, {color: '#C0C0C070', lineWidth: 0.1});
+            drawConnectors(canvasCtx, results.leftHandLandmarks, HAND_CONNECTIONS, {color: '#CC0000', lineWidth: 0.5});
+            drawConnectors(canvasCtx, results.rightHandLandmarks, HAND_CONNECTIONS, {color: '#00CC00', lineWidth: 0.5});
+    
+            drawLandmarks(canvasCtx, results.poseLandmarks, {color: 'rgba(0,0,0,0)', lineWidth: 0});
+            drawLandmarks(canvasCtx, results.faceLandmarks, {color: 'rgba(0,0,0,0)', lineWidth: 0});
+            drawLandmarks(canvasCtx, results.leftHandLandmarks, {color: 'rgba(0,0,0,0)', lineWidth: 0});
+            drawLandmarks(canvasCtx, results.rightHandLandmarks, {color: 'rgba(0,0,0,0)', lineWidth: 0});
+    }
+    
+        // Restore the canvas state
+        canvasCtx.restore();
+    
+        // Extract keypoints and manage sequence
+        const keypoints = extractKeypoints(results);
+        sequence.push(keypoints);
+    
+        if (sequence.length > maxSequenceLength) {
+            sequence.shift(); // Remove the oldest entry
+        }
+    
+        // If the camera is open and recognizing, capture and send the frame
+        if (isCameraOpen && isRecognizing) {
+            if (sequence.length === maxSequenceLength) {
+                if (socket.readyState === WebSocket.OPEN) {
+                    console.log("Sending sequence:", sequence.length);
+                    socket.send(JSON.stringify({
+                        type: 'extracted-keypoints',
+                        sequence: sequence,
+                        sender_id: loggedInUserId,
+                        room_id: roomID
+                    }));
+                    sequence = []; // Clear the sequence after sending
+                } else {
+                    console.error("WebSocket is not open. Current state:", socket.readyState);
+                }
+            }
+        }
+    }
+    
+    
+    function extractKeypoints(results) {
+        const pose = results.poseLandmarks ? 
+            results.poseLandmarks.map(landmark => [landmark.x, landmark.y, landmark.z, landmark.visibility]).flat() :
+            new Array(33 * 4).fill(0);
+            
+        // Use only the first 468 face keypoints (slice before flattening)
+        const face = results.faceLandmarks ? 
+            results.faceLandmarks.slice(0, 468).map(landmark => [landmark.x, landmark.y, landmark.z]).flat() :
+            new Array(468 * 3).fill(0);  // Ensuring 468 keypoints are taken
+    
+        const leftHand = results.leftHandLandmarks ? 
+            results.leftHandLandmarks.map(landmark => [landmark.x, landmark.y, landmark.z]).flat() :
+            new Array(21 * 3).fill(0);
+    
+        const rightHand = results.rightHandLandmarks ? 
+            results.rightHandLandmarks.map(landmark => [landmark.x, landmark.y, landmark.z]).flat() :
+            new Array(21 * 3).fill(0);
+    
+        return [].concat(pose, face, leftHand, rightHand);
+    }
+    
+    const holistic = new Holistic({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`
+    });
+
+    holistic.setOptions({
+        modelComplexity: 1,
+        smoothLandmarks: false,
+        enableSegmentation: false,
+        smoothSegmentation: false,
+        refineFaceLandmarks: false,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5,
+    });
+
+    holistic.onResults(onResults);
+
+    const camera = new Camera(videoElement, {
+        onFrame: async () => {
+            if (isRecognizing) {
+                // Apply mirroring effect before sending to MediaPipe
+                const mirroredCanvas = mirrorVideoFrame(videoElement);
+                await holistic.send({ image: mirroredCanvas });
+            }
+        },
+        width: 1280,
+        height: 720,
+    });
+
+
+
+async function startRecordingCamera() {
+  try {
+      localStream = await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
+      document.getElementById('localVideo').srcObject = localStream;
+
+      if (!peerConnection) createPeerConnection();
+
+      localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+      const offer = await peerConnection.createOffer();
+      await peerConnection.setLocalDescription(offer);
+      socket.send(JSON.stringify({
+          type: 'offer',
+          sdp: offer.sdp,
+          sender_id: loggedInUserId,
+          room_id: roomID
+      }));
+
+  } catch (error) {
+      console.error('Error accessing video stream:', error);
+  }
+}
+
+   // Stop capturing and sending audio
+   function stopRecordingCamera() {
+      if (localStream) {
+          recognitionButton.innerHTML = "Start Recognition"; 
+          localStream.getTracks().forEach(track => track.stop());
+         
+      }
+      if (peerConnection) {
+          peerConnection.close();
+          peerConnection = null; // Reset peerConnection
+      }
+     
+  }
+
+
+        cameraBtn.addEventListener('click', async function onClick() {
+        if (isCameraOpen) {
+                await camera.stop();
+                stopRecordingCamera();
+                cameraBtn.style.backgroundColor = 'rgb(255, 80, 80, 1)'; 
+                openNav();
+                setTimeout(function() {
+                    socket.send(JSON.stringify({
+                        type: 'video-frame',
+                        frame: '{% static '/images/ebigkas1.png' %}',
+                        sender_id: loggedInUserId,
+                        room_id : roomID
+                    }));            
+                }, 100);
+            } else {
+                cameraBtn.style.backgroundColor = 'rgba(245, 222, 179, 0.886)'; 
+                closeNav();
+                await camera.stop();
+                await startRecordingCamera();
+            }
+            isCameraOpen = !isCameraOpen;
+        });
+
+        recognitionButton.addEventListener('click', async function() {
+            if (isCameraOpen) {
+                if (!isRecognizing) { // Start recognition
+                    closeNav();
+                    localVideo.style.display = 'none'; // Hide video for the sender
+                    canvasElement.style.display = 'block'; // Show the canvas
+                    await camera.start();
+                    recognitionButton.innerHTML = "Stop Recognition"; 
+                } else { // Stop recognition
+                    openNav();
+                    camera.stop(); // Stop the camera
+        
+                    localVideo.style.display = 'block'; // Show the video again if needed
+                    canvasElement.style.display = 'none'; 
+        
+                    // Clear the canvas
+                    canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height); 
+                    
+                    await startRecordingCamera(); // Reinitialize camera if needed
+                    socket.send(JSON.stringify({
+                        type: 'prediction',
+                        sender_id: loggedInUserId,
+                        room_id: roomID
+                    }));
+                    setTimeout(function() {
+                        socket.send(JSON.stringify({
+                            type: 'video-frame',
+                            frame: '/static/images/ebigkas1.png', // Adjust if using Django static files
+                            sender_id: loggedInUserId,
+                            room_id: roomID
+                        }));
+                    }, 100);
+                    sequence = [];
+                    recognitionButton.innerHTML = "Start Recognition"; 
+                }
+                isRecognizing = !isRecognizing;
+            } else {
+                alert("Camera not open.");
+            }
+        });
+        
+        
 </script>
+
 
 </html>

@@ -19,6 +19,42 @@ function handleStatusUpdate(status) {
     }
 }
 
+ // WebRTC configuration
+ const configuration = { 
+    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] // Public STUN server
+};
+
+function createPeerConnection() {
+  peerConnection = new RTCPeerConnection(configuration);
+
+  peerConnection.onicecandidate = function(event) {
+      if (event.candidate) {
+          console.log('ICE Candidate:', event.candidate);
+          socket.send(JSON.stringify({
+              type: 'ice_candidate',
+              candidate: event.candidate,
+              sender_id: loggedInUserId,
+              room_id: roomID
+          }));
+      }
+  };
+
+  peerConnection.ontrack = function(event) {
+      console.log('Remote stream added:', event.streams[0]);
+      const remoteAudio = document.getElementById('remoteAudio');
+      const remoteVideo = document.getElementById('remoteVideo'); 
+  
+      if (remoteAudio && event.track.kind === 'audio') {
+          remoteAudio.srcObject = event.streams[0]; // Assign audio stream
+      }
+      
+      if (remoteVideo && event.track.kind === 'video') {
+          remoteVideo.srcObject = event.streams[0]; // Assign video stream
+      }
+  };
+  
+}
+
 
 
 // Function to reset inactivity timer and update status
@@ -76,6 +112,8 @@ socket.onopen = function(event) {
     console.log("WebSocket connection established with room id");
 };
 socket.onclose = function(event) {
+    console.log('WebSocket closed with code:', event.code);
+    console.log('Reason for closing:', event.reason);
     if (socket.readyState === WebSocket.OPEN) {
         try {
             socket.send(JSON.stringify({
@@ -90,7 +128,6 @@ socket.onclose = function(event) {
     } else {
         console.warn('WebSocket is not open. Cannot send message.');
     }
-    console.log('WebSocket connection closed.');
 };
 
 
@@ -223,15 +260,19 @@ if (message.type === 'ice_candidate' && message.sender_id != loggedInUserId) {
         }));
     }
 
+    if (message.type === 'predicted_action') {
+        console.log('Predicted action: ', message.predicted_action);
+    }
+
 
     if (message.type === 'video-frame' && message.room_id == roomID) {
-        const video = document.getElementById('video1');
-        const receivedImgElement = document.getElementById('video2');
-        if( message.sender_id == loggedInUserId ){
-            video.src = message.frame;
+        const localVideo = document.getElementById('localVideo');
+        const remoteVIdeo = document.getElementById('remoteVideo');
+        if( message.sender_id == loggedInUserId){
+            localVideo.src = message.frame;
         }
         else{
-            receivedImgElement.src = message.frame;
+            remoteVIdeo.src = message.frame;
         }
     }
 

@@ -65,7 +65,8 @@ def extract_keypoints(results):
 
 
 # Actions that we try to detect
-actions = np.array(['blank','maybe','no','sorry','take care','thank you','understand','welcome','what','when','where','yes','hello', 'thank you', 'how are you', 'I\'m fine', 'I love you', "I'm not fine"])
+# actions = np.array(['blank','maybe','no','sorry','take care','thank you','understand','welcome','what','when','where','yes','hello', 'thank you', 'how are you', 'I\'m fine', 'I love you', "I'm not fine"])
+actions = np.array(['hello', 'thank you', 'I love you','how are you', "I'm fine", "I'm not fine", "yes"])
 
 
 from tensorflow.keras.models import Sequential
@@ -79,7 +80,7 @@ model.add(Dense(64, activation='relu'))
 model.add(Dense(32, activation='relu'))
 model.add(Dense(actions.shape[0], activation='softmax'))
 
-model.load_weights('action2.h5')
+model.load_weights('MyModels/seven.h5')
 
 colors = [(245, 117, 16), (117, 245, 16), (16, 117, 245), (245, 125, 16), (16, 117, 100)]
 colors = [(245, 117, 16), (117, 245, 16), (16, 117, 245), (245, 125, 16), (16, 117, 100)]
@@ -120,6 +121,57 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
             self.stop_requested = False
             self.recognition_thread = threading.Thread(target=self.recognition_loop, args=(sender_id, room_id,))
             self.recognition_thread.start()
+                     
+    
+    async def process_extracted_keypoints(self, sender_id, room_id, sequence):
+        threshold = 0.6
+        action_name = ""
+        confidence = 0
+
+        # Validate sequence length
+        if len(sequence) != 23:
+            print("Invalid sequence length.")
+            return
+
+        # Attempt to predict the action
+        try:
+            res = model.predict(np.expand_dims(sequence, axis=0))[0]
+            action = np.argmax(res)
+            confidence = res[action]
+
+            if confidence > threshold:
+                action_name = actions[action]
+        except Exception as e:
+            print(f"Error during model prediction: {e}")
+            return  # Exit early if there's an error
+
+        # If an action name was predicted, send it to the group
+        if action_name:
+            try:
+                print(f"Sent predicted action: {action_name} with confidence: {confidence}")
+               # await self.send_prediction(sender_id, room_id, action_name)
+                
+            except Exception as send_error:
+                print(f"Error sending predicted action: {send_error}")
+        else:
+            print(f"No action predicted. Confidence: {confidence}")
+
+
+    async def send_prediction(self, sender_id, room_id, predicted_action):
+        await self.channel_layer.group_send(
+            "video_call_group",
+            {
+                'type': 'predicted_action',
+                'predicted_action': predicted_action,
+                'sender_id': sender_id,
+                'room_id': room_id
+            }
+        )
+        print(f"sent prediction: {predicted_action}")
+
+            
+
+            
 
     async def send_frame(self, frame_data, sender_id, room_id):
         await self.channel_layer.group_send(
@@ -152,8 +204,14 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
         """
         if len(sequence) == 23:
             res = model.predict(np.expand_dims(sequence, axis=0))[0]
+            print(f"np.argmax(res): {np.argmax(res)}, res[np.argmax(res)]: {res[np.argmax(res)]}")
             return np.argmax(res), res[np.argmax(res)]
         return None, None
+    
+                
+    
+                
+                  
 
     def recognition_loop(self, sender_id, room_id):
         # Ensure OpenCV setup is correct
@@ -249,7 +307,8 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard("video_call_group", self.channel_name)
-        logger.info("WebSocket connection closed.")
+        logger.info(f"WebSocket connection closed with code: {close_code}")
+
 
     async def update_profile(self, event):
    
@@ -357,6 +416,7 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
                         'room_id': room_id
                     }
                 )
+                
             elif data['type'] == 'message':
                 logger.info("Received message from client")
                 message_data = data['message']
@@ -387,6 +447,17 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
                 logger.info("Received stop_recognition message from client")
                 await self.stop_recognition()
                 logger.info("stop_recognition method called successfully")
+                
+            elif data['type'] == 'extracted-keypoints':
+                sender_id = data.get('sender_id')
+                room_id = data.get('room_id')
+                sequence = data.get('sequence')
+                await self.process_extracted_keypoints(sender_id, room_id, sequence)
+                
+            elif data['type'] == 'prediction':
+                sender_id = data.get('sender_id')
+                room_id = data.get('room_id')
+                await self.send_prediction(sender_id, room_id)
                 
             elif data['type'] == 'friend_status':
                 loggedInUserID = data.get('loggedInUserID')
