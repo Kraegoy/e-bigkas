@@ -33,13 +33,9 @@
 
                     <svg class="button-down" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
                         <path fill="currentColor" d="M19.858 3.01H4.142C2.95 3.01 2 3.932 2 5.099v13.252c0 1.167.95 2.089 2.142 2.089l7.053-.001 2.923 2.873a.66.66 0 0 0 1.039-.004l2.92-2.868h.007l2.927 2.865a.66.66 0 0 0 1.04 0l2.924-2.868 7.058-.001C21.05 20.438 22 19.516 22 18.349V5.1c0-1.167-.95-2.09-2.142-2.09zM12 15.782c-1.124 0-2.04-.88-2.04-1.963 0-1.084.916-1.964 2.04-1.964s2.04.88 2.04 1.963c0 1.084-.916 1.964-2.04 1.964zm-5-6.798a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm10 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
-                    </svg>
-                    
-                    
+                    </svg> 
                 </div>
                 
-                
-
             </div>
             
                     <div id="video-streams">
@@ -47,9 +43,13 @@
                         <div class="video-container" id="user-container-1">
                             <div class="video-player" id="user-1">
                                 <div class="username-wrapper"><span class="user-name">{{ request.user.username }}</span></div>
-                                <img id="video1" style="width: 100%; ; height: 100%; position: relative; border-radius: 1.5em; ">
-                                <video id="video-video" autoplay></video>  <!-- Video element for open camera stream -->
-                             
+
+                                <video id="localVideo" style=" transform: scaleX(-1); height: 100%; width: 100%; position: relative; border-radius: 1.5em; object-fit: cover;" autoplay muted>
+                                    <!-- Video element for open camera stream -->
+                                </video> 
+
+                                <canvas id="canvas" style="width: 100%; ; height: 100%; position: relative; border-radius: 1.5em;"></canvas>
+
 
                             </div>
                         </div>
@@ -57,12 +57,14 @@
                         <div class="video-container" id="user-container-2">
                             <div class="video-player" id="user-2">
                                 <div class="username-wrapper"><span class="user-name">Other user</span></div> 
-                                 <!-- img element for receiving camera stream -->
-                                <img id="video2" style="width: 100%; height: 100%; position: relative; border-radius: 1.5em;">
+                                <video id="remoteVideo" style="height: 100%; width: 100%; position: relative; border-radius: 1.5em; object-fit: cover;" autoplay muted>
+                                     <!-- Video element for receiving stream -->
+                                </video>
 
                             </div> 
+
                         </div>
-                        <canvas id="canvas" style="display: none; "></canvas>
+
 
                     </div>
 
@@ -73,7 +75,7 @@
                     </div>
                 
                     <section id="controls-wrapper">
-                        <button id="toggleButton" class="runButton startButton" onclick="toggleStream()">Start Recognition</button>
+                        <button id="toggleButton" class="runButton startButton">Start Recognition</button>
 
                         <div class="icon-wrapper">
                             <img class="control-icon" id="mic-btn" src="{% static '/images/microphone.svg' %}" />
@@ -107,255 +109,263 @@
     </div>
 
     <script src="{% static 'JS/index.js' %}"></script>
+    
+    <script src="{% static 'JS/libs/camera_utils.js' %}"></script>
+    <script src="{% static 'JS/libs/control_utils.js' %}"></script>
+    <script src="{% static 'JS/libs/drawing_utils.js' %}"></script>
+    <script src="{% static 'JS/libs/holistic.js' %}"></script>
+
+
 
 <script>
-        const IsInvited = sessionStorage.getItem('invited');
-        const loggedInUserId = sessionStorage.getItem('loggedInUserId');
-        const invitingUserID = sessionStorage.getItem('invitingUserID');
-        const invitedUserID = sessionStorage.getItem('invitedUserID');
-        
-        let user1;
-        let user2;
-        let conversationName = ''; 
-        let sender;
-        let receiver;
-        let friend_userID;
+    const IsInvited = sessionStorage.getItem('invited');
+    const loggedInUserId = sessionStorage.getItem('loggedInUserId');
+    const invitingUserID = sessionStorage.getItem('invitingUserID');
+    const invitedUserID = sessionStorage.getItem('invitedUserID');
+    
+    let user1;
+    let user2;
+    let conversationName = ''; 
+    let sender;
+    let receiver;
+    let friend_userID;
 
-        
-        if (IsInvited == "true") {
-            user1 = parseInt(invitingUserID);
-            user2 = parseInt(loggedInUserId);
-            sender = loggedInUserId;
-            receiver = invitingUserID;
-        } else {
-            user1 = parseInt(loggedInUserId);
-            user2 = parseInt(invitedUserID);
-            sender = loggedInUserId;
-            receiver = invitedUserID;
+    
+    if (IsInvited == "true") {
+        user1 = parseInt(invitingUserID);
+        user2 = parseInt(loggedInUserId);
+        sender = loggedInUserId;
+        receiver = invitingUserID;
+    } else {
+        user1 = parseInt(loggedInUserId);
+        user2 = parseInt(invitedUserID);
+        sender = loggedInUserId;
+        receiver = invitedUserID;
+    }
+    
+    //console.log("sender: " + sender);
+    //console.log("receiver: " + receiver);
+    
+    if (user1 > user2) {
+        conversationName = `${user1} and ${user2}`;
+    } else {
+        conversationName = `${user2} and ${user1}`;
+    }
+    //console.log("ConversationName: " + conversationName);
+    sessionStorage.setItem('ConversationName', conversationName);
+    if(user1 == loggedInUserId){
+        friend_userID = user2;
+    }
+    else{
+        friend_userID = user1;
+    }
+
+    const buttondown = document.getElementById('button-down')
+    const receiverUsername1 = sessionStorage.getItem('receiverUsername')
+    buttondown.addEventListener("click", () => displaychat1(friend_userID, receiverUsername1));
+    
+    const sendButton = document.querySelector('#sendButton');
+    sendButton.addEventListener('click', function(event) {
+        event.preventDefault(); // Prevent the default form submission
+    
+        const messageInput = document.querySelector('#chat-input');
+        const messageContent = messageInput.value.trim();
+        if (messageContent === '') {
+            // Handle empty message content
+            return;
         }
-        
-        //console.log("sender: " + sender);
-        //console.log("receiver: " + receiver);
-        
-        if (user1 > user2) {
-            conversationName = `${user1} and ${user2}`;
-        } else {
-            conversationName = `${user2} and ${user1}`;
-        }
-        //console.log("ConversationName: " + conversationName);
-        sessionStorage.setItem('ConversationName', conversationName);
-        if(user1 == loggedInUserId){
-            friend_userID = user2;
-        }
-        else{
-            friend_userID = user1;
-        }
+    
+        console.log("Sender ID:", sender);
+        console.log("Receiver ID:", receiver);
+    
+        // Set the sender and receiver values to hidden input fields
+        const senderInput = document.querySelector('#sender');
+        const receiverInput = document.querySelector('#receiver');
+        senderInput.value = sender;
+        receiverInput.value = receiver;
 
-        const buttondown = document.getElementById('button-down')
-        const receiverUsername1 = sessionStorage.getItem('receiverUsername')
-        buttondown.addEventListener("click", () => displaychat1(friend_userID, receiverUsername1));
-        
-        const sendButton = document.querySelector('#sendButton');
-        sendButton.addEventListener('click', function(event) {
-            event.preventDefault(); // Prevent the default form submission
-        
-            const messageInput = document.querySelector('#chat-input');
-            const messageContent = messageInput.value.trim();
-            if (messageContent === '') {
-                // Handle empty message content
-                return;
-            }
-        
-            console.log("Sender ID:", sender);
-            console.log("Receiver ID:", receiver);
-        
-            // Set the sender and receiver values to hidden input fields
-            const senderInput = document.querySelector('#sender');
-            const receiverInput = document.querySelector('#receiver');
-            senderInput.value = sender;
-            receiverInput.value = receiver;
-
-                // Construct a form data object
-            const formData = new FormData();
-            formData.append('content', messageContent);
-            formData.append('conversationName', conversationName); // Append the conversation name string
-            formData.append('sender', sender);
-            formData.append('receiver', receiver);
-        
-            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-            fetch('/send_message/', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': csrftoken
-                    },
-                    body: formData
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    // Clear the message input field after sending the message
-                    messageInput.value = '';
-                })
-                .catch(error => {
-                    console.error('Error sending message:', error);
-                });
-        });
-
-                document.addEventListener('DOMContentLoaded', async (event) => {
-                    otherUserId = (loggedInUserId == user1) ? user2 : user1;
-
-                    // Fetch the username of the other user
-                    const otherUserUsername = await fetchUsername(otherUserId);
-
-                    // Update the DOM with the usernames
-                    document.querySelector('#user-container-2 .user-name').textContent = otherUserUsername;
-                    const receiverUsername = sessionStorage.setItem('receiverUsername', otherUserUsername);
-              });
-  
-                // Function to fetch username from the server
-        async function fetchUsername(userId) {
-            try {
-                const response = await fetch(`/api/get-username/${userId}/`);
+            // Construct a form data object
+        const formData = new FormData();
+        formData.append('content', messageContent);
+        formData.append('conversationName', conversationName); // Append the conversation name string
+        formData.append('sender', sender);
+        formData.append('receiver', receiver);
+    
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        fetch('/send_message/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                body: formData
+            })
+            .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
-                const data = await response.json();
-                return data.username;
-            } catch (error) {
-                console.error('There was a problem with the fetch operation:', error);
-                return 'Unknown User';
-            }
-        }   
-        const messageBox = document.querySelector('.messages-container');
-        let kk = false; 
-        
-        function displaychat() {
-
-            
-            kk = !kk; // Toggle the variable
-            messageBox.style.display = kk ? 'block' : 'none'; // Toggle the display style
-            
-            // Toggle the rotation class for the arrow
-            document.querySelector('.button-down').classList.toggle('rotated');
-
-                scrollToBottom();
-        }
-        
-        // Function to scroll to the bottom of the chat window
-        function scrollToBottom() {
-            const messagesContainer = document.querySelector('.messages');
-            if (messagesContainer) {
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            }
-        }
-        
-    </script>
-
-    <script>   
-
-// Get the current URL path
-const path = window.location.pathname;
-const parts = path.split('/');
-const roomID = parts[parts.length - 2]; 
-
-
-function handleKeyDown(event) {
-    // Check if the Enter key is pressed
-    if (event.keyCode === 13 && !event.shiftKey) {
-        event.preventDefault(); // Prevent the default Enter key behavior (line break)
-        sendMessage(); // Call the sendMessage function
-    }
-}
-
-
-// Function to handle messages loaded event
-function handleMessagesLoaded(data) {
-    //console.log("Received messages_loaded event from server. Data:", data);
-    
-    const messagesContainer = document.querySelector('.messages');
-    const loggedInUserId = sessionStorage.getItem('loggedInUserId');
-    
-    messagesContainer.innerHTML = '';
-    
-    data.messages.forEach(message => {
-        handleIncomingMessage(message);
+                // Clear the message input field after sending the message
+                messageInput.value = '';
+            })
+            .catch(error => {
+                console.error('Error sending message:', error);
+            });
     });
-    scrollToBottom();
 
-}
+            document.addEventListener('DOMContentLoaded', async (event) => {
+                otherUserId = (loggedInUserId == user1) ? user2 : user1;
 
-// Function to handle incoming messages
-function handleIncomingMessage(message) {
-    console.log("loadedede")
+                // Fetch the username of the other user
+                const otherUserUsername = await fetchUsername(otherUserId);
 
-    const messagesContainer = document.querySelector('.messages');
-    const loggedInUserId = sessionStorage.getItem('loggedInUserId');
+                // Update the DOM with the usernames
+                document.querySelector('#user-container-2 .user-name').textContent = otherUserUsername;
+                const receiverUsername = sessionStorage.setItem('receiverUsername', otherUserUsername);
+            });
 
-    const sender = message.sender_id == loggedInUserId ? 'your-messages' : 'friends-messages';
-
-    const messageDiv = document.createElement('div');
-    messageDiv.classList.add(sender);
+            // Function to fetch username from the server
+    async function fetchUsername(userId) {
+        try {
+            const response = await fetch(`/api/get-username/${userId}/`);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            return data.username;
+        } catch (error) {
+            console.error('There was a problem with the fetch operation:', error);
+            return 'Unknown User';
+        }
+    }   
+    const messageBox = document.querySelector('.messages-container');
+    let kk = false; 
     
-    const messageContent = document.createElement('div');
-    messageContent.textContent = message.content;
-    messageContent.classList.add('indiv-messages');
+    function displaychat() {
 
-    messageDiv.appendChild(messageContent);
-    const timeSent = document.createElement('div');
-    const messageDate = new Date(message.timestamp);
-    const currentDate = new Date();
+        
+        kk = !kk; // Toggle the variable
+        messageBox.style.display = kk ? 'block' : 'none'; // Toggle the display style
+        
+        // Toggle the rotation class for the arrow
+        document.querySelector('.button-down').classList.toggle('rotated');
 
-    if (messageDate.toDateString() === currentDate.toDateString()) {
-        // Display time if message was sent today
-        timeSent.textContent = messageDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-    } else {
-        // Display date and time if message was sent on a different day
-        const options = { month: 'short', day: 'numeric' };
-        const formattedDate = messageDate.toLocaleDateString('en-US', options);
-        timeSent.textContent = `${formattedDate}, ${messageDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
+            scrollToBottom();
     }
-    // Add appropriate CSS class based on sender
-    timeSent.classList.add(message.sender_id == loggedInUserId ? 'your-time-sent' : 'friends-time-sent');
-    messageDiv.appendChild(timeSent);
-        
-    messagesContainer.appendChild(messageDiv);
-}
-
-
-function sendMessage() {
-    const chatInput = document.getElementById('chat-input');
-    const messageContent = chatInput.value;
-    const senderId = sessionStorage.getItem('loggedInUserId');
-    const conversationName = sessionStorage.getItem('ConversationName');
     
-    // Check if the user is the inviting or invited user based on session storage
-    const isInvited = sessionStorage.getItem('invited') === 'true';
-    const receiverId = isInvited ? sessionStorage.getItem('invitedUserID') : sessionStorage.getItem('invitingUserID');
+    // Function to scroll to the bottom of the chat window
+    function scrollToBottom() {
+        const messagesContainer = document.querySelector('.messages');
+        if (messagesContainer) {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    }
+    
+</script>
 
-    if (messageContent.trim() !== '' && receiverId) { 
-        const message = {
-            sender_id: senderId,
-            receiver_id: receiverId, 
-            content: messageContent,
-            timestamp: new Date().toISOString(),
-            conversationName: conversationName
-        };
+<script>   
+
+    // Get the current URL path
+    const path = window.location.pathname;
+    const parts = path.split('/');
+    const roomID = parts[parts.length - 2]; 
+
+
+    function handleKeyDown(event) {
+        // Check if the Enter key is pressed
+        if (event.keyCode === 13 && !event.shiftKey) {
+            event.preventDefault(); // Prevent the default Enter key behavior (line break)
+            sendMessage(); // Call the sendMessage function
+        }
+    }
+
+
+    // Function to handle messages loaded event
+    function handleMessagesLoaded(data) {
+        //console.log("Received messages_loaded event from server. Data:", data);
         
-        console.log("Sending message:", message);
-        socket.send(JSON.stringify({ type: 'message', message: message }));
+        const messagesContainer = document.querySelector('.messages');
+        const loggedInUserId = sessionStorage.getItem('loggedInUserId');
         
-        chatInput.value = '';
+        messagesContainer.innerHTML = '';
         
+        data.messages.forEach(message => {
+            handleIncomingMessage(message);
+        });
         scrollToBottom();
-    } else {
-        console.error('Receiver ID is null or undefined');
+
     }
-}
+
+    // Function to handle incoming messages
+    function handleIncomingMessage(message) {
+        console.log("loadedede")
+
+        const messagesContainer = document.querySelector('.messages');
+        const loggedInUserId = sessionStorage.getItem('loggedInUserId');
+
+        const sender = message.sender_id == loggedInUserId ? 'your-messages' : 'friends-messages';
+
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add(sender);
+        
+        const messageContent = document.createElement('div');
+        messageContent.textContent = message.content;
+        messageContent.classList.add('indiv-messages');
+
+        messageDiv.appendChild(messageContent);
+        const timeSent = document.createElement('div');
+        const messageDate = new Date(message.timestamp);
+        const currentDate = new Date();
+
+        if (messageDate.toDateString() === currentDate.toDateString()) {
+            // Display time if message was sent today
+            timeSent.textContent = messageDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        } else {
+            // Display date and time if message was sent on a different day
+            const options = { month: 'short', day: 'numeric' };
+            const formattedDate = messageDate.toLocaleDateString('en-US', options);
+            timeSent.textContent = `${formattedDate}, ${messageDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
+        }
+        // Add appropriate CSS class based on sender
+        timeSent.classList.add(message.sender_id == loggedInUserId ? 'your-time-sent' : 'friends-time-sent');
+        messageDiv.appendChild(timeSent);
+            
+        messagesContainer.appendChild(messageDiv);
+    }
+
+
+    function sendMessage() {
+        const chatInput = document.getElementById('chat-input');
+        const messageContent = chatInput.value;
+        const senderId = sessionStorage.getItem('loggedInUserId');
+        const conversationName = sessionStorage.getItem('ConversationName');
+        
+        // Check if the user is the inviting or invited user based on session storage
+        const isInvited = sessionStorage.getItem('invited') === 'true';
+        const receiverId = isInvited ? sessionStorage.getItem('invitedUserID') : sessionStorage.getItem('invitingUserID');
+
+        if (messageContent.trim() !== '' && receiverId) { 
+            const message = {
+                sender_id: senderId,
+                receiver_id: receiverId, 
+                content: messageContent,
+                timestamp: new Date().toISOString(),
+                conversationName: conversationName
+            };
+            
+            console.log("Sending message:", message);
+            socket.send(JSON.stringify({ type: 'message', message: message }));
+            
+            chatInput.value = '';
+            
+            scrollToBottom();
+        } else {
+            console.error('Receiver ID is null or undefined');
+        }
+    }
 
 
 
-    </script>
+</script>
+
 </body>
 
 <script>
@@ -371,170 +381,16 @@ function sendMessage() {
     var toggleButton = document.getElementById('toggleButton');
     var speakButton = document.getElementById('speakButton');
 
-    const cameraBtn =  document.getElementById('camera-btn');
+    
+
+
+    
     const leftNav = document.querySelector('.nav-container');
-    const checkbox = document.getElementById('checkbox');
-    const bottomContent = document.querySelector('.bottom-content');    
-    const videoContainer = document.querySelector('.video-container');    
-    const videStreams = document.querySelector('#video-streams');  
-    const controlsWrapper = document.querySelector('#controls-wrapper');    
-    const videoElement = document.getElementById('video-video');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-
-
-    cameraBtn.addEventListener('click', function() {
-
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            if (!videoElement.srcObject) {
-                // Camera is currently off, turn it on
-                cameraBtn.style.backgroundColor = 'rgba(245, 222, 179, 0.886)';
-                video.src = '{% static '/images/ebigkas-logo.png' %}';
-                leftNav.classList.add('menu-opened');
-                videoContainer.style.marginRight = '1.5em';
-                videStreams.style.marginLeft = '74%';
-                bottomContent.style.marginLeft = '-1%'
-                controlsWrapper.style.marginLeft = '33%';
-        
-
-                navigator.mediaDevices.getUserMedia({ video: true })
-                    .then(function(stream) {
-                        videoElement.srcObject = stream;
-                       videoElement.style.transform = 'translateY(-100.75%) scaleX(-1)'; // Apply both translations
-
-                        // Send the video stream frames over WebSocket
-                        const mediaRecorder = new MediaRecorder(stream);
-                        mediaRecorder.start(1); // Start recording frames every 1 ms
-
-                        mediaRecorder.ondataavailable = function(event) {
-                            if (event.data.size > 0) {
-                                // Mirror the context horizontally
-                                ctx.scale(-1, 1);
-                                
-                                // Draw the image to the canvas, with the x position adjusted to account for the mirrored context
-                                ctx.drawImage(videoElement, -canvas.width, 0, canvas.width, canvas.height);
-                                const frame = canvas.toDataURL('image/webp');
-                                socket.send(JSON.stringify({
-                                    type: 'video-frame',
-                                    frame: frame,
-                                    sender_id: loggedInUserId,
-                                    room_id: roomID
-                                }));
-                            }
-                        };
-
-                    })
-                    .catch(function(error) {
-                        console.error('Error accessing camera:', error);
-                    });
-            } else {
-                leftNav.classList.remove('menu-opened');
-                videoContainer.style.marginRight = '2px';
-                videStreams.style.marginLeft = '78.5%'; 
-                bottomContent.style.marginLeft = '30px'
-                controlsWrapper.style.marginLeft = '37%'
-                cameraBtn.style.backgroundColor = 'rgb(255, 80, 80, 1)';
-                
-                setTimeout(function() {
-                    socket.send(JSON.stringify({
-                        type: 'video-frame',
-                        frame: '{% static '/images/ebigkas1.png' %}',
-                        sender_id: loggedInUserId,
-                        room_id : roomID
-                    }));            
-                }, 100);
-
-                let stream = videoElement.srcObject;
-                let tracks = stream.getTracks();
-                
-                tracks.forEach(function(track) {
-                    track.stop();
-                });
-                
-                videoElement.srcObject = null;        
-            }
-        } else {
-            console.error('getUserMedia not supported on this browser');
-        }
-    });
-
-
-
-    let counter = false;
-    let streaming = false;
-
-
-
-    function toggleStream() {
-        // currently at stop recognition
-        if (streaming) {
-            counter = true;
-            console.log("stopping recognition")
-            toggleButton.innerText = 'Start Recognition';
-            toggleButton.classList.remove('stopButton');
-            toggleButton.classList.add('startButton');
-
-            leftNav.classList.remove('menu-opened');
-            videoContainer.style.marginRight = '2px';
-            videStreams.style.marginLeft = '78.5%'; 
-            bottomContent.style.marginLeft = '30px';
-            controlsWrapper.style.marginLeft = '37%';
-            socket.send(JSON.stringify({ 'type': 'stop_recognition' }));
-
-        } else {
-            counter = false;
-            let videoElement = document.getElementById('video-video');
-            let stream = videoElement.srcObject;
-            if (videoElement.srcObject) {
-                simulateCameraBtnClick();
-            }
-            socket.send(JSON.stringify({
-                'type': 'start_recognition',
-                'sender_id': loggedInUserId,
-                'room_id' : roomID
-            }));
-
-            toggleButton.innerText = 'Stop Recognition';
-            toggleButton.classList.remove('startButton');
-            toggleButton.classList.add('stopButton');
-
-            leftNav.classList.add('menu-opened');
-            videoContainer.style.marginRight = '1.5em';
-            videStreams.style.marginLeft = '74%';
-            bottomContent.style.marginLeft = '-1%';
-            controlsWrapper.style.marginLeft = '33%';
-        }
-        streaming = !streaming;
-    }
-
-
-    function simulateCameraBtnClick() {
-        cameraBtn.click();
-    }
-
-    // Add an event listener to send a message to the server when Enter key is pressed
-    document.addEventListener('keypress', function(event) {
-        if (event.key === 'Enter') {
-            if(counter){
-
-            streaming = true;
-            const message = {
-                type: 'stop_recognition'
-            };
-            // Send WebSocket message to server
-            //socket.send(JSON.stringify(message));
-
-        }
-
-            if(streaming && !counter){
-                // Simulate click on cameraBtn
-                streaming = true;
-                toggleButton.innerText = 'Start Recognition';
-                simulateCameraBtnClick();
-                counter = false;
-            }
-        }
-    });
+    const bottomContent = document.querySelector('.bottom-content');
+    const videoContainer = document.querySelector('.video-container');
+    const videStreams = document.querySelector('#video-streams');
+    const controlsWrapper = document.querySelector('#controls-wrapper');
+    const cameraBtn = document.getElementById('camera-btn');
 
     function typeText(element, text, index = 0) {
         if (index < text.length) {
@@ -708,8 +564,7 @@ function sendMessage() {
               const messageDropdown = document.getElementById("message-dropdown");
     
               // Clear existing content except the 'chats-text' div
-              const existingChatsText =
-                messageDropdown.querySelector(".chats-text");
+              const existingChatsText = messageDropdown.querySelector(".chats-text");
               messageDropdown.innerHTML = "";
               messageDropdown.appendChild(existingChatsText);
     
@@ -816,90 +671,385 @@ function sendMessage() {
           .catch((error) => console.error("Error:", error));
       }
 
-
-
-
-
+      const videoElement = document.getElementById('localVideo');
+      const canvasElement = document.getElementById('canvas');
+      const canvasCtx = canvasElement.getContext('2d');
+      const mirroredCanvas = document.createElement('canvas'); // Create a mirrored canvas
+      const mirroredCtx = mirroredCanvas.getContext('2d');
+      
+       
+        function closeNav() {
+          cameraBtn.style.backgroundColor = 'rgba(245, 222, 179, 0.886)';
+          videoElement.src = '/static/images/ebigkas-logo.png'; 
+          leftNav.classList.add('menu-opened');
+          videoContainer.style.marginRight = '1.5em';
+          videStreams.style.marginLeft = '74%';
+          bottomContent.style.marginLeft = '-1%';
+          controlsWrapper.style.marginLeft = '33%';
+      }
+  
+      function openNav() {
+          leftNav.classList.remove('menu-opened');
+          videoContainer.style.marginRight = '2px';
+          videStreams.style.marginLeft = '78.5%';
+          bottomContent.style.marginLeft = '30px';
+          controlsWrapper.style.marginLeft = '37%';
+          cameraBtn.style.backgroundColor = 'rgb(255, 80, 80, 1)';
+      }
+        
 
       const micBtn = document.getElementById('mic-btn');
       let isMicOpen = false;
       let localStream;
       let peerConnection;
       
-      // WebRTC configuration
-      const configuration = { 
-          iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] // Public STUN server
-      };
+     
+
+</script>
+
+
+
+
+
+<script type="module">
+    const IsInvited = sessionStorage.getItem('invited');
+    const loggedInUserId = sessionStorage.getItem('loggedInUserId');
+    const invitingUserID = sessionStorage.getItem('invitingUserID');
+    const invitedUserID = sessionStorage.getItem('invitedUserID');
+
+    const recognitionButton = document.getElementById('toggleButton')
+    const cameraBtn = document.getElementById('camera-btn');
+    const leftNav = document.querySelector('.nav-container');
+    const bottomContent = document.querySelector('.bottom-content');
+    const videoContainer = document.querySelector('.video-container');
+    const videStreams = document.querySelector('#video-streams');
+    const controlsWrapper = document.querySelector('#controls-wrapper');
+    const canvasElement = document.getElementById('canvas');
+    const canvasCtx = canvasElement.getContext('2d');
+    const mirroredCanvas = document.createElement('canvas'); // Create a mirrored canvas
+    const mirroredCtx = mirroredCanvas.getContext('2d');
+    const localVideo = document.getElementById('localVideo');
+
+    const videoElement = document.getElementById('localVideo');
+
+    let isRecognizing = false;
+
+    let isCameraOpen = false;
+
+    function closeNav() {
+        videoElement.src = '/static/images/ebigkas-logo.png'; // Adjust if using Django static files
+        leftNav.classList.add('menu-opened');
+        videoContainer.style.marginRight = '1.5em';
+        videStreams.style.marginLeft = '74%';
+        bottomContent.style.marginLeft = '-1%';
+        controlsWrapper.style.marginLeft = '33%';
+    }
+
+    function openNav() {
+        leftNav.classList.remove('menu-opened');
+        videoContainer.style.marginRight = '2px';
+        videStreams.style.marginLeft = '78.5%';
+        bottomContent.style.marginLeft = '30px';
+        controlsWrapper.style.marginLeft = '37%';
+    }
+
+    function mirrorVideoFrame(videoElement) {
+        // Set dimensions for the mirrored canvas
+        mirroredCanvas.width = videoElement.videoWidth;
+        mirroredCanvas.height = videoElement.videoHeight;
+
+        // Apply mirroring effect
+        mirroredCtx.translate(mirroredCanvas.width, 0); // Move origin to the far right
+        mirroredCtx.scale(-1, 1); // Flip horizontally
+
+        // Draw the video frame onto the mirrored canvas
+        mirroredCtx.drawImage(videoElement, 0, 0, mirroredCanvas.width, mirroredCanvas.height);
+        
+        return mirroredCanvas;
+    }
+
+         // WebRTC configuration
+         const configuration = { 
+            iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] // Public STUN server
+        };
+        
+        function createPeerConnection() {
+          peerConnection = new RTCPeerConnection(configuration);
       
-      function createPeerConnection() {
-        peerConnection = new RTCPeerConnection(configuration);
-    
-        peerConnection.onicecandidate = function(event) {
-            if (event.candidate) {
-                console.log('ICE Candidate:', event.candidate);
-                socket.send(JSON.stringify({
-                    type: 'ice_candidate',
-                    candidate: event.candidate,
-                    sender_id: loggedInUserId,
-                    room_id: roomID
-                }));
-            }
-        };
-    
-        peerConnection.ontrack = function(event) {
-            console.log('Remote stream added:', event.streams[0]);
-            const remoteAudio = document.getElementById('remoteAudio');
-            remoteAudio.srcObject = event.streams[0];
-        };
-    }
-    
-    
-    async function startRecording() {
-        try {
-            localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-            document.getElementById('localAudio').srcObject = localStream;
-    
-            if (!peerConnection) createPeerConnection();
-    
-            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-    
-            const offer = await peerConnection.createOffer();
-            await peerConnection.setLocalDescription(offer);
-            socket.send(JSON.stringify({
-                type: 'offer',
-                sdp: offer.sdp,
-                sender_id: loggedInUserId,
-                room_id: roomID
-            }));
-        } catch (error) {
-            console.error('Error accessing audio stream:', error);
-        }
-    }
-    
-      // Stop capturing and sending audio
-      function stopRecording() {
-          if (localStream) {
-              localStream.getTracks().forEach(track => track.stop());
-          }
-          if (peerConnection) {
-              peerConnection.close();
-              peerConnection = null; // Reset peerConnection
+          peerConnection.onicecandidate = function(event) {
+              if (event.candidate) {
+                //  console.log('ICE Candidate:', event.candidate);
+                  socket.send(JSON.stringify({
+                      type: 'ice_candidate',
+                      candidate: event.candidate,
+                      sender_id: loggedInUserId,
+                      room_id: roomID
+                  }));
+              }
+          };
+      
+          peerConnection.ontrack = function(event) {
+              console.log('Remote stream added:', event.streams[0]);
+              const remoteAudio = document.getElementById('remoteAudio');
+              const remoteVideo = document.getElementById('remoteVideo'); 
+          
+              if (remoteAudio && event.track.kind === 'audio') {
+                  remoteAudio.srcObject = event.streams[0]; // Assign audio stream
+              }
+              
+              if (remoteVideo && event.track.kind === 'video') {
+                  remoteVideo.srcObject = event.streams[0]; // Assign video stream
+              }
+          };
+          
+      }
+      
+      
+      async function startRecordingAudio() {
+          try {
+              localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+              document.getElementById('localAudio').srcObject = localStream;
+      
+              if (!peerConnection) createPeerConnection();
+      
+              localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+      
+              const offer = await peerConnection.createOffer();
+              await peerConnection.setLocalDescription(offer);
+              socket.send(JSON.stringify({
+                  type: 'offer',
+                  sdp: offer.sdp,
+                  sender_id: loggedInUserId,
+                  room_id: roomID
+              }));
+          } catch (error) {
+              console.error('Error accessing audio stream:', error);
           }
       }
       
-      // Toggle microphone state
-      micBtn.addEventListener('click', async function onClick() {
+        // Stop capturing and sending audio
+        function stopRecordingAudio() {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+            }
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null; // Reset peerConnection
+            }
+        }
+    
+        
+        // Toggle microphone state
+        micBtn.addEventListener('click', async function onClick() {
           if (isMicOpen) {
               micBtn.style.backgroundColor = 'rgb(255, 80, 80, 1)'; // Red when muted
-              stopRecording();
+              stopRecordingAudio();
           } else {
               micBtn.style.backgroundColor = 'rgba(245, 222, 179, 0.886)'; // Beige when unmuted
-              await startRecording();
+              await startRecordingAudio();
           }
           isMicOpen = !isMicOpen;
       });
       
+      
+    
+      const maxSequenceLength = 23; // Maintain this
+      let sequence = [];
+      let sequences_holder = [];
+      
+      function onResults(results) {
+          // Save the current canvas state
+          canvasCtx.save();
+          // Clear the canvas efficiently
+          canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+      
+          // Draw the image from MediaPipe results onto the canvas
+          canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+      
+          // Only draw connectors and landmarks if isRecognizing is true
+          if (isRecognizing) {
+              drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, { color: '#00FF00', lineWidth: 0.1 });
+              drawConnectors(canvasCtx, results.faceLandmarks, FACEMESH_TESSELATION, { color: '#C0C0C070', lineWidth: 0.1 });
+              drawConnectors(canvasCtx, results.leftHandLandmarks, HAND_CONNECTIONS, { color: '#CC0000', lineWidth: 0.5 });
+              drawConnectors(canvasCtx, results.rightHandLandmarks, HAND_CONNECTIONS, { color: '#00CC00', lineWidth: 0.5 });
+      
+              drawLandmarks(canvasCtx, results.poseLandmarks, { color: 'rgba(0,0,0,0)', lineWidth: 0 });
+              drawLandmarks(canvasCtx, results.faceLandmarks, { color: 'rgba(0,0,0,0)', lineWidth: 0 });
+              drawLandmarks(canvasCtx, results.leftHandLandmarks, { color: 'rgba(0,0,0,0)', lineWidth: 0 });
+              drawLandmarks(canvasCtx, results.rightHandLandmarks, { color: 'rgba(0,0,0,0)', lineWidth: 0 });
+          }
+      
+          // Restore the canvas state
+          canvasCtx.restore();
+      
+          // Extract keypoints and manage sequence
+          const keypoints = extractKeypoints(results);
+          sequence.push(keypoints);
+      
+          // Check if we have reached the maximum sequence length
+          if (sequence.length === maxSequenceLength) {
+              // Store the complete sequence into sequences_holder
+              sequences_holder.push([...sequence]); // Push a copy of sequence
+              sequence = []; // Reset the sequence for new input
+          }
+      }
+      
+    
+    
+    function extractKeypoints(results) {
+        const pose = results.poseLandmarks ? 
+            results.poseLandmarks.map(landmark => [landmark.x, landmark.y, landmark.z, landmark.visibility]).flat() :
+            new Array(33 * 4).fill(0);
+            
+        // Use only the first 468 face keypoints (slice before flattening)
+        const face = results.faceLandmarks ? 
+            results.faceLandmarks.slice(0, 468).map(landmark => [landmark.x, landmark.y, landmark.z]).flat() :
+            new Array(468 * 3).fill(0);  // Ensuring 468 keypoints are taken
+    
+        const leftHand = results.leftHandLandmarks ? 
+            results.leftHandLandmarks.map(landmark => [landmark.x, landmark.y, landmark.z]).flat() :
+            new Array(21 * 3).fill(0);
+    
+        const rightHand = results.rightHandLandmarks ? 
+            results.rightHandLandmarks.map(landmark => [landmark.x, landmark.y, landmark.z]).flat() :
+            new Array(21 * 3).fill(0);
+    
+        return [].concat(pose, face, leftHand, rightHand);
+    }
+    
+    const holistic = new Holistic({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`
+    });
 
+    holistic.setOptions({
+        modelComplexity: 1,
+        smoothLandmarks: false,
+        enableSegmentation: false,
+        smoothSegmentation: false,
+        refineFaceLandmarks: false,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5,
+    });
+
+    holistic.onResults(onResults);
+
+    const camera = new Camera(videoElement, {
+        onFrame: async () => {
+            if (isRecognizing) {
+                // Apply mirroring effect before sending to MediaPipe
+                const mirroredCanvas = mirrorVideoFrame(videoElement);
+                await holistic.send({ image: mirroredCanvas });
+            }
+        },
+        width: 1280,
+        height: 720,
+    });
+
+
+
+async function startRecordingCamera() {
+  try {
+      localStream = await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
+      document.getElementById('localVideo').srcObject = localStream;
+      camera.stop();
+
+      if (!peerConnection) createPeerConnection();
+
+      localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+      const offer = await peerConnection.createOffer();
+      await peerConnection.setLocalDescription(offer);
+      socket.send(JSON.stringify({
+          type: 'offer',
+          sdp: offer.sdp,
+          sender_id: loggedInUserId,
+          room_id: roomID
+      }));
+
+  } catch (error) {
+      console.error('Error accessing video stream:', error);
+  }
+}
+
+   // Stop capturing and sending audio
+   function stopRecordingCamera() {
+      if (localStream) {
+          recognitionButton.innerHTML = "Start Recognition"; 
+          localStream.getTracks().forEach(track => track.stop());
+
+         
+      }
+      if (peerConnection) {
+          peerConnection.close();
+          peerConnection = null; // Reset peerConnection
+      }
+      camera.stop();
+     
+  }
+
+
+        cameraBtn.addEventListener('click', async function onClick() {
+        if (isCameraOpen) {
+                await camera.stop();
+                stopRecordingCamera();
+                cameraBtn.style.backgroundColor = 'rgb(255, 80, 80, 1)'; 
+                openNav();
+                setTimeout(function() {
+                    socket.send(JSON.stringify({
+                        type: 'video-frame',
+                        frame: "{% static '/images/ebigkas1.png' %}",
+                        sender_id: loggedInUserId,
+                        room_id : roomID
+                    }));            
+                }, 100);
+                
+            } else {
+                cameraBtn.style.backgroundColor = 'rgba(245, 222, 179, 0.886)'; 
+                closeNav();
+                await camera.stop();
+                await startRecordingCamera();
+            }
+            isCameraOpen = !isCameraOpen;
+        });
+
+        recognitionButton.addEventListener('click', async function() {
+            if (true) {
+                if (!isRecognizing) { // Start recognition
+                    closeNav();
+                    localVideo.style.display = 'none'; // Hide video for the sender
+                    canvasElement.style.display = 'block'; // Show the canvas
+                    await camera.start();
+                    recognitionButton.innerHTML = "Stop Recognition"; 
+                } else { // Stop recognition
+                    openNav();
+                    await camera.stop(); // Stop the camera
+        
+                    localVideo.style.display = 'block'; // Show the video again if needed
+                    canvasElement.style.display = 'none'; 
+        
+                    // Clear the canvas
+                    canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height); 
+                    
+                    await startRecordingCamera(); 
+                    socket.send(JSON.stringify({
+                        type: 'predict_actions_taken',
+                        data: sequences_holder,
+                        sender_id: loggedInUserId,
+                        room_id: roomID
+                    }));
+                    sequences_holder = []
+                    
+                    sequence = [];
+                    recognitionButton.innerHTML = "Start Recognition"; 
+                }
+                isRecognizing = !isRecognizing;
+            } else {
+                alert("Camera not open.");
+            }
+        });
+        
+        
 </script>
+
 
 </html>

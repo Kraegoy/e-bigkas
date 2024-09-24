@@ -65,7 +65,8 @@ def extract_keypoints(results):
 
 
 # Actions that we try to detect
-actions = np.array(['blank','maybe','no','sorry','take care','thank you','understand','welcome','what','when','where','yes','hello', 'thank you', 'how are you', 'I\'m fine', 'I love you', "I'm not fine"])
+# actions = np.array(['blank','maybe','no','sorry','take care','thank you','understand','welcome','what','when','where','yes','hello', 'thank you', 'how are you', 'I\'m fine', 'I love you', "I'm not fine"])
+actions = np.array(['hello', 'thank you', 'I love you','how are you', "I'm fine", "I'm not fine", "yes"])
 
 
 from tensorflow.keras.models import Sequential
@@ -79,7 +80,7 @@ model.add(Dense(64, activation='relu'))
 model.add(Dense(32, activation='relu'))
 model.add(Dense(actions.shape[0], activation='softmax'))
 
-model.load_weights('action2.h5')
+model.load_weights('MyModels/seven.h5')
 
 colors = [(245, 117, 16), (117, 245, 16), (16, 117, 245), (245, 125, 16), (16, 117, 100)]
 colors = [(245, 117, 16), (117, 245, 16), (16, 117, 245), (245, 125, 16), (16, 117, 100)]
@@ -120,6 +121,67 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
             self.stop_requested = False
             self.recognition_thread = threading.Thread(target=self.recognition_loop, args=(sender_id, room_id,))
             self.recognition_thread.start()
+                     
+    
+    async def process_extracted_keypoints(self, sender_id, room_id, sequences):
+        threshold = 0.6
+        action_names = []  # Use a list to store action names
+        confidences = []  # Store confidences for each action
+
+        for sequence in sequences:
+            try:
+                # Predict action for the current sequence
+                res = model.predict(np.expand_dims(sequence, axis=0))[0]
+                action = np.argmax(res)
+                confidence = res[action]
+
+                if confidence > threshold:
+                    action_names.append(str(actions[action]))  # Collect action names
+                    confidences.append(confidence)  # Collect corresponding confidence values
+
+            except Exception as e:
+                print(f"Error during model prediction: {e}")
+                continue  # Continue to the next sequence
+
+        # If any action names were predicted, send them to the group
+        if action_names:
+            combined_action_names = " ".join(action_names)  # Combine actions into a single string
+            try:
+                await self.send_prediction_to_group(sender_id, room_id, combined_action_names)
+                print(f"Sent predicted actions: {combined_action_names} with confidences: {confidences}")
+
+            except Exception as send_error:
+                print(f"Error sending predicted actions: {send_error}")
+        else:
+            print("No action predicted.")
+
+    async def send_prediction_to_group(self, sender_id, room_id, predicted_action):
+        try:
+            await self.channel_layer.group_send(
+                'video_call_group',
+                {
+                    'type': 'predicted_action_back',
+                    'predicted_action': predicted_action,
+                    'sender_id': sender_id,
+                    'room_id': room_id
+                }
+            )
+            print(f"Sent prediction to group: {predicted_action}")
+        except Exception as e:
+            print(f"Error sending prediction to group: {e}")
+
+    async def predicted_action_back(self, event):
+        # Send message to WebSocket
+        await self.send(text_data=json.dumps({
+            'type': 'predicted_action',
+            'predicted_action': event['predicted_action'],
+            'sender_id': event['sender_id'],
+            'room_id': event['room_id']
+        }))
+
+            
+
+            
 
     async def send_frame(self, frame_data, sender_id, room_id):
         await self.channel_layer.group_send(
@@ -152,8 +214,14 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
         """
         if len(sequence) == 23:
             res = model.predict(np.expand_dims(sequence, axis=0))[0]
+            print(f"np.argmax(res): {np.argmax(res)}, res[np.argmax(res)]: {res[np.argmax(res)]}")
             return np.argmax(res), res[np.argmax(res)]
         return None, None
+    
+                
+    
+                
+                  
 
     def recognition_loop(self, sender_id, room_id):
         # Ensure OpenCV setup is correct
@@ -249,7 +317,8 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard("video_call_group", self.channel_name)
-        logger.info("WebSocket connection closed.")
+        logger.info(f"WebSocket connection closed with code: {close_code}")
+
 
     async def update_profile(self, event):
    
@@ -357,6 +426,7 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
                         'room_id': room_id
                     }
                 )
+                
             elif data['type'] == 'message':
                 logger.info("Received message from client")
                 message_data = data['message']
@@ -387,6 +457,27 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
                 logger.info("Received stop_recognition message from client")
                 await self.stop_recognition()
                 logger.info("stop_recognition method called successfully")
+                
+            elif data['type'] == 'predict_actions_taken':
+                sender_id = data.get('sender_id')
+                room_id = data.get('room_id')
+                sequences = data.get('data')
+                await self.process_extracted_keypoints(sender_id, room_id, sequences)
+                
+            elif data['type'] == 'predicted_action':
+                predicted_action = data.get('predicted_action')
+                sender_id = data.get('sender_id')
+                room_id = data.get('room_id')
+                # Send predicted actions to room group
+                await self.channel_layer.group_send(
+                    "video_call_group",
+                    {
+                        'type': 'predicted_action',
+                        'predicted_action': predicted_action,
+                        'sender_id': sender_id,
+                        'room_id': room_id
+                    }
+                )
                 
             elif data['type'] == 'friend_status':
                 loggedInUserID = data.get('loggedInUserID')
@@ -490,22 +581,6 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             logger.error("Error processing message (consumer): %s", e)
             
-    
-
-    async def output_text_return1(self, event):
-        logger.info("Handling output_text_return for event: %s", event)
-        
-        current_time = time.time()
-        if current_time - self.last_sent_message_time >= 5:
-            await self.send(text_data=json.dumps({
-                'type': 'output_text_s',
-                'output_text1': event['output_text1'],
-                'sender_id': event['sender_id'],
-                'room_id': event['room_id'],
-            }))
-            self.last_sent_message_time = current_time
-        else:
-            logger.info("Message discarded as it matches the previous message sent within 5 seconds.")
 
 
 
