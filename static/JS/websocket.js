@@ -29,7 +29,7 @@ function createPeerConnection() {
 
   peerConnection.onicecandidate = function(event) {
       if (event.candidate) {
-          console.log('ICE Candidate:', event.candidate);
+          //console.log('ICE Candidate:', event.candidate);
           socket.send(JSON.stringify({
               type: 'ice_candidate',
               candidate: event.candidate,
@@ -40,7 +40,7 @@ function createPeerConnection() {
   };
 
   peerConnection.ontrack = function(event) {
-      console.log('Remote stream added:', event.streams[0]);
+      //console.log('Remote stream added:', event.streams[0]);
       const remoteAudio = document.getElementById('remoteAudio');
       const remoteVideo = document.getElementById('remoteVideo'); 
   
@@ -149,7 +149,6 @@ socket.onmessage = function(event) {
     const message = JSON.parse(event.data);
 
 
-
     // Handle offer
 if (message.type === 'offer' && message.sender_id != loggedInUserId) {
     if (!peerConnection) createPeerConnection();
@@ -207,16 +206,11 @@ if (message.type === 'ice_candidate' && message.sender_id != loggedInUserId) {
 
     
 
-    if (message.type === 'output_text_s' && message.room_id === roomID) {
+    if (message.type === 'predicted_action' && message.room_id === roomID) {
         console.log('Received data with room ID:', message); 
-        const outputText = message.output_text1 ? message.output_text1 : "blank";
+        const outputText = message.predicted_action ? message.predicted_action : "blank";
         
         const sanitizedOutputText = removeDuplicates(outputText);
-        
-        const video = document.getElementById('video1');
-        const receivedImgElement = document.getElementById('video2');
-        video.src = message.frame;
-        receivedImgElement.src = message.frame;
         
         // Create a new div element
         const newDiv = document.createElement('div');
@@ -260,9 +254,7 @@ if (message.type === 'ice_candidate' && message.sender_id != loggedInUserId) {
         }));
     }
 
-    if (message.type === 'predicted_action') {
-        console.log('Predicted action: ', message.predicted_action);
-    }
+    
 
 
     if (message.type === 'video-frame' && message.room_id == roomID) {

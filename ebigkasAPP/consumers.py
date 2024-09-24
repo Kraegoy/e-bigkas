@@ -123,51 +123,52 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
             self.recognition_thread.start()
                      
     
-    async def process_extracted_keypoints(self, sender_id, room_id, sequence):
+    async def process_extracted_keypoints(self, sender_id, room_id, sequences):
         threshold = 0.6
-        action_name = ""
-        confidence = 0
+        action_names = []  # Use a list to store action names
+        confidences = []  # Store confidences for each action
 
-        # Validate sequence length
-        if len(sequence) != 23:
-            print("Invalid sequence length.")
-            return
-
-        # Attempt to predict the action
-        try:
-            res = model.predict(np.expand_dims(sequence, axis=0))[0]
-            action = np.argmax(res)
-            confidence = res[action]
-
-            if confidence > threshold:
-                action_name = actions[action]
-        except Exception as e:
-            print(f"Error during model prediction: {e}")
-            return  # Exit early if there's an error
-
-        # If an action name was predicted, send it to the group
-        if action_name:
+        for sequence in sequences:
             try:
-                print(f"Sent predicted action: {action_name} with confidence: {confidence}")
-               # await self.send_prediction(sender_id, room_id, action_name)
-                
+                # Predict action for the current sequence
+                res = model.predict(np.expand_dims(sequence, axis=0))[0]
+                action = np.argmax(res)
+                confidence = res[action]
+
+                if confidence > threshold:
+                    action_names.append(str(actions[action]))  # Collect action names
+                    confidences.append(confidence)  # Collect corresponding confidence values
+
+            except Exception as e:
+                print(f"Error during model prediction: {e}")
+                continue  # Continue to the next sequence
+
+        # If any action names were predicted, send them to the group
+        if action_names:
+            combined_action_names = " ".join(action_names)  # Combine actions into a single string
+            try:
+                await self.send_prediction(sender_id, room_id, combined_action_names)
+                print(f"Sent predicted actions: {combined_action_names} with confidences: {confidences}")
+
             except Exception as send_error:
-                print(f"Error sending predicted action: {send_error}")
+                print(f"Error sending predicted actions: {send_error}")
         else:
-            print(f"No action predicted. Confidence: {confidence}")
+            print("No action predicted.")
+
 
 
     async def send_prediction(self, sender_id, room_id, predicted_action):
-        await self.channel_layer.group_send(
-            "video_call_group",
-            {
+        try:
+            await self.send(text_data=json.dumps({
                 'type': 'predicted_action',
                 'predicted_action': predicted_action,
                 'sender_id': sender_id,
                 'room_id': room_id
-            }
-        )
-        print(f"sent prediction: {predicted_action}")
+            }))
+            print(f"sent prediction: {predicted_action}")
+        except Exception as e:
+            print(f"Error sending prediction: {e}")
+
 
             
 
@@ -448,16 +449,26 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
                 await self.stop_recognition()
                 logger.info("stop_recognition method called successfully")
                 
-            elif data['type'] == 'extracted-keypoints':
+            elif data['type'] == 'predict_actions_taken':
                 sender_id = data.get('sender_id')
                 room_id = data.get('room_id')
-                sequence = data.get('sequence')
-                await self.process_extracted_keypoints(sender_id, room_id, sequence)
+                sequences = data.get('data')
+                await self.process_extracted_keypoints(sender_id, room_id, sequences)
                 
-            elif data['type'] == 'prediction':
+            elif data['type'] == 'predicted_action':
+                predicted_action = data.get('predicted_action')
                 sender_id = data.get('sender_id')
                 room_id = data.get('room_id')
-                await self.send_prediction(sender_id, room_id)
+                # Send predicted actions to room group
+                await self.channel_layer.group_send(
+                    "video_call_group",
+                    {
+                        'type': 'predicted_action',
+                        'predicted_action': predicted_action,
+                        'sender_id': sender_id,
+                        'room_id': room_id
+                    }
+                )
                 
             elif data['type'] == 'friend_status':
                 loggedInUserID = data.get('loggedInUserID')
@@ -561,22 +572,6 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             logger.error("Error processing message (consumer): %s", e)
             
-    
-
-    async def output_text_return1(self, event):
-        logger.info("Handling output_text_return for event: %s", event)
-        
-        current_time = time.time()
-        if current_time - self.last_sent_message_time >= 5:
-            await self.send(text_data=json.dumps({
-                'type': 'output_text_s',
-                'output_text1': event['output_text1'],
-                'sender_id': event['sender_id'],
-                'room_id': event['room_id'],
-            }))
-            self.last_sent_message_time = current_time
-        else:
-            logger.info("Message discarded as it matches the previous message sent within 5 seconds.")
 
 
 

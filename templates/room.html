@@ -44,7 +44,7 @@
                             <div class="video-player" id="user-1">
                                 <div class="username-wrapper"><span class="user-name">{{ request.user.username }}</span></div>
 
-                                <video id="localVideo" style=" height: 100%; width: 100%; position: relative; border-radius: 1.5em; object-fit: cover;" autoplay muted>
+                                <video id="localVideo" style=" transform: scaleX(-1); height: 100%; width: 100%; position: relative; border-radius: 1.5em; object-fit: cover;" autoplay muted>
                                     <!-- Video element for open camera stream -->
                                 </video> 
 
@@ -109,266 +109,263 @@
     </div>
 
     <script src="{% static 'JS/index.js' %}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic/holistic.js"></script>
+    
+    <script src="{% static 'JS/libs/camera_utils.js' %}"></script>
+    <script src="{% static 'JS/libs/control_utils.js' %}"></script>
+    <script src="{% static 'JS/libs/drawing_utils.js' %}"></script>
+    <script src="{% static 'JS/libs/holistic.js' %}"></script>
 
 
-   
-    
-    
-    
-    
 
 <script>
-        const IsInvited = sessionStorage.getItem('invited');
-        const loggedInUserId = sessionStorage.getItem('loggedInUserId');
-        const invitingUserID = sessionStorage.getItem('invitingUserID');
-        const invitedUserID = sessionStorage.getItem('invitedUserID');
-        
-        let user1;
-        let user2;
-        let conversationName = ''; 
-        let sender;
-        let receiver;
-        let friend_userID;
+    const IsInvited = sessionStorage.getItem('invited');
+    const loggedInUserId = sessionStorage.getItem('loggedInUserId');
+    const invitingUserID = sessionStorage.getItem('invitingUserID');
+    const invitedUserID = sessionStorage.getItem('invitedUserID');
+    
+    let user1;
+    let user2;
+    let conversationName = ''; 
+    let sender;
+    let receiver;
+    let friend_userID;
 
-        
-        if (IsInvited == "true") {
-            user1 = parseInt(invitingUserID);
-            user2 = parseInt(loggedInUserId);
-            sender = loggedInUserId;
-            receiver = invitingUserID;
-        } else {
-            user1 = parseInt(loggedInUserId);
-            user2 = parseInt(invitedUserID);
-            sender = loggedInUserId;
-            receiver = invitedUserID;
+    
+    if (IsInvited == "true") {
+        user1 = parseInt(invitingUserID);
+        user2 = parseInt(loggedInUserId);
+        sender = loggedInUserId;
+        receiver = invitingUserID;
+    } else {
+        user1 = parseInt(loggedInUserId);
+        user2 = parseInt(invitedUserID);
+        sender = loggedInUserId;
+        receiver = invitedUserID;
+    }
+    
+    //console.log("sender: " + sender);
+    //console.log("receiver: " + receiver);
+    
+    if (user1 > user2) {
+        conversationName = `${user1} and ${user2}`;
+    } else {
+        conversationName = `${user2} and ${user1}`;
+    }
+    //console.log("ConversationName: " + conversationName);
+    sessionStorage.setItem('ConversationName', conversationName);
+    if(user1 == loggedInUserId){
+        friend_userID = user2;
+    }
+    else{
+        friend_userID = user1;
+    }
+
+    const buttondown = document.getElementById('button-down')
+    const receiverUsername1 = sessionStorage.getItem('receiverUsername')
+    buttondown.addEventListener("click", () => displaychat1(friend_userID, receiverUsername1));
+    
+    const sendButton = document.querySelector('#sendButton');
+    sendButton.addEventListener('click', function(event) {
+        event.preventDefault(); // Prevent the default form submission
+    
+        const messageInput = document.querySelector('#chat-input');
+        const messageContent = messageInput.value.trim();
+        if (messageContent === '') {
+            // Handle empty message content
+            return;
         }
-        
-        //console.log("sender: " + sender);
-        //console.log("receiver: " + receiver);
-        
-        if (user1 > user2) {
-            conversationName = `${user1} and ${user2}`;
-        } else {
-            conversationName = `${user2} and ${user1}`;
-        }
-        //console.log("ConversationName: " + conversationName);
-        sessionStorage.setItem('ConversationName', conversationName);
-        if(user1 == loggedInUserId){
-            friend_userID = user2;
-        }
-        else{
-            friend_userID = user1;
-        }
+    
+        console.log("Sender ID:", sender);
+        console.log("Receiver ID:", receiver);
+    
+        // Set the sender and receiver values to hidden input fields
+        const senderInput = document.querySelector('#sender');
+        const receiverInput = document.querySelector('#receiver');
+        senderInput.value = sender;
+        receiverInput.value = receiver;
 
-        const buttondown = document.getElementById('button-down')
-        const receiverUsername1 = sessionStorage.getItem('receiverUsername')
-        buttondown.addEventListener("click", () => displaychat1(friend_userID, receiverUsername1));
-        
-        const sendButton = document.querySelector('#sendButton');
-        sendButton.addEventListener('click', function(event) {
-            event.preventDefault(); // Prevent the default form submission
-        
-            const messageInput = document.querySelector('#chat-input');
-            const messageContent = messageInput.value.trim();
-            if (messageContent === '') {
-                // Handle empty message content
-                return;
-            }
-        
-            console.log("Sender ID:", sender);
-            console.log("Receiver ID:", receiver);
-        
-            // Set the sender and receiver values to hidden input fields
-            const senderInput = document.querySelector('#sender');
-            const receiverInput = document.querySelector('#receiver');
-            senderInput.value = sender;
-            receiverInput.value = receiver;
-
-                // Construct a form data object
-            const formData = new FormData();
-            formData.append('content', messageContent);
-            formData.append('conversationName', conversationName); // Append the conversation name string
-            formData.append('sender', sender);
-            formData.append('receiver', receiver);
-        
-            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-            fetch('/send_message/', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': csrftoken
-                    },
-                    body: formData
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    // Clear the message input field after sending the message
-                    messageInput.value = '';
-                })
-                .catch(error => {
-                    console.error('Error sending message:', error);
-                });
-        });
-
-                document.addEventListener('DOMContentLoaded', async (event) => {
-                    otherUserId = (loggedInUserId == user1) ? user2 : user1;
-
-                    // Fetch the username of the other user
-                    const otherUserUsername = await fetchUsername(otherUserId);
-
-                    // Update the DOM with the usernames
-                    document.querySelector('#user-container-2 .user-name').textContent = otherUserUsername;
-                    const receiverUsername = sessionStorage.setItem('receiverUsername', otherUserUsername);
-              });
-  
-                // Function to fetch username from the server
-        async function fetchUsername(userId) {
-            try {
-                const response = await fetch(`/api/get-username/${userId}/`);
+            // Construct a form data object
+        const formData = new FormData();
+        formData.append('content', messageContent);
+        formData.append('conversationName', conversationName); // Append the conversation name string
+        formData.append('sender', sender);
+        formData.append('receiver', receiver);
+    
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        fetch('/send_message/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                body: formData
+            })
+            .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
-                const data = await response.json();
-                return data.username;
-            } catch (error) {
-                console.error('There was a problem with the fetch operation:', error);
-                return 'Unknown User';
-            }
-        }   
-        const messageBox = document.querySelector('.messages-container');
-        let kk = false; 
-        
-        function displaychat() {
-
-            
-            kk = !kk; // Toggle the variable
-            messageBox.style.display = kk ? 'block' : 'none'; // Toggle the display style
-            
-            // Toggle the rotation class for the arrow
-            document.querySelector('.button-down').classList.toggle('rotated');
-
-                scrollToBottom();
-        }
-        
-        // Function to scroll to the bottom of the chat window
-        function scrollToBottom() {
-            const messagesContainer = document.querySelector('.messages');
-            if (messagesContainer) {
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            }
-        }
-        
-    </script>
-
-    <script>   
-
-// Get the current URL path
-const path = window.location.pathname;
-const parts = path.split('/');
-const roomID = parts[parts.length - 2]; 
-
-
-function handleKeyDown(event) {
-    // Check if the Enter key is pressed
-    if (event.keyCode === 13 && !event.shiftKey) {
-        event.preventDefault(); // Prevent the default Enter key behavior (line break)
-        sendMessage(); // Call the sendMessage function
-    }
-}
-
-
-// Function to handle messages loaded event
-function handleMessagesLoaded(data) {
-    //console.log("Received messages_loaded event from server. Data:", data);
-    
-    const messagesContainer = document.querySelector('.messages');
-    const loggedInUserId = sessionStorage.getItem('loggedInUserId');
-    
-    messagesContainer.innerHTML = '';
-    
-    data.messages.forEach(message => {
-        handleIncomingMessage(message);
+                // Clear the message input field after sending the message
+                messageInput.value = '';
+            })
+            .catch(error => {
+                console.error('Error sending message:', error);
+            });
     });
-    scrollToBottom();
 
-}
+            document.addEventListener('DOMContentLoaded', async (event) => {
+                otherUserId = (loggedInUserId == user1) ? user2 : user1;
 
-// Function to handle incoming messages
-function handleIncomingMessage(message) {
-    console.log("loadedede")
+                // Fetch the username of the other user
+                const otherUserUsername = await fetchUsername(otherUserId);
 
-    const messagesContainer = document.querySelector('.messages');
-    const loggedInUserId = sessionStorage.getItem('loggedInUserId');
+                // Update the DOM with the usernames
+                document.querySelector('#user-container-2 .user-name').textContent = otherUserUsername;
+                const receiverUsername = sessionStorage.setItem('receiverUsername', otherUserUsername);
+            });
 
-    const sender = message.sender_id == loggedInUserId ? 'your-messages' : 'friends-messages';
-
-    const messageDiv = document.createElement('div');
-    messageDiv.classList.add(sender);
+            // Function to fetch username from the server
+    async function fetchUsername(userId) {
+        try {
+            const response = await fetch(`/api/get-username/${userId}/`);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            return data.username;
+        } catch (error) {
+            console.error('There was a problem with the fetch operation:', error);
+            return 'Unknown User';
+        }
+    }   
+    const messageBox = document.querySelector('.messages-container');
+    let kk = false; 
     
-    const messageContent = document.createElement('div');
-    messageContent.textContent = message.content;
-    messageContent.classList.add('indiv-messages');
+    function displaychat() {
 
-    messageDiv.appendChild(messageContent);
-    const timeSent = document.createElement('div');
-    const messageDate = new Date(message.timestamp);
-    const currentDate = new Date();
+        
+        kk = !kk; // Toggle the variable
+        messageBox.style.display = kk ? 'block' : 'none'; // Toggle the display style
+        
+        // Toggle the rotation class for the arrow
+        document.querySelector('.button-down').classList.toggle('rotated');
 
-    if (messageDate.toDateString() === currentDate.toDateString()) {
-        // Display time if message was sent today
-        timeSent.textContent = messageDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-    } else {
-        // Display date and time if message was sent on a different day
-        const options = { month: 'short', day: 'numeric' };
-        const formattedDate = messageDate.toLocaleDateString('en-US', options);
-        timeSent.textContent = `${formattedDate}, ${messageDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
+            scrollToBottom();
     }
-    // Add appropriate CSS class based on sender
-    timeSent.classList.add(message.sender_id == loggedInUserId ? 'your-time-sent' : 'friends-time-sent');
-    messageDiv.appendChild(timeSent);
-        
-    messagesContainer.appendChild(messageDiv);
-}
-
-
-function sendMessage() {
-    const chatInput = document.getElementById('chat-input');
-    const messageContent = chatInput.value;
-    const senderId = sessionStorage.getItem('loggedInUserId');
-    const conversationName = sessionStorage.getItem('ConversationName');
     
-    // Check if the user is the inviting or invited user based on session storage
-    const isInvited = sessionStorage.getItem('invited') === 'true';
-    const receiverId = isInvited ? sessionStorage.getItem('invitedUserID') : sessionStorage.getItem('invitingUserID');
+    // Function to scroll to the bottom of the chat window
+    function scrollToBottom() {
+        const messagesContainer = document.querySelector('.messages');
+        if (messagesContainer) {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    }
+    
+</script>
 
-    if (messageContent.trim() !== '' && receiverId) { 
-        const message = {
-            sender_id: senderId,
-            receiver_id: receiverId, 
-            content: messageContent,
-            timestamp: new Date().toISOString(),
-            conversationName: conversationName
-        };
+<script>   
+
+    // Get the current URL path
+    const path = window.location.pathname;
+    const parts = path.split('/');
+    const roomID = parts[parts.length - 2]; 
+
+
+    function handleKeyDown(event) {
+        // Check if the Enter key is pressed
+        if (event.keyCode === 13 && !event.shiftKey) {
+            event.preventDefault(); // Prevent the default Enter key behavior (line break)
+            sendMessage(); // Call the sendMessage function
+        }
+    }
+
+
+    // Function to handle messages loaded event
+    function handleMessagesLoaded(data) {
+        //console.log("Received messages_loaded event from server. Data:", data);
         
-        console.log("Sending message:", message);
-        socket.send(JSON.stringify({ type: 'message', message: message }));
+        const messagesContainer = document.querySelector('.messages');
+        const loggedInUserId = sessionStorage.getItem('loggedInUserId');
         
-        chatInput.value = '';
+        messagesContainer.innerHTML = '';
         
+        data.messages.forEach(message => {
+            handleIncomingMessage(message);
+        });
         scrollToBottom();
-    } else {
-        console.error('Receiver ID is null or undefined');
+
     }
-}
+
+    // Function to handle incoming messages
+    function handleIncomingMessage(message) {
+        console.log("loadedede")
+
+        const messagesContainer = document.querySelector('.messages');
+        const loggedInUserId = sessionStorage.getItem('loggedInUserId');
+
+        const sender = message.sender_id == loggedInUserId ? 'your-messages' : 'friends-messages';
+
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add(sender);
+        
+        const messageContent = document.createElement('div');
+        messageContent.textContent = message.content;
+        messageContent.classList.add('indiv-messages');
+
+        messageDiv.appendChild(messageContent);
+        const timeSent = document.createElement('div');
+        const messageDate = new Date(message.timestamp);
+        const currentDate = new Date();
+
+        if (messageDate.toDateString() === currentDate.toDateString()) {
+            // Display time if message was sent today
+            timeSent.textContent = messageDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        } else {
+            // Display date and time if message was sent on a different day
+            const options = { month: 'short', day: 'numeric' };
+            const formattedDate = messageDate.toLocaleDateString('en-US', options);
+            timeSent.textContent = `${formattedDate}, ${messageDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
+        }
+        // Add appropriate CSS class based on sender
+        timeSent.classList.add(message.sender_id == loggedInUserId ? 'your-time-sent' : 'friends-time-sent');
+        messageDiv.appendChild(timeSent);
+            
+        messagesContainer.appendChild(messageDiv);
+    }
+
+
+    function sendMessage() {
+        const chatInput = document.getElementById('chat-input');
+        const messageContent = chatInput.value;
+        const senderId = sessionStorage.getItem('loggedInUserId');
+        const conversationName = sessionStorage.getItem('ConversationName');
+        
+        // Check if the user is the inviting or invited user based on session storage
+        const isInvited = sessionStorage.getItem('invited') === 'true';
+        const receiverId = isInvited ? sessionStorage.getItem('invitedUserID') : sessionStorage.getItem('invitingUserID');
+
+        if (messageContent.trim() !== '' && receiverId) { 
+            const message = {
+                sender_id: senderId,
+                receiver_id: receiverId, 
+                content: messageContent,
+                timestamp: new Date().toISOString(),
+                conversationName: conversationName
+            };
+            
+            console.log("Sending message:", message);
+            socket.send(JSON.stringify({ type: 'message', message: message }));
+            
+            chatInput.value = '';
+            
+            scrollToBottom();
+        } else {
+            console.error('Receiver ID is null or undefined');
+        }
+    }
 
 
 
-    </script>
+</script>
+
 </body>
 
 <script>
@@ -740,7 +737,6 @@ function sendMessage() {
     let isCameraOpen = false;
 
     function closeNav() {
-        cameraBtn.style.backgroundColor = 'rgba(245, 222, 179, 0.886)';
         videoElement.src = '/static/images/ebigkas-logo.png'; // Adjust if using Django static files
         leftNav.classList.add('menu-opened');
         videoContainer.style.marginRight = '1.5em';
@@ -755,7 +751,6 @@ function sendMessage() {
         videStreams.style.marginLeft = '78.5%';
         bottomContent.style.marginLeft = '30px';
         controlsWrapper.style.marginLeft = '37%';
-        cameraBtn.style.backgroundColor = 'rgb(255, 80, 80, 1)';
     }
 
     function mirrorVideoFrame(videoElement) {
@@ -783,7 +778,7 @@ function sendMessage() {
       
           peerConnection.onicecandidate = function(event) {
               if (event.candidate) {
-                  console.log('ICE Candidate:', event.candidate);
+                //  console.log('ICE Candidate:', event.candidate);
                   socket.send(JSON.stringify({
                       type: 'ice_candidate',
                       candidate: event.candidate,
@@ -858,60 +853,47 @@ function sendMessage() {
       
       
     
-    const maxSequenceLength = 23; // Maintain this
-    let sequence = [];
-
-    function onResults(results) {
-        // Save the current canvas state
-        
-        // Clear the canvas efficiently
-        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-    
-        // Draw the image from MediaPipe results onto the canvas
-        canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
-    
-        // Only draw connectors and landmarks if isRecognizing is true
-        if (isRecognizing) {
-            drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {color: '#00FF00', lineWidth: 0.1});
-            drawConnectors(canvasCtx, results.faceLandmarks, FACEMESH_TESSELATION, {color: '#C0C0C070', lineWidth: 0.1});
-            drawConnectors(canvasCtx, results.leftHandLandmarks, HAND_CONNECTIONS, {color: '#CC0000', lineWidth: 0.5});
-            drawConnectors(canvasCtx, results.rightHandLandmarks, HAND_CONNECTIONS, {color: '#00CC00', lineWidth: 0.5});
-    
-            drawLandmarks(canvasCtx, results.poseLandmarks, {color: 'rgba(0,0,0,0)', lineWidth: 0});
-            drawLandmarks(canvasCtx, results.faceLandmarks, {color: 'rgba(0,0,0,0)', lineWidth: 0});
-            drawLandmarks(canvasCtx, results.leftHandLandmarks, {color: 'rgba(0,0,0,0)', lineWidth: 0});
-            drawLandmarks(canvasCtx, results.rightHandLandmarks, {color: 'rgba(0,0,0,0)', lineWidth: 0});
-    }
-    
-        // Restore the canvas state
-        canvasCtx.restore();
-    
-        // Extract keypoints and manage sequence
-        const keypoints = extractKeypoints(results);
-        sequence.push(keypoints);
-    
-        if (sequence.length > maxSequenceLength) {
-            sequence.shift(); // Remove the oldest entry
-        }
-    
-        // If the camera is open and recognizing, capture and send the frame
-        if (isCameraOpen && isRecognizing) {
-            if (sequence.length === maxSequenceLength) {
-                if (socket.readyState === WebSocket.OPEN) {
-                    console.log("Sending sequence:", sequence.length);
-                    socket.send(JSON.stringify({
-                        type: 'extracted-keypoints',
-                        sequence: sequence,
-                        sender_id: loggedInUserId,
-                        room_id: roomID
-                    }));
-                    sequence = []; // Clear the sequence after sending
-                } else {
-                    console.error("WebSocket is not open. Current state:", socket.readyState);
-                }
-            }
-        }
-    }
+      const maxSequenceLength = 23; // Maintain this
+      let sequence = [];
+      let sequences_holder = [];
+      
+      function onResults(results) {
+          // Save the current canvas state
+          canvasCtx.save();
+          // Clear the canvas efficiently
+          canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+      
+          // Draw the image from MediaPipe results onto the canvas
+          canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+      
+          // Only draw connectors and landmarks if isRecognizing is true
+          if (isRecognizing) {
+              drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, { color: '#00FF00', lineWidth: 0.1 });
+              drawConnectors(canvasCtx, results.faceLandmarks, FACEMESH_TESSELATION, { color: '#C0C0C070', lineWidth: 0.1 });
+              drawConnectors(canvasCtx, results.leftHandLandmarks, HAND_CONNECTIONS, { color: '#CC0000', lineWidth: 0.5 });
+              drawConnectors(canvasCtx, results.rightHandLandmarks, HAND_CONNECTIONS, { color: '#00CC00', lineWidth: 0.5 });
+      
+              drawLandmarks(canvasCtx, results.poseLandmarks, { color: 'rgba(0,0,0,0)', lineWidth: 0 });
+              drawLandmarks(canvasCtx, results.faceLandmarks, { color: 'rgba(0,0,0,0)', lineWidth: 0 });
+              drawLandmarks(canvasCtx, results.leftHandLandmarks, { color: 'rgba(0,0,0,0)', lineWidth: 0 });
+              drawLandmarks(canvasCtx, results.rightHandLandmarks, { color: 'rgba(0,0,0,0)', lineWidth: 0 });
+          }
+      
+          // Restore the canvas state
+          canvasCtx.restore();
+      
+          // Extract keypoints and manage sequence
+          const keypoints = extractKeypoints(results);
+          sequence.push(keypoints);
+      
+          // Check if we have reached the maximum sequence length
+          if (sequence.length === maxSequenceLength) {
+              // Store the complete sequence into sequences_holder
+              sequences_holder.push([...sequence]); // Push a copy of sequence
+              sequence = []; // Reset the sequence for new input
+          }
+      }
+      
     
     
     function extractKeypoints(results) {
@@ -969,6 +951,7 @@ async function startRecordingCamera() {
   try {
       localStream = await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
       document.getElementById('localVideo').srcObject = localStream;
+      camera.stop();
 
       if (!peerConnection) createPeerConnection();
 
@@ -993,12 +976,14 @@ async function startRecordingCamera() {
       if (localStream) {
           recognitionButton.innerHTML = "Start Recognition"; 
           localStream.getTracks().forEach(track => track.stop());
+
          
       }
       if (peerConnection) {
           peerConnection.close();
           peerConnection = null; // Reset peerConnection
       }
+      camera.stop();
      
   }
 
@@ -1012,11 +997,12 @@ async function startRecordingCamera() {
                 setTimeout(function() {
                     socket.send(JSON.stringify({
                         type: 'video-frame',
-                        frame: '{% static '/images/ebigkas1.png' %}',
+                        frame: "{% static '/images/ebigkas1.png' %}",
                         sender_id: loggedInUserId,
                         room_id : roomID
                     }));            
                 }, 100);
+                
             } else {
                 cameraBtn.style.backgroundColor = 'rgba(245, 222, 179, 0.886)'; 
                 closeNav();
@@ -1027,7 +1013,7 @@ async function startRecordingCamera() {
         });
 
         recognitionButton.addEventListener('click', async function() {
-            if (isCameraOpen) {
+            if (true) {
                 if (!isRecognizing) { // Start recognition
                     closeNav();
                     localVideo.style.display = 'none'; // Hide video for the sender
@@ -1036,7 +1022,7 @@ async function startRecordingCamera() {
                     recognitionButton.innerHTML = "Stop Recognition"; 
                 } else { // Stop recognition
                     openNav();
-                    camera.stop(); // Stop the camera
+                    await camera.stop(); // Stop the camera
         
                     localVideo.style.display = 'block'; // Show the video again if needed
                     canvasElement.style.display = 'none'; 
@@ -1044,20 +1030,15 @@ async function startRecordingCamera() {
                     // Clear the canvas
                     canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height); 
                     
-                    await startRecordingCamera(); // Reinitialize camera if needed
+                    await startRecordingCamera(); 
                     socket.send(JSON.stringify({
-                        type: 'prediction',
+                        type: 'predict_actions_taken',
+                        data: sequences_holder,
                         sender_id: loggedInUserId,
                         room_id: roomID
                     }));
-                    setTimeout(function() {
-                        socket.send(JSON.stringify({
-                            type: 'video-frame',
-                            frame: '/static/images/ebigkas1.png', // Adjust if using Django static files
-                            sender_id: loggedInUserId,
-                            room_id: roomID
-                        }));
-                    }, 100);
+                    sequences_holder = []
+                    
                     sequence = [];
                     recognitionButton.innerHTML = "Start Recognition"; 
                 }
