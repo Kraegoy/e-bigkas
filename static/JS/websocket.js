@@ -204,7 +204,8 @@ if (message.type === 'ice_candidate' && message.sender_id != loggedInUserId) {
     }
 }
 
-    
+ 
+        
 
     if (message.type === 'predicted_action' && message.room_id === roomID) {
         console.log('Received data with room ID:', message); 

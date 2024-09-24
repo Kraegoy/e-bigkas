@@ -147,7 +147,7 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
         if action_names:
             combined_action_names = " ".join(action_names)  # Combine actions into a single string
             try:
-                await self.send_prediction(sender_id, room_id, combined_action_names)
+                await self.send_prediction_to_group(sender_id, room_id, combined_action_names)
                 print(f"Sent predicted actions: {combined_action_names} with confidences: {confidences}")
 
             except Exception as send_error:
@@ -155,20 +155,29 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
         else:
             print("No action predicted.")
 
-
-
-    async def send_prediction(self, sender_id, room_id, predicted_action):
+    async def send_prediction_to_group(self, sender_id, room_id, predicted_action):
         try:
-            await self.send(text_data=json.dumps({
-                'type': 'predicted_action',
-                'predicted_action': predicted_action,
-                'sender_id': sender_id,
-                'room_id': room_id
-            }))
-            print(f"sent prediction: {predicted_action}")
+            await self.channel_layer.group_send(
+                'video_call_group',
+                {
+                    'type': 'predicted_action_back',
+                    'predicted_action': predicted_action,
+                    'sender_id': sender_id,
+                    'room_id': room_id
+                }
+            )
+            print(f"Sent prediction to group: {predicted_action}")
         except Exception as e:
-            print(f"Error sending prediction: {e}")
+            print(f"Error sending prediction to group: {e}")
 
+    async def predicted_action_back(self, event):
+        # Send message to WebSocket
+        await self.send(text_data=json.dumps({
+            'type': 'predicted_action',
+            'predicted_action': event['predicted_action'],
+            'sender_id': event['sender_id'],
+            'room_id': event['room_id']
+        }))
 
             
 
