@@ -163,3 +163,78 @@ input[type="file"] {
   color: rgb(246, 246, 246);
   cursor: default;
 }
+
+.remove-friend{
+  padding: 10px;
+  background-color: rgb(93, 93, 93);
+  width: fit-content;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.remove-friend:hover{
+  color: wheat;
+  font-weight: bold;
+}
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000000000;
+}
+.popup-content {
+  background: rgb(73, 73, 73);
+  padding: 20px;
+  text-align: center;
+  border-radius: 10px;
+}
+.popup.hidden {
+  display: none;
+}
+
+#popup-username{
+  color: wheat;
+}
+
+.confirm-btn{
+  background-color: rgb(137, 207, 254);
+  padding: 8px;
+  border-radius: 8px;
+  margin-right: 1em;
+  cursor: pointer;
+}
+
+.cancel-btn{
+  background-color: rgb(234, 247, 255);
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.confirm-btn:hover, .cancel-btn:hover{
+  font-weight: bold
+}
+
+.accept-friend, .decline-friend{
+  padding: 10px;
+  margin: 8px;
+  cursor: pointer;
+  border: 1px solid grey;
+  border-radius: 8px;
+  width: fit-content;
+}
+
+.accept-friend{
+  color: wheat;
+  background-color: #5d5d5d;
+}
+
+.decline-friend{
+  color: rgb(247, 167, 167);
+  background-color: #5d5d5d;
+}

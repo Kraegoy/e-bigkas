@@ -204,6 +204,15 @@ if (message.type === 'ice_candidate' && message.sender_id != loggedInUserId) {
     }
 }
 
+
+    if(message.type === 'friend_request_accepted'){
+        if(message.user == loggedInUserID){
+            friends_list();
+        }
+        else{
+            console.log("not for u" +message.user)
+        }
+    }
  
         
 

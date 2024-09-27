@@ -178,6 +178,12 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
             'sender_id': event['sender_id'],
             'room_id': event['room_id']
         }))
+        
+    async def friend_request_accepted(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'friend_request_accepted',
+            'user': event['user']
+        }))
 
             
 
@@ -464,6 +470,8 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
                 sequences = data.get('data')
                 await self.process_extracted_keypoints(sender_id, room_id, sequences)
                 
+                
+                
             elif data['type'] == 'predicted_action':
                 predicted_action = data.get('predicted_action')
                 sender_id = data.get('sender_id')
@@ -506,7 +514,18 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
                         'receiver_id': receiver_id,
                         
                     }
-                )                
+                ) 
+                
+            elif data['type'] == 'friend_request_accepted':
+                user = data.get('user')
+                await self.channel_layer.group_send(
+                    "video_call_group",
+                    {
+                        'type': 'friend_request_accepted',
+                        'user': user,
+                    }
+                )
+               
                 
 
             elif data['type'] == 'video_call_invitation':

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'styles/admin.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'styles/styles.css' %}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+
+    <title>Sign Language Detection</title>
+</head>
+
+<body>
+    <div class='admin-page-container'>
+        {% include 'admin_nav.html' %}
+
+        <div class="admin-main-content">
+            <h1>Feedbacks</h1>
+
+            <div class="tabs">
+                <button id="btnNoResponse" class="active" onclick="showTab('noResponse', this)">Unresolved Feedback</button>
+                <button id="btnHasResponse" onclick="showTab('hasResponse', this)">Adressed Feedback</button>
+            </div>
+    
+            <!-- Feedback With Responses -->
+            <div id="hasResponse" class="tab">
+                <h2>Feedback With Responses</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Feedback Type</th>
+                            <th>Message</th>
+                            <th>Response</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for feedback in has_response %}
+                            <tr>
+                                <td>{{ feedback.id }}</td>
+                                <td>{{ feedback.user.username }}</td>
+                                <td>{{ feedback.feedback_type }}</td>
+                                <td>{{ feedback.message }}</td>
+                                <td>{{ feedback.response }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5">No feedback with responses.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+    
+            <!-- Feedback Without Responses -->
+            <div id="noResponse" class="tab active">
+                <h2>Feedback Without Responses</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Feedback Type</th>
+                            <th>Message</th>
+                            <th>Date</th>
+                            <th>Action</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for feedback in no_response %}
+                            <tr>
+                                <td>{{ feedback.id }}</td>
+                                <td>{{ feedback.user.username }}</td>
+                                <td>{{ feedback.feedback_type }}</td>
+                                <td>{{ feedback.message|truncatechars:50 }}</td>
+                                <td>{{ feedback.created_at }}</td>
+
+                                <td>
+                                    <a href="#" title="Respond" class="feedback-details">
+                                     View
+                                    </a>
+                                </td>
+                                
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4">No feedback without responses.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    
+        <script>
+            function showTab(tabId, btn) {
+                // Hide all tabs
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                // Show the selected tab
+                document.getElementById(tabId).classList.add('active');
+            
+                // Remove active class from all buttons
+                document.querySelectorAll('.tabs button').forEach(button => {
+                    button.classList.remove('active');
+                });
+                // Add active class to the clicked button
+                btn.classList.add('active');
+            }
+        </script>
+</body>
+
+</html>

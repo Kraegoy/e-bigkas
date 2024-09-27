@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.utils.timezone import now
 from django.db.models import Count
 from django.db.models.functions import TruncDate
-from .models import Slideshow
+from .models import Slideshow, Feedback
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
@@ -112,3 +112,28 @@ def add_slideshow(request):
             return redirect('ebigkas_admin')  
     
     return render(request, 'admin_page.html')
+
+
+@login_required
+def admin_feedbacks(request):
+    # Fetch feedbacks with and without responses directly from the database
+    username = request.user.username
+    has_response = Feedback.objects.exclude(response__isnull=True).exclude(response__exact='')
+    no_response = Feedback.objects.filter(response__isnull=True) | Feedback.objects.filter(response__exact='')
+
+    # Render the data in the template
+    return render(request, 'admin_feedbacks.html', {
+        'username': username,
+        'has_response': has_response, 
+        'no_response': no_response
+    })
+    
+@login_required
+def edit_slideshow(request, id):
+    slideshow = get_object_or_404(Slideshow, id=id)
+    if request.method == "POST":
+        is_active = request.POST.get('is_active') == 'True'
+        slideshow.is_active = is_active
+        slideshow.save()
+        messages.success(request, "Slideshow updated successfully.")
+        return redirect('ebigkas_admin') 

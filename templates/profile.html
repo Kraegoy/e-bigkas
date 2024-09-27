@@ -25,6 +25,44 @@
                             <br><br>
                             <div class="welcome-message-container">
                                 <p class="user-info-username"><span class="user-info-username">{{ username }}</span></p>
+
+                                {% if isFriends %}
+                                    {% if status != "friends" %}
+                                        {% if IsInitiator %}
+                                            <div class="remove-friend" onclick="showConfirmPopup('{{ username }}', {{ user_id }}, 'cancel friend request to')">
+                                                Cancel friend request
+                                            </div>
+                                        {% else %}   
+                                            <div class="accept-friend" onclick="#">
+                                                Accept friend request
+                                            </div>
+                                            <div class="decline-friend" onclick="showConfirmPopup('{{ username }}', {{ user_id }}, 'decline friend request of')">
+                                                Decline friend request
+                                            </div>
+                                        {% endif %} 
+                                    {% endif %}
+
+                                {% if status == "friends" %}
+                                    <div class="remove-friend" onclick="showConfirmPopup('{{ username }}', {{ user_id }}, 'unfriend')">
+                                        Remove friend
+                                    </div>
+                                {% endif %}
+
+
+                                        
+                                    <div id="confirm-popup" class="popup hidden">
+                                        <div class="popup-content">
+                                            <p>Are you sure you want to <span id="popup-action"></span> <span id="popup-username"></span>?</p>
+                                            <form id="remove-friend-form" method="POST" action="{% url 'remove_friend' user_id %}">
+                                                {% csrf_token %}
+                                                <button type="button" class="confirm-btn" onclick="confirmUnfriend('{{ user_id }}')">Confirm</button>
+                                                <button type="button" class="cancel-btn" onclick="hideConfirmPopup()">Cancel</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    
+                                {% endif %}
+
                                 <hr>
                                 <p class="user-basic-info">First Name: <span class="user-info-span">{{ first_name }}</span></p>
                                 <p class="user-basic-info">Last Name: <span class="user-info-span">{{ last_name }}</span></p>
@@ -35,7 +73,6 @@
                                 {% if user_id == request.user.id %}
                                 <p class="edit-profile-info" id="edit-profile-info">Edit Profile</p>
                                 {% endif %}
-
                             </div>
                         </div>
 
@@ -110,6 +147,25 @@
 
     <script src="{% static 'JS/index.js' %}"></script>
     <script>
+
+        function confirmUnfriend(user_id) {
+            document.getElementById("remove-friend-form").submit(); // Then submit the form
+        }
+        
+
+        function showConfirmPopup(username, userId, action) {
+            document.getElementById("popup-action").textContent = action;
+            document.getElementById("popup-username").textContent = username;
+            document.getElementById("remove-friend-form").action = `/remove_friend/${userId}/`;
+            document.getElementById("confirm-popup").classList.remove("hidden");
+          
+        }
+    
+        function hideConfirmPopup() {
+            document.getElementById("confirm-popup").classList.add("hidden");
+        }
+
+
         document.getElementById('file').addEventListener('change', function() {
             var fileName = this.files[0].name;
             document.getElementById('file-name').textContent = fileName;

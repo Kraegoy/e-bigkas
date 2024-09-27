@@ -12,6 +12,13 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
 
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+
+
     <title>Sign Language Detection</title>
 </head>
 
@@ -22,6 +29,8 @@
 
         <div class="admin-overlay" id="admin-overlay"> </div>
         <div class="edit-dash-overlay" id="edit-dash-overlay"> </div>
+        <div class="modal-overlay"></div>
+
 
         <div class="admin-main-content">
             <div class="admin-top1">
@@ -41,7 +50,7 @@
                             <i class="fas fa-plus"></i> 
                         </div>
                         {% for slideshow in slideshows %}
-                            <a href="#">
+                            <a href="#" data-toggle="modal" data-target="#editSlideshowModal" data-id="{{ slideshow.id }}" class="edit-slideshow">
                                 <img src="{{ slideshow.image.url }}" alt="{{ slideshow.description }}" class="slideshow-picture slide-{{slideshow.is_active}}">
                             </a>
                         {% empty %}
@@ -96,6 +105,40 @@
         </div>
 
     </div>
+    
+<!-- Modal -->
+<div class="modal1" id="editSlideshowModal" tabindex="-1" role="dialog" aria-labelledby="editSlideshowModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editSlideshowModalLabel">Edit Slideshow</h5>
+                <button type="button" class="close" onclick="closeModal()">
+                    &times;
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editSlideshowForm" method="POST" action="{% url 'edit_slideshow' 0 %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="id" id="slideshow-id" value="">
+                    
+                    <div class="form-group">
+                        <label for="is_active">Is Active</label>
+                        <select name="is_active" class="form-control" id="is_active">
+                            <option value="True">Active</option>
+                            <option value="False">Inactive</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('editSlideshowModal').style.display='none'">Cancel</button>
+                <button type="submit" form="editSlideshowForm" class="btn btn-primary">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
@@ -106,6 +149,17 @@
             maxZoom: 18,
             id: 'mapbox/dark-v10',  // Use 'mapbox/light-v10' for a lighter style
         }).addTo(map);
+
+
+        function openModal() {
+            document.getElementById('editSlideshowModal').style.display = 'block';
+            document.querySelector('.modal-overlay').style.display = 'block';
+        }
+
+        function closeModal(){
+            document.getElementById('editSlideshowModal').style.display = 'none';
+            document.querySelector('.modal-overlay').style.display = 'none';
+        }
     </script>
 
 <script>
@@ -316,6 +370,14 @@
             }
         });
         
+
+        $(document).ready(function() {
+            $('.edit-slideshow').on('click', function() {
+                var slideshowId = $(this).data('id');
+                $('#slideshow-id').val(slideshowId);
+                $('#editSlideshowForm').attr('action', "{% url 'edit_slideshow' 0 %}".replace('0', slideshowId));
+            });
+        });
 
        
 </script>

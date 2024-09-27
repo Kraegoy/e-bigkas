@@ -35,4 +35,4 @@ class Feedback(models.Model):
         return f"{self.user.username} - {self.feedback_type}"
 
     class Meta:
-        ordering = ['-created_at']  # Sorts feedback by creation date descending
+        ordering = ['created_at']  # Sorts feedback by creation date ascending

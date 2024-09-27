@@ -8,17 +8,13 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from .models import Room, Friendship
-from .forms import AddFriendForm
 from django.db.models import Q
-from .forms import UserProfileForm  
 from ebigkasAdminAPP.models import Slideshow, Feedback
 from django.dispatch import receiver
 from django.db.models.signals import post_save
-from .models import UserProfile, UserForm, Conversation, Message, RecentCalls
+from .models import UserProfile, Conversation, Message, RecentCalls
 import os
 from django.utils import timezone
-from django.http import HttpResponseRedirect
-from urllib.parse import urlparse
 import logging
 logger = logging.getLogger(__name__)
 
@@ -70,8 +66,20 @@ def profile(request, user_id):
     user_profile = UserProfile.objects.get(user=user)
     friendships = Friendship.objects.filter(Q(user1=user_id) | Q(user2=user_id), status='friends')
     friends_count = friendships.count()
+
+    # Check if a friendship already exists
+    isFriends = Friendship.objects.filter(
+        Q(user1=request.user, user2=user) | Q(user1=user, user2=request.user)
+    ).first()
     
-   
+    if isFriends:
+        status = isFriends.status 
+        IsInitiator = isFriends.initiator == request.user
+        
+    else:
+        status = None
+        IsInitiator = None
+    
     user_profile_pic = user_profile.profile_picture.url if user_profile.profile_picture else None
     location = user_profile.location 
     bio = user_profile.bio
@@ -84,7 +92,10 @@ def profile(request, user_id):
         'friends_count': friends_count,
         'location' : location,
         'bio' : bio,
-        'user_id': user_id
+        'user_id': user_id,
+        'isFriends': isFriends,
+        'status': status,
+        'IsInitiator': IsInitiator,
     }
     
     return render(request, 'profile.html', context)
@@ -110,6 +121,22 @@ def add_friend(request, friend_id):
         Friendship.objects.create(user1=request.user, user2=friend, initiator=request.user)
 
         return JsonResponse({'success': True})
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+@login_required
+def remove_friend(request, friend_id):
+    if request.method == 'POST':
+        friend = get_object_or_404(User, id=friend_id)
+
+        # Check if a friendship already exists
+        existing_friendship = Friendship.objects.filter(
+            Q(user1=request.user, user2=friend) | Q(user1=friend, user2=request.user)
+        )
+
+        if existing_friendship.exists():
+            existing_friendship.delete()
+            
+        return redirect('home')
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 @login_required

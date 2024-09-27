@@ -10,6 +10,13 @@
         <nav class="admin-nav">
             <a href="{% url 'ebigkas_admin' %}">
                 <div class="feedbacks nav-opt">
+                    Home
+                    <hr>
+                </div>
+            </a>
+
+            <a href="{% url 'admin_feedbacks' %}">
+                <div class="feedbacks nav-opt">
                     feedbacks
                     <hr>
                 </div>
@@ -20,10 +27,7 @@
                 <hr>
 
             </div>
-            <div class="announce nav-opt">
-                announce
-                <hr>
-            </div>
+         
 
             <a href="{% url 'logout' %}" onclick="logout()">
                 <div class="admin_logout nav-opt">

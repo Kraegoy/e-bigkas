@@ -9,6 +9,8 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
     />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <!--  <script src="static/styles/index.js"></script>    -->
     <title>Sign Language Detection</title>
   </head>
@@ -22,8 +24,51 @@
           <div class="upper-content">
 
             <div class="news">    {% include 'slide-carousel.html' with slideshows=slideshows %} </div>
-            
-            <div class="history">DI KO PA ALAM // HISTORY</div>
+
+            <div class="learnings">
+              <div class="learnings-left">
+                <canvas id="percentageDoughnutChart" width="400" height="400"></canvas>
+                <div class="learnings-left-header" style="margin: 1em;">
+                  Your e-Bigkas learnings progress
+                </div>
+              </div>
+
+              <div class="learnings-right">
+                <div class="to-learn-header">To learn</div>
+               
+                <div class="learnings-resources">
+
+                  <div class="to-learn-elements">
+                    <div class="to-learn-text">
+                      Hello
+                    </div>
+
+                    <div class="to-learn-circle">
+                      <i class="far fa-circle"></i>
+                    </div>
+                  </div>
+
+                  <div class="to-learn-elements">
+                    <div class="to-learn-text">
+                      Thank You
+                    </div>
+
+                    <div class="to-learn-circle">
+                      <i class="far fa-circle"></i>
+                    </div>
+                  </div>
+                </div>
+
+                <a href="{% url 'learnings_view' %}" class="learn-more-href">
+                  <div class="learn-more-button">
+                    Learn now!
+                  </div>
+                </a>
+              </div>
+
+
+            </div>
+
           </div>
 
           <div class="below-content">
@@ -31,16 +76,15 @@
               <div class="recent-calls-header">Recent Calls</div>
 
               <div class="recent-calls-container" id="recent-calls-container">
-
               <!-- dynamically added here-->
-
               </div>
-
-
             </div>
+
             <div class="bottom2">DI KO PA ALAM</div>
-            <div class="bottom3">LEARNING AND RESOURCES???</div>
+            <div class="bottom3">Help the deaf community</div>
           </div>
+
+          
         </div>
 
       </main>
@@ -172,7 +216,7 @@
                             callsHTML += `
                             <div class="recent-call">
                                 ${profilePic}
-                                <div>You called <span class="recent-call-username">${call.call_with}</span> <span class="recent-call-duration">${formatDuration(call.duration)}</span></div>
+                                <div class="recent-call-info">You called <div class="recent-call-username">${call.call_with}</div> <span class="recent-call-duration">${formatDuration(call.duration)}</span></div>
                                 <div class="recent-call-timestamp">${new Date(call.timestamp).toLocaleString()}</div>
                             </div>
                             `;
@@ -181,7 +225,7 @@
                             callsHTML += `
                             <div class="recent-call">
                                 ${profilePic}
-                                <div><span class="recent-call-username">${call.call_with}</span> called you <span class="recent-call-duration">${formatDuration(call.duration)}</span></div>
+                                <div class="recent-call-info"><div class="recent-call-username">${call.call_with}</div> called you <span class="recent-call-duration">${formatDuration(call.duration)}</span></div>
                                 <div class="recent-call-timestamp">${new Date(call.timestamp).toLocaleString()}</div>
                             </div>
                             `;
@@ -205,7 +249,63 @@
     }
     
     fetchRecentCalls();
-    
+
+// Custom plugin to draw text in the center of the doughnut
+Chart.register({
+  id: 'centerText',
+  beforeDraw: function(chart) {
+      const ctx = chart.ctx;
+      const chartArea = chart.chartArea;
+
+      // Get the available chart area (excludes the legend)
+      const centerX = (chartArea.left + chartArea.right) / 2;
+      const centerY = (chartArea.top + chartArea.bottom) / 2;
+
+      ctx.restore();
+
+      const fontSize = (chartArea.height / 160).toFixed(2); // Adjust font size based on chart area
+      ctx.font = fontSize + "em sans-serif";  // Set font size and style
+      ctx.textBaseline = "middle";  // Vertically center the text
+      ctx.textAlign = "center";  // Horizontally center the text
+      ctx.fillStyle = "wheat";  // Set the text color
+
+      const text = chart.config.data.datasets[0].data[0] + "%";  // Set the percentage text
+      ctx.fillText(text, centerX, centerY);  // Draw the percentage text in the center
+      ctx.save();
+  }
+});
+
+// Get the canvas element by its ID
+const ctx = document.getElementById('percentageDoughnutChart').getContext('2d');
+
+// Set the percentage you want to shade
+const percentage = 75;
+
+// Calculate the shaded and remaining portion
+const shadedPortion = percentage;
+const remainingPortion = 100 - percentage;
+
+// Create the doughnut chart using Chart.js
+const doughnutChart = new Chart(ctx, {
+  type: 'doughnut',
+  data: {
+      labels: ['Learned', 'Remaining'],
+      datasets: [{
+          data: [shadedPortion, remainingPortion],  // Percentage values
+          backgroundColor: ['#36A2EB', '#e0e0e0'],  // Colors for shaded and remaining parts
+          borderWidth: 0,  // Remove border
+      }]
+  },
+  options: {
+      cutout: '70%',  // Adjust the size of the doughnut hole
+      responsive: true,
+      plugins: {
+          tooltip: {enabled: true},  // Disable tooltips
+          legend: {display: true},  // Hide the legend
+      }
+  }
+});
+
 
     </script>
   </body>

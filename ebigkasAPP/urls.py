@@ -27,6 +27,7 @@ from .views import (
     update_profile_info,
     feedback_view,
     send_feedback,
+    remove_friend,
     
 )
 
@@ -47,6 +48,8 @@ urlpatterns = [
     path('room/<str:room_id>/', room_detail, name='room_detail'),
     
     path('add_friend/<int:friend_id>/', add_friend, name='add_friend'),
+    path('remove_friend/<int:friend_id>/', remove_friend, name='remove_friend'),
+
     path('accept_friend_request/<int:friendship_id>/', accept_friend_request, name='accept_friend_request'),
     path('decline_friend_request/<int:friendship_id>/', decline_friend_request, name='decline_friend_request'),
     path('update-location/', update_location, name='update_location'),

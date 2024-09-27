@@ -335,18 +335,6 @@ overflow-y: hidden; /* Remove vertical scroll */
   width: 100%;
   height: 350px;
   transition: all 0.3s ease;
-
-}
-
-.news, .history{
-  width: 50%;
-  margin: 0.5em;
-  margin-bottom:0;
-  border: 1px solid #4f4f4f;
-  position: relative;
-  border-radius: 20px;
-  transition: all 0.3s ease;
-
 }
 
 .below-content{
@@ -357,6 +345,89 @@ overflow-y: hidden; /* Remove vertical scroll */
   transition: all 0.3s ease;
 
 }
+
+.news, .learnings{
+  width: 50%;
+  margin: 0.5em;
+  margin-bottom:0;
+  border: 1px solid #4f4f4f;
+  position: relative;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+
+
+.learnings{
+  display: flex;
+  background-color: rgb(21, 21, 21);
+
+}
+
+.learnings-left{
+  width: 40%;
+  padding: 1em;
+}
+.learnings-right{
+  width: 60%;
+  padding: 1em;
+
+}
+
+#percentageDoughnutChart{
+  margin: 1em;
+}
+
+
+.learnings-resources{
+  height: 70%;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  
+}
+.to-learn-elements{
+  width: 95%;
+  border: 1px solid rgb(119, 119, 119);
+  margin-bottom: 10px;
+  border-radius: 8px;
+  display: flex;
+}
+
+.to-learn-header{
+  margin-bottom: 10px;
+  font-size: 1.2em;  
+  color: wheat;
+}
+
+.to-learn-circle{
+  padding: 10px;
+  margin-left: auto;
+  color: grey;
+}
+
+.to-learn-text{
+  padding: 10px;
+  text-align: left;
+
+}
+
+.learn-more-href{
+  text-decoration: none;
+  padding: 1em;
+}
+
+.learn-more-button {
+  color: black;
+  border: 1px solid white;
+  padding: 10px;
+  border-radius: 10px;
+  width: fit-content;
+  text-align: center;
+  margin: auto; /* Center the button within the flex container */
+  background-color: wheat;
+}
+
+
 
  .bottom2, .bottom3{
   width: 37.5%;
@@ -1802,7 +1873,7 @@ font-weight: bold;
 .recent-call{
   color: whitesmoke;
   border-radius: 0.2em;
-  height: 3em;
+  height: 4.5em;
   background-color: rgb(42, 42, 41);
   border: 1px solid rgba(109, 108, 108, 0.878);
   display: flex;
@@ -1811,6 +1882,13 @@ font-weight: bold;
   margin-bottom: 7px;
   font-size: 0.9em;
 }
+
+.recent-call-info{
+  display: flex;
+  text-align: center;
+}
+
+
 
 .home-user-profile-pic{
   width: 2em;
@@ -1831,15 +1909,27 @@ font-weight: bold;
   bottom: 0;
   left: 50%;
   transform: translate(-50%);
+  margin-left: 8px;
 }
 
-.recent-call-username{
+
+.recent-call-username {
   color: wheat;
+  max-width: 8em; 
+  white-space: nowrap; 
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: start;
+  margin-left: 8px;
+  margin-right: 8px;
+
 }
+
 
 .recent-call-duration{
   color: rgb(255, 141, 141);
   font-size: 0.8em;
+  margin-left: 8px;
 }
 
 

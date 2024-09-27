@@ -401,6 +401,11 @@
             );
             userPendingRequest.classList.add("user-pending-request");
             console.log(friend_request);
+
+            const profilePicLink = document.createElement("a");
+            user_id = friend_request.user_id
+            profilePicLink.href = `/profile/${user_id}/`;
+            
             const profilepic = document.createElement("img");
             profilepic.src = friend_request.profile_picture;
             profilepic.classList.add("user-pending-profile-pic");
@@ -421,8 +426,8 @@
 
             actionConatiner.appendChild(declineInviteButton);
             actionConatiner.appendChild(acceptInviteButton);
-
-            userPendingRequest.appendChild(profilepic);
+            profilePicLink.appendChild(profilepic)
+            userPendingRequest.appendChild(profilePicLink);
             userPendingRequest.appendChild(friendRequestUsername);
             userPendingRequest.appendChild(actionConatiner);
             userPendingRequestContainer.appendChild(userPendingRequest);
@@ -442,6 +447,7 @@
                     console.log("Friend request accepted successfully");
                     showFriendRequests();
                     friends_list();
+                    sendLoadFriends(friend_request.user_id)
                   }
                 })
                 .catch((error) => console.error("Error:", error));
@@ -623,4 +629,14 @@
     }
     return cookieValue;
   }
+
+  function sendLoadFriends(user){
+    socket.send(
+      JSON.stringify({
+        type: "friend_request_accepted",
+        user: user,
+      })
+    );  
+  }
+
 </script>

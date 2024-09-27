@@ -1,3 +1,8 @@
+@media screen and (max-width: 1100px) {
+    .content-container{
+        width: 50%;
+    }
+}
 @media screen and (max-width: 768px) {
     .icon-container{
         right: -2em;
@@ -11,6 +16,7 @@
         width: 35px;
         height: 35px;
     }
+
    
 }
 
