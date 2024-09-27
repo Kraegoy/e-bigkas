@@ -24,13 +24,14 @@
                             <img class="profile-picture" src="{{ user_profile_pic }}" alt="Profile Picture" width="150px">
                             <br><br>
                             <div class="welcome-message-container">
-                                <p class="user-info-username"><span class="user-info-username">{{ username }}</span></p>
+                                <p class="user-info-username"><span class="user-info-username">{{ username }} {{status}}</span></p>
+                                
 
                                 {% if isFriends %}
                                     {% if status != "friends" %}
                                         {% if IsInitiator %}
                                             <div class="remove-friend" onclick="showConfirmPopup('{{ username }}', {{ user_id }}, 'cancel friend request to')">
-                                                Cancel friend request
+                                                Cancel friend request 
                                             </div>
                                         {% else %}   
                                             <div class="accept-friend" onclick="#">
@@ -42,11 +43,22 @@
                                         {% endif %} 
                                     {% endif %}
 
-                                {% if status == "friends" %}
-                                    <div class="remove-friend" onclick="showConfirmPopup('{{ username }}', {{ user_id }}, 'unfriend')">
-                                        Remove friend
+                                    {% if status == "friends" %}
+                                        <div class="remove-friend" onclick="showConfirmPopup('{{ username }}', {{ user_id }}, 'unfriend')">
+                                            Remove friend
+                                        </div>
+                                    {% endif %}
+                                
+                                    {% else %}
+                                    <div class="remove-friend" onclick="addFriend({{ user_id }}, this)">
+                                        Add friend
                                     </div>
+                                    
+                                    
                                 {% endif %}
+
+                                
+
 
 
                                         
@@ -61,7 +73,6 @@
                                         </div>
                                     </div>
                                     
-                                {% endif %}
 
                                 <hr>
                                 <p class="user-basic-info">First Name: <span class="user-info-span">{{ first_name }}</span></p>
@@ -149,21 +160,46 @@
     <script>
 
         function confirmUnfriend(user_id) {
-            document.getElementById("remove-friend-form").submit(); // Then submit the form
+            const form = document.getElementById("remove-friend-form");
+            const formData = new FormData(form);
+        
+            fetch(`/remove_friend/${user_id}/`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCsrfToken(),  
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                if (data.success) {
+                    
+                location.reload(); 
+
+                } else {
+                    // Handle error case (e.g., show an error message)
+                    alert(data.error || 'An error occurred. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
         }
         
-
         function showConfirmPopup(username, userId, action) {
             document.getElementById("popup-action").textContent = action;
             document.getElementById("popup-username").textContent = username;
-            document.getElementById("remove-friend-form").action = `/remove_friend/${userId}/`;
+            // You might want to store the userId in a hidden input or as a data attribute
+            document.getElementById("remove-friend-form").setAttribute('data-user-id', userId);
             document.getElementById("confirm-popup").classList.remove("hidden");
-          
         }
-    
+        
         function hideConfirmPopup() {
             document.getElementById("confirm-popup").classList.add("hidden");
         }
+        
 
 
         document.getElementById('file').addEventListener('change', function() {
@@ -210,6 +246,36 @@
         });
 
 
+        function addFriend(userId, buttonElement) {
+            fetch(`/add_friend/${userId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken(),
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                if (data.success) {
+                    location.reload(); 
+
+                } else {
+                    console.error('Error:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+        
+        
+  function getCsrfToken() {
+    const tokenElement = document.querySelector(
+      'input[name="csrfmiddlewaretoken"]'
+    );
+    return tokenElement ? tokenElement.value : "";
+  }
 
 
 

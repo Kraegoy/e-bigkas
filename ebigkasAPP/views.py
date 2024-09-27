@@ -77,7 +77,7 @@ def profile(request, user_id):
         IsInitiator = isFriends.initiator == request.user
         
     else:
-        status = None
+        status = "Not Friends"
         IsInitiator = None
     
     user_profile_pic = user_profile.profile_picture.url if user_profile.profile_picture else None
@@ -100,9 +100,6 @@ def profile(request, user_id):
     
     return render(request, 'profile.html', context)
 
-@login_required
-def people(request):
-    return render(request, 'people.html')
 
 @login_required
 def add_friend(request, friend_id):
@@ -136,7 +133,7 @@ def remove_friend(request, friend_id):
         if existing_friendship.exists():
             existing_friendship.delete()
             
-        return redirect('home')
+        return JsonResponse({'success': True})
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 @login_required
