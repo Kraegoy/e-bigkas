@@ -2,7 +2,6 @@ from django.urls import path
 from .views import (
     home, 
     profile,
-    people,
     loginPage, 
     register, 
     logout_view, 
@@ -42,7 +41,6 @@ urlpatterns = [
     path('help/', help_view, name='help'),
     path('profile/<int:user_id>/', profile, name='profile'),
     path('update_profile_info/', update_profile_info, name='update_profile_info'),
-    path('people/', people, name='people'),
 
     path('create_room/', create_room, name='create_room'),  
     path('room/<str:room_id>/', room_detail, name='room_detail'),

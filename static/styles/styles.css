@@ -318,7 +318,7 @@ overflow-y: hidden; /* Remove vertical scroll */
 .content-container{
   height: 120%;
   width: 55%;
-  overflow-y: scroll;
+  overflow-y: hidden;
   margin-left: 1em;
   margin-top: 2em;
   position: absolute;
@@ -347,7 +347,7 @@ overflow-y: hidden; /* Remove vertical scroll */
 }
 
 .news, .learnings{
-  width: 50%;
+  width: 47%;
   margin: 0.5em;
   margin-bottom:0;
   border: 1px solid #4f4f4f;
@@ -426,19 +426,30 @@ overflow-y: hidden; /* Remove vertical scroll */
   margin: auto; /* Center the button within the flex container */
   background-color: wheat;
 }
+.learn-more-button:hover{
+  font-weight: bold;
+}
 
 
 
  .bottom2, .bottom3{
-  width: 37.5%;
-  padding: 1em;
   margin: 0.5em;
-  border: 1px solid #4f4f4f;
+  border: 1px solid #777777;
+  position: relative;
+  padding-bottom: 10em;
+  border-radius: 10px;
+  background-color: rgb(24, 24, 24);
 
+}
+.bottom2{
+  width: 30%;
+}
+.bottom3{
+  width: 40%;
 }
 .bottom1{
   transition: all 0.3s ease;
-  width: 250px;
+  width: 20%;
   padding: 1em;
   margin: 0.5em;
   border: 1px solid #777777;
@@ -2256,4 +2267,90 @@ to {opacity: 1}
 .my-feedback{
   overflow-y: scroll;
   height: 85%;
+}
+
+
+
+
+
+
+#profile-card {
+  background-color: #0000003a;
+  border: 1px solid rgba(128, 128, 128, 0.181);
+  border-radius: 8px; 
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
+  text-align: center; 
+  padding: 10px;
+  margin: 20px auto; 
+  width: 50%;
+}
+
+.suggestion-profile-pic-container {
+  margin-bottom: 10px;
+}
+
+.suggested-profile-pic {
+  width: 100px; 
+  height: 100px; 
+  border-radius: 50%; 
+  object-fit: cover;
+  border: 1px solid rgba(128, 128, 128, 0.181);
+
+}
+
+#username-link {
+  text-decoration: none; /* Remove underline from link */
+  font-size: 18px; /* Font size for the username */
+  color: white; /* Dark text color */
+  font-weight: bold; /* Bold font weight */
+}
+
+#username-link:hover {
+  text-decoration: underline; /* Underline on hover */
+  color: wheat; /* Change color on hover */
+}
+
+#status {
+  font-size: 14px; /* Font size for the status */
+  color: #666; /* Gray text color */
+  margin-top: 8px; /* Space above status text */
+}
+
+.navigation {
+  margin-top: 20px; /* Space above navigation buttons */
+}
+
+
+#prev-button, #next-button {
+  background-color: wheat; /* Bootstrap primary color */
+  color: black;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 15px;
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  margin: 0 5px; /* Space between buttons */
+}
+
+#prev-button:hover, #next-button:hover {
+ font-weight: bold;
+}
+
+#prev-button:disabled, #next-button:disabled {
+  background-color: rgba(245, 222, 179, 0.715); /* Disabled button color */
+  cursor: not-allowed;
+}
+
+.suggested-header{
+  text-align: start;
+  padding: 0;
+  padding-left: 1em;
+  font-size: 0.9em;
+  color: wheat;
+}
+
+
+.space{
+  height: 100px;
 }

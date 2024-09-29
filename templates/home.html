@@ -80,8 +80,33 @@
               </div>
             </div>
 
-            <div class="bottom2">Mutual friends/ suggested </div>
+            <div class="bottom2">
+              <h2 class="suggested-header">Suggested for you</h2>
+
+              <div id="profile-card" class="profile-card">
+
+                <div class="suggestion-profile-pic-container">
+                  <a id="profile-link" href="#" onclick="goToProfile()">
+                    <img id="profile-picture" class="suggested-profile-pic" src="" alt="Profile Picture" />
+                  </a>
+                </div>
+                <a id="username-link"  href="#" onclick="goToProfile()">
+                    <span id="username"></span>
+                </a>
+                <p id="status"></p>
+              </div>
+              
+              <div class="navigation">
+                <button id="prev-button" onclick="prevSuggestion()">&#10094; </button>
+                <button id="next-button" onclick="nextSuggestion()"> &#10095;</button>
+              </div>
+
+              </div>
+              
             <div class="bottom3">Help the deaf community</div>
+          </div>
+
+          <div class="space">
           </div>
 
           
@@ -99,7 +124,7 @@
     <div id="newUserModal" class="newUserModal"></div>
 
     <script src="{% static 'JS/index.js' %}"></script>
-    <script>
+<script>
       sessionStorage.setItem("loggedInUserId", "{{ request.user.id }}");
       sessionStorage.setItem("loggedInUsername", "{{ request.user.username }}");
       var welcomeContent = document.querySelector(".welcome-content");
@@ -120,7 +145,7 @@
           const newUserModalContent = `
                 <div class="newUserModal-content">
                     <div class="Welcome-video-container" id="Welcome-video-container">
-                        <video id="Welcome-video" controls >
+                        <video id="Welcome-video" autoplay muted >
                             <source src="{% static 'tutorial_ebigkas/part1.mp4' %}" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
@@ -250,64 +275,116 @@
     
     fetchRecentCalls();
 
-// Custom plugin to draw text in the center of the doughnut
-Chart.register({
-  id: 'centerText',
-  beforeDraw: function(chart) {
-      const ctx = chart.ctx;
-      const chartArea = chart.chartArea;
+    // Custom plugin to draw text in the center of the doughnut
+    Chart.register({
+      id: 'centerText',
+      beforeDraw: function(chart) {
+          const ctx = chart.ctx;
+          const chartArea = chart.chartArea;
 
-      // Get the available chart area (excludes the legend)
-      const centerX = (chartArea.left + chartArea.right) / 2;
-      const centerY = (chartArea.top + chartArea.bottom) / 2;
+          // Get the available chart area (excludes the legend)
+          const centerX = (chartArea.left + chartArea.right) / 2;
+          const centerY = (chartArea.top + chartArea.bottom) / 2;
 
-      ctx.restore();
+          ctx.restore();
 
-      const fontSize = (chartArea.height / 160).toFixed(2); // Adjust font size based on chart area
-      ctx.font = fontSize + "em sans-serif";  // Set font size and style
-      ctx.textBaseline = "middle";  // Vertically center the text
-      ctx.textAlign = "center";  // Horizontally center the text
-      ctx.fillStyle = "wheat";  // Set the text color
+          const fontSize = (chartArea.height / 160).toFixed(2); // Adjust font size based on chart area
+          ctx.font = fontSize + "em sans-serif";  // Set font size and style
+          ctx.textBaseline = "middle";  // Vertically center the text
+          ctx.textAlign = "center";  // Horizontally center the text
+          ctx.fillStyle = "wheat";  // Set the text color
 
-      const text = chart.config.data.datasets[0].data[0] + "%";  // Set the percentage text
-      ctx.fillText(text, centerX, centerY);  // Draw the percentage text in the center
-      ctx.save();
+          const text = chart.config.data.datasets[0].data[0] + "%";  // Set the percentage text
+          ctx.fillText(text, centerX, centerY);  // Draw the percentage text in the center
+          ctx.save();
+      }
+    });
+
+    // Get the canvas element by its ID
+    const ctx = document.getElementById('percentageDoughnutChart').getContext('2d');
+
+    // Set the percentage you want to shade
+    const percentage = 75;
+
+    // Calculate the shaded and remaining portion
+    const shadedPortion = percentage;
+    const remainingPortion = 100 - percentage;
+
+    // Create the doughnut chart using Chart.js
+    const doughnutChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+          labels: ['Learned', 'Remaining'],
+          datasets: [{
+              data: [shadedPortion, remainingPortion],  // Percentage values
+              backgroundColor: ['#36A2EB', '#e0e0e0'],  // Colors for shaded and remaining parts
+              borderWidth: 0,  // Remove border
+          }]
+      },
+      options: {
+          cutout: '70%',  // Adjust the size of the doughnut hole
+          responsive: true,
+          plugins: {
+              tooltip: {enabled: true},  // Disable tooltips
+              legend: {display: true},  // Hide the legend
+          }
+      }
+    });
+
+</script>
+
+
+<script>
+  let currentIndex = 0; // Start at the first suggestion
+  const friendSuggestions = {{ friend_suggestion|safe }}; // Pass the list of suggestions to JavaScript
+  
+  function updateProfile() {
+      const suggestion = friendSuggestions[currentIndex]; // Get the current suggestion
+      document.getElementById('profile-picture').src = suggestion.profile_picture;
+      document.getElementById('username').innerText = suggestion.username;
+      document.getElementById('status').innerText = suggestion.status;
+      
+      // Update profile link using the user_id
+      const profileLink = document.getElementById('profile-link');
+      profileLink.href = `/profile/${suggestion.id}/`; // Build the URL based on id
+  
+      // Update username link using the id
+      const usernameLink = document.getElementById('username-link');
+      usernameLink.href = `/profile/${suggestion.id}/`; // Same profile URL for the username
+  
+      updateButtonStates(); // Update button states after changing the profile
   }
-});
-
-// Get the canvas element by its ID
-const ctx = document.getElementById('percentageDoughnutChart').getContext('2d');
-
-// Set the percentage you want to shade
-const percentage = 75;
-
-// Calculate the shaded and remaining portion
-const shadedPortion = percentage;
-const remainingPortion = 100 - percentage;
-
-// Create the doughnut chart using Chart.js
-const doughnutChart = new Chart(ctx, {
-  type: 'doughnut',
-  data: {
-      labels: ['Learned', 'Remaining'],
-      datasets: [{
-          data: [shadedPortion, remainingPortion],  // Percentage values
-          backgroundColor: ['#36A2EB', '#e0e0e0'],  // Colors for shaded and remaining parts
-          borderWidth: 0,  // Remove border
-      }]
-  },
-  options: {
-      cutout: '70%',  // Adjust the size of the doughnut hole
-      responsive: true,
-      plugins: {
-          tooltip: {enabled: true},  // Disable tooltips
-          legend: {display: true},  // Hide the legend
+  
+  function nextSuggestion() {
+      if (currentIndex < friendSuggestions.length - 1) {
+          currentIndex++;
+          updateProfile();
       }
   }
-});
+  
+  function prevSuggestion() {
+      if (currentIndex > 0) {
+          currentIndex--;
+          updateProfile();
+      }
+  }
+  
+  function goToProfile() {
+      const suggestion = friendSuggestions[currentIndex];
+      window.location.href = `/profile/${suggestion.id}/`; // Navigate to the profile
+  }
+  
+  function updateButtonStates() {
+      document.getElementById('prev-button').disabled = currentIndex === 0; // Disable if at the start
+      document.getElementById('next-button').disabled = currentIndex === friendSuggestions.length - 1; // Disable if at the end
+  }
+  
+  // Initial load
+  updateProfile();
+  
 
+</script>
 
-    </script>
   </body>
 
   <footer class="footer">

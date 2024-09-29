@@ -16,6 +16,7 @@ from .models import UserProfile, Conversation, Message, RecentCalls
 import os
 from django.utils import timezone
 import logging
+import random
 logger = logging.getLogger(__name__)
 
 
@@ -213,6 +214,47 @@ def friends_list(request):
 
     # Return the friends list as JSON
     return JsonResponse({'success': True, 'friends': friends})
+
+
+def get_friend_suggestions(user):
+    # Step 1: Get the user's friends (IDs)
+    user_friendships = Friendship.objects.filter(
+        Q(user1=user) | Q(user2=user),
+        Q(status='friends') | Q(status='pending')
+    )
+    user_friends_ids = set()
+    
+    for friendship in user_friendships:
+        if friendship.user1 == user:
+            user_friends_ids.add(friendship.user2.id)
+        else:
+            user_friends_ids.add(friendship.user1.id)
+
+    # Step 2: Get the friends of those friends (suggestions), excluding the user's friends and the user themselves
+    friend_suggestions = set()
+    for friend_id in user_friends_ids:
+        friend_friendships = Friendship.objects.filter(Q(user1_id=friend_id) | Q(user2_id=friend_id), status='friends')
+        for friendship in friend_friendships:
+            if friendship.user1 != user and friendship.user1.id not in user_friends_ids and friendship.user1.id != user.id:
+                friend_suggestions.add(friendship.user1)
+            if friendship.user2 != user and friendship.user2.id not in user_friends_ids and friendship.user2.id != user.id:
+                friend_suggestions.add(friendship.user2)
+
+    # Step 3: Convert the suggestions into a list of user info
+    suggestions_list = []
+    for suggestion in friend_suggestions:
+        suggestions_list.append({
+            'id': suggestion.id,
+            'username': suggestion.username,
+            'profile_picture': suggestion.userprofile.profile_picture.url if hasattr(suggestion, 'userprofile') else None,
+            'status': suggestion.userprofile.status
+        })
+    
+    random.shuffle(suggestions_list)
+
+    return suggestions_list
+
+
 
 
 
@@ -469,9 +511,9 @@ def home(request):
     
     # Retrieve active slideshows first, ordered by most recent
     slideshows = Slideshow.objects.filter(is_active=True).order_by('-created_at')
+    friend_suggestion = get_friend_suggestions(request.user)    
     
-    
-    return render(request, 'home.html', {'isNewUser': isNewUser, 'user_profile_pic': user_profile_pic, 'slideshows': slideshows})
+    return render(request, 'home.html', {'isNewUser': isNewUser, 'user_profile_pic': user_profile_pic, 'slideshows': slideshows, 'friend_suggestion': friend_suggestion})
 
 
 @login_required
