@@ -26,36 +26,39 @@
                             <div class="welcome-message-container">
                                 <p class="user-info-username"><span class="user-info-username">{{ username }}</span></p>
                                 
+                                {% if user_id != request.user.id %}
 
-                                {% if isFriends %}
-                                    {% if status != "friends" %}
-                                        {% if IsInitiator %}
-                                            <div class="remove-friend" onclick="showConfirmPopup('{{ username }}', {{ user_id }}, 'cancel friend request to')">
-                                                Cancel friend request 
-                                            </div>
-                                        {% else %}   
-                                            <div class="accept-friend" onclick="#">
-                                                Accept friend request
-                                            </div>
-                                            <div class="decline-friend" onclick="showConfirmPopup('{{ username }}', {{ user_id }}, 'decline friend request of')">
-                                                Decline friend request
-                                            </div>
-                                        {% endif %} 
-                                    {% endif %}
+                                    {% if isFriends %}
+                                        {% if status != "friends" %}
+                                            {% if IsInitiator %}
+                                                <div class="remove-friend" onclick="showConfirmPopup('{{ username }}', {{ user_id }}, 'cancel friend request to')">
+                                                    Cancel friend request 
+                                                </div>
+                                            {% else %}   
+                                                <div class="accept-friend" onclick="#">
+                                                    Accept friend request
+                                                </div>
+                                                <div class="decline-friend" onclick="showConfirmPopup('{{ username }}', {{ user_id }}, 'decline friend request of')">
+                                                    Decline friend request
+                                                </div>
+                                            {% endif %} 
+                                        {% endif %}
 
-                                    {% if status == "friends" %}
-                                        <div class="remove-friend" onclick="showConfirmPopup('{{ username }}', {{ user_id }}, 'unfriend')">
-                                            Remove friend
+                                        {% if status == "friends" %}
+                                            <div class="remove-friend" onclick="showConfirmPopup('{{ username }}', {{ user_id }}, 'unfriend')">
+                                                Remove friend
+                                            </div>
+                                        {% endif %}
+                                    
+                                        {% else %}
+                                        <div class="remove-friend" onclick="addFriend({{ user_id }}, this)">
+                                            Add friend
                                         </div>
+                                        
+                                        
                                     {% endif %}
-                                
-                                    {% else %}
-                                    <div class="remove-friend" onclick="addFriend({{ user_id }}, this)">
-                                        Add friend
-                                    </div>
-                                    
-                                    
                                 {% endif %}
+
 
                                 
 

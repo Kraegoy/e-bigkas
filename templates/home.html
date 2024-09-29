@@ -84,6 +84,7 @@
               <h2 class="suggested-header">Suggested for you</h2>
 
               <div id="profile-card" class="profile-card">
+                {% if friend_suggestion %}
 
                 <div class="suggestion-profile-pic-container">
                   <a id="profile-link" href="#" onclick="goToProfile()">
@@ -94,6 +95,9 @@
                     <span id="username"></span>
                 </a>
                 <p id="status"></p>
+                {% else %}
+                <p style="color: grey;">To receive friend suggestions, please add more friends to your profile.</p>
+                {% endif %}
               </div>
               
               <div class="navigation">
@@ -338,6 +342,7 @@
   let currentIndex = 0; // Start at the first suggestion
   const friendSuggestions = {{ friend_suggestion|safe }}; // Pass the list of suggestions to JavaScript
   
+ 
   function updateProfile() {
       const suggestion = friendSuggestions[currentIndex]; // Get the current suggestion
       document.getElementById('profile-picture').src = suggestion.profile_picture;

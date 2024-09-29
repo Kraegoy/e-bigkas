@@ -377,107 +377,107 @@
   }
 
   function loadFriendRequests() {
-    console.log("showFriendRequests");
     fetch("/pending_friendships_list/")
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          const pendingDropdown = document.getElementById(
-            "pending-friendships-dropdown"
-          );
-          const pendingFriendshipsText = document.getElementById(
-            "pending-friendships-text"
-          );
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.success) {
+                const pendingDropdown = document.getElementById("pending-friendships-dropdown");
+                const pendingFriendshipsText = document.getElementById("pending-friendships-text");
 
-          pendingDropdown.innerHTML = "";
-          pendingDropdown.appendChild(pendingFriendshipsText);
+                // Clear previous content
+                pendingDropdown.innerHTML = "";
+                pendingDropdown.appendChild(pendingFriendshipsText);
 
-          data.pending_user_info.forEach((friend_request) => {
-            const userPendingRequestContainer = document.createElement("div");
-            const userPendingRequest = document.createElement("div");
+                if (data.pending_user_info.length === 0) {
+                    // Create a message for no pending requests
+                    const noRequestsMessage = document.createElement("div");
+                    noRequestsMessage.classList.add("no-requests-message");
+                    noRequestsMessage.textContent = "You have no pending friend requests.";
+                    pendingDropdown.appendChild(noRequestsMessage);
+                } else {
+                    // Process pending friend requests
+                    data.pending_user_info.forEach((friend_request) => {
+                        const userPendingRequestContainer = document.createElement("div");
+                        const userPendingRequest = document.createElement("div");
 
-            userPendingRequestContainer.classList.add(
-              "user-pending-request-container"
-            );
-            userPendingRequest.classList.add("user-pending-request");
-            console.log(friend_request);
+                        userPendingRequestContainer.classList.add("user-pending-request-container");
+                        userPendingRequest.classList.add("user-pending-request");
 
-            const profilePicLink = document.createElement("a");
-            user_id = friend_request.user_id
-            profilePicLink.href = `/profile/${user_id}/`;
-            
-            const profilepic = document.createElement("img");
-            profilepic.src = friend_request.profile_picture;
-            profilepic.classList.add("user-pending-profile-pic");
+                        const profilePicLink = document.createElement("a");
+                        const user_id = friend_request.user_id;
+                        profilePicLink.href = `/profile/${user_id}/`;
 
-            const actionConatiner = document.createElement("div");
-            const acceptInviteButton = document.createElement("div");
-            const declineInviteButton = document.createElement("div");
+                        const profilepic = document.createElement("img");
+                        profilepic.src = friend_request.profile_picture;
+                        profilepic.classList.add("user-pending-profile-pic");
 
-            actionConatiner.classList.add("action-button-container");
-            acceptInviteButton.classList.add("accept-invite-button");
-            declineInviteButton.classList.add("decline-invite-button");
-            acceptInviteButton.textContent = "✓";
-            declineInviteButton.textContent = "✗";
+                        const actionContainer = document.createElement("div");
+                        const acceptInviteButton = document.createElement("div");
+                        const declineInviteButton = document.createElement("div");
 
-            const friendRequestUsername = document.createElement("div");
-            friendRequestUsername.classList.add("friend-request-info");
-            friendRequestUsername.textContent = friend_request.username;
+                        actionContainer.classList.add("action-button-container");
+                        acceptInviteButton.classList.add("accept-invite-button");
+                        declineInviteButton.classList.add("decline-invite-button");
+                        acceptInviteButton.textContent = "✓";
+                        declineInviteButton.textContent = "✗";
 
-            actionConatiner.appendChild(declineInviteButton);
-            actionConatiner.appendChild(acceptInviteButton);
-            profilePicLink.appendChild(profilepic)
-            userPendingRequest.appendChild(profilePicLink);
-            userPendingRequest.appendChild(friendRequestUsername);
-            userPendingRequest.appendChild(actionConatiner);
-            userPendingRequestContainer.appendChild(userPendingRequest);
-            pendingDropdown.appendChild(userPendingRequestContainer);
+                        const friendRequestUsername = document.createElement("div");
+                        friendRequestUsername.classList.add("friend-request-info");
+                        friendRequestUsername.textContent = friend_request.username;
 
-            acceptInviteButton.addEventListener("click", function () {
-              fetch(`/accept_friend_request/${friend_request.friendship_id}/`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  "X-CSRFToken": getCookie("csrftoken"),
-                },
-              })
-                .then((response) => response.json())
-                .then((data) => {
-                  if (data.success) {
-                    console.log("Friend request accepted successfully");
-                    showFriendRequests();
-                    friends_list();
-                    sendLoadFriends(friend_request.user_id)
-                  }
-                })
-                .catch((error) => console.error("Error:", error));
-            });
+                        actionContainer.appendChild(declineInviteButton);
+                        actionContainer.appendChild(acceptInviteButton);
+                        profilePicLink.appendChild(profilepic);
+                        userPendingRequest.appendChild(profilePicLink);
+                        userPendingRequest.appendChild(friendRequestUsername);
+                        userPendingRequest.appendChild(actionContainer);
+                        userPendingRequestContainer.appendChild(userPendingRequest);
+                        pendingDropdown.appendChild(userPendingRequestContainer);
 
-            declineInviteButton.addEventListener("click", function () {
-              fetch(
-                `/decline_friend_request/${friend_request.friendship_id}/`,
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": getCookie("csrftoken"),
-                  },
+                        acceptInviteButton.addEventListener("click", function () {
+                            fetch(`/accept_friend_request/${friend_request.friendship_id}/`, {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "X-CSRFToken": getCookie("csrftoken"),
+                                },
+                            })
+                                .then((response) => response.json())
+                                .then((data) => {
+                                    if (data.success) {
+                                        console.log("Friend request accepted successfully");
+                                        showFriendRequests();
+                                        friends_list();
+                                        sendLoadFriends(friend_request.user_id);
+                                    }
+                                })
+                                .catch((error) => console.error("Error:", error));
+                        });
+
+                        declineInviteButton.addEventListener("click", function () {
+                            fetch(`/decline_friend_request/${friend_request.friendship_id}/`, {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "X-CSRFToken": getCookie("csrftoken"),
+                                },
+                            })
+                                .then((response) => response.json())
+                                .then((data) => {
+                                    if (data.success) {
+                                        console.log("Friend request declined successfully");
+                                        showFriendRequests();
+                                    }
+                                })
+                                .catch((error) => console.error("Error:", error));
+                        });
+                    });
                 }
-              )
-                .then((response) => response.json())
-                .then((data) => {
-                  if (data.success) {
-                    console.log("Friend request declined successfully");
-                    showFriendRequests();
-                  }
-                })
-                .catch((error) => console.error("Error:", error));
-            });
-          });
-        }
-      })
-      .catch((error) => console.error("Error:", error));
-  }
+            }
+        })
+        .catch((error) => console.error("Error:", error));
+}
+
 
   let ako = sessionStorage.getItem("loggedInUserId");
   function loadFriendsConversations() {
