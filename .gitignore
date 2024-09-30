@@ -1,8 +1,5 @@
 # Ignore virtual environment directory
 ebigkas-venv/
 
-# Ignore database file
-db.sqlite3
-
 text.txt
 
