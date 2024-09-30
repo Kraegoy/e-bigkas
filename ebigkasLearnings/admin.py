@@ -1,3 +1,10 @@
 from django.contrib import admin
+from .models import Learning, UserLearning
 
-# Register your models here.
+admin.site.register(Learning)
+admin.site.register(UserLearning)
+
+
+
+
+

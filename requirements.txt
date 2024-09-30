@@ -1,4 +1,3 @@
-opencv-python
 mediapipe
 tensorflow==2.12.0rc0
 django

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'styles/styles.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'styles/learnings.css' %}">
+
+    <title>Sign Language Detection</title>
+</head>
+
+
+<body>
+    <div class="container">
+        {% include 'nav.html' %}
+        {% include 'topnav.html' %}
+
+        <div class="learnings-container">
+            <div class="learnings-video-container">
+                
+                <div class="canvas-container">
+                    <canvas id="canvas"></canvas>
+                </div>
+                <div class="border-indicator-container">
+                    <div class="border-indicator">
+                    </div>
+                </div>
+                <button id="toggleButton" class="startRecogButton">Start Recognition</button>
+                <video id="localVideo" style="display: none;" autoplay muted>
+
+
+            </div>
+
+            <div class="learnings-elements-container">
+            </div>
+
+        </div>
+        
+    </div>
+
+
+    <script src="{% static 'JS/learnings.js' %}"></script>
+    
+    <script src="{% static 'JS/libs/camera_utils.js' %}"></script>
+    <script src="{% static 'JS/libs/control_utils.js' %}"></script>
+    <script src="{% static 'JS/libs/drawing_utils.js' %}"></script>
+    <script src="{% static 'JS/libs/holistic.js' %}"></script>
+
+
+
+    <script type="module">
+        let isRecognizing = false;
+        const leftNav = document.querySelector('.nav-container');
+        const canvasElement = document.getElementById('canvas');
+        const canvasCtx = canvasElement.getContext('2d');
+        const mirroredCanvas = document.createElement('canvas'); 
+        const mirroredCtx = mirroredCanvas.getContext('2d');   
+        const videoElement = document.getElementById('localVideo');
+        const recognitionButton = document.getElementById('toggleButton');
+        
+        function closeNav() {
+            leftNav.classList.add('menu-opened');
+        }
+        
+        function openNav() {
+            leftNav.classList.remove('menu-opened');
+        }
+        
+        function mirrorVideoFrame(videoElement) {
+            mirroredCanvas.width = videoElement.videoWidth;
+            mirroredCanvas.height = videoElement.videoHeight;
+        
+            mirroredCtx.translate(mirroredCanvas.width, 0);
+            mirroredCtx.scale(-1, 1);
+            mirroredCtx.drawImage(videoElement, 0, 0, mirroredCanvas.width, mirroredCanvas.height);
+            
+            return mirroredCanvas;
+        }
+        
+        const maxSequenceLength = 23;
+        let sequence = [];
+        let isCooldown = false; // Flag to track cooldown status
+        let isFirstSequence = true;
+        
+        function onResults(results) {
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+        
+            if (isRecognizing) {
+                drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, { color: '#00FF00', lineWidth: 0.1 });
+                drawConnectors(canvasCtx, results.faceLandmarks, FACEMESH_TESSELATION, { color: '#C0C0C070', lineWidth: 0.1 });
+                drawConnectors(canvasCtx, results.leftHandLandmarks, HAND_CONNECTIONS, { color: '#CC0000', lineWidth: 0.5 });
+                drawConnectors(canvasCtx, results.rightHandLandmarks, HAND_CONNECTIONS, { color: '#00CC00', lineWidth: 0.5 });
+                drawLandmarks(canvasCtx, results.poseLandmarks, { color: 'rgba(0,0,0,0)', lineWidth: 0 });
+                drawLandmarks(canvasCtx, results.faceLandmarks, { color: 'rgba(0,0,0,0)', lineWidth: 0 });
+                drawLandmarks(canvasCtx, results.leftHandLandmarks, { color: 'rgba(0,0,0,0)', lineWidth: 0 });
+                drawLandmarks(canvasCtx, results.rightHandLandmarks, { color: 'rgba(0,0,0,0)', lineWidth: 0 });
+            }
+        
+            canvasCtx.restore();
+        
+            // Check if we are in cooldown
+            if (!isCooldown) {
+                const keypoints = extractKeypoints(results);
+                sequence.push(keypoints);
+        
+                updateBorder(sequence.length, maxSequenceLength);
+                
+                
+                if (sequence.length === maxSequenceLength) {
+                    if (isFirstSequence){
+                        isFirstSequence = false;
+                        isCooldown = true; // Set cooldown flag
+                        sequence = [];
+                        console.log("not sent")
+                         // Start the countdown
+                        let count = 3; // Start from 3
+                        if(isRecognizing){
+
+                            const countdownInterval = setInterval(() => {
+                                if (count > 0) {
+                                    drawCountdown(count); // Display the current count
+                                    count--; // Decrease the count
+                                } else {
+                                    clearInterval(countdownInterval); // Stop the interval when done
+                                    drawCountdown(""); // Display "Ready!"
+                                    setTimeout(() => {
+                                        isCooldown = false; // Reset cooldown flag after 3 seconds
+                                        console.log("Cooldown finished, ready to add to sequence again");
+                                    }, 100); // Cooldown period
+                                }
+                            }, 1000); // Update every second (1000 milliseconds)
+
+                          }
+                    
+                    }
+                    else{
+                        
+                        isCooldown = true; // Set cooldown flag
+                        sequence = [];
+            
+                        // Start the countdown
+                        let count = 3; // Start from 3
+                        if(isRecognizing){
+                            console.log("sent")
+
+                            const countdownInterval = setInterval(() => {
+                                if (count > 0) {
+                                    drawCountdown(count); // Display the current count
+                                    count--; // Decrease the count
+                                } else {
+                                    clearInterval(countdownInterval); // Stop the interval when done
+                                    drawCountdown(""); // Display "Ready!"
+                                    setTimeout(() => {
+                                        isCooldown = false; // Reset cooldown flag after 3 seconds
+                                        console.log("Cooldown finished, ready to add to sequence again");
+                                    }, 100); // Cooldown period
+                                }
+                            }, 1000); // Update every second (1000 milliseconds)
+
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Function to draw the countdown in the center of the canvas-container
+        function drawCountdown(count) {
+            // Create a countdown element
+            const countdownElement = document.createElement('div');
+            countdownElement.style.position = 'absolute';
+            countdownElement.style.top = '50%';
+            countdownElement.style.left = '50%';
+            countdownElement.style.transform = 'translate(-50%, -50%)';
+            countdownElement.style.fontSize = '100px';
+            countdownElement.style.color = 'yellowgreen';
+            countdownElement.style.fontWeight = 'bold';
+            countdownElement.style.zIndex = '10'; // Ensure it's above other elements
+            countdownElement.textContent = count;
+        
+            // Append the countdown element to the canvas container
+            const canvasContainer = document.querySelector('.canvas-container');
+            canvasContainer.appendChild(countdownElement); 
+        
+            // Remove the countdown after 1 second
+            setTimeout(() => {
+                countdownElement.remove();
+            }, 1000);
+        }
+        
+        
+        function updateBorder(currentLength, maxLength) {
+            const percentage = currentLength / maxLength; // Calculate the current percentage
+            const borderIndicator = document.querySelector('.border-indicator');
+            
+            // Calculate the width based on percentage
+            const widthPercentage = percentage * 100; // Convert to percentage
+        
+            // Set the width of the border indicator
+            borderIndicator.style.width = `${widthPercentage}%`;
+            
+            // Optional: Reset the width when the max sequence length is reached
+            if (currentLength >= maxLength) {
+                borderIndicator.style.width = '0%';
+                setTimeout(() => {
+                }, 3000); // Cooldown time in milliseconds
+            }
+        }
+        
+        
+            
+        function extractKeypoints(results) {
+            const pose = results.poseLandmarks ? 
+                results.poseLandmarks.map(landmark => [landmark.x, landmark.y, landmark.z, landmark.visibility]).flat() :
+                new Array(33 * 4).fill(0);
+        
+            const face = results.faceLandmarks ? 
+                results.faceLandmarks.slice(0, 468).map(landmark => [landmark.x, landmark.y, landmark.z]).flat() :
+                new Array(468 * 3).fill(0);
+        
+            const leftHand = results.leftHandLandmarks ? 
+                results.leftHandLandmarks.map(landmark => [landmark.x, landmark.y, landmark.z]).flat() :
+                new Array(21 * 3).fill(0);
+        
+            const rightHand = results.rightHandLandmarks ? 
+                results.rightHandLandmarks.map(landmark => [landmark.x, landmark.y, landmark.z]).flat() :
+                new Array(21 * 3).fill(0);
+        
+            return [].concat(pose, face, leftHand, rightHand);
+        }
+        
+        const holistic = new Holistic({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`
+        });
+        
+        holistic.setOptions({
+            modelComplexity: 1,
+            smoothLandmarks: false,
+            enableSegmentation: false,
+            smoothSegmentation: false,
+            refineFaceLandmarks: false,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5,
+        });
+        
+        holistic.onResults(onResults);
+        
+        const camera = new Camera(videoElement, {
+            onFrame: async () => {
+                if (isRecognizing) {
+                    const mirroredCanvas = mirrorVideoFrame(videoElement);
+                    await holistic.send({ image: mirroredCanvas });
+                }
+            },
+            width: 1280,
+            height: 720,
+        });
+        
+        recognitionButton.addEventListener('click', async function() {
+            if (!isRecognizing) {
+                closeNav();
+                await camera.start();
+
+                recognitionButton.innerHTML = "Stop Recognition"; 
+            } else {
+                openNav();
+                await camera.stop();
+                canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height); 
+                sequence = [];
+                recognitionButton.innerHTML = "Start Recognition"; 
+            }
+            isRecognizing = !isRecognizing;
+        });
+        
+    </script>
+</body>
+</html>

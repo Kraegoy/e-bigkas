@@ -34,29 +34,31 @@
               </div>
 
               <div class="learnings-right">
-                <div class="to-learn-header">To learn</div>
+                <div class="to-learn-header">To learn: {{ not_learned_count }}</div>
                
                 <div class="learnings-resources">
-
+                  {% for learning in not_learned_learnings %}
                   <div class="to-learn-elements">
                     <div class="to-learn-text">
-                      Hello
+                      {{ learning.title }}
                     </div>
 
                     <div class="to-learn-circle">
                       <i class="far fa-circle"></i>
                     </div>
                   </div>
-
+                  {% empty %}
                   <div class="to-learn-elements">
                     <div class="to-learn-text">
-                      Thank You
+                      You have learned all our resources!
                     </div>
 
                     <div class="to-learn-circle">
                       <i class="far fa-circle"></i>
                     </div>
                   </div>
+                  {% endfor %}
+  
                 </div>
 
                 <a href="{% url 'learnings_view' %}" class="learn-more-href">
@@ -307,8 +309,7 @@
     // Get the canvas element by its ID
     const ctx = document.getElementById('percentageDoughnutChart').getContext('2d');
 
-    // Set the percentage you want to shade
-    const percentage = 75;
+    const percentage = {{ percentage_learned|floatformat:2 }};
 
     // Calculate the shaded and remaining portion
     const shadedPortion = percentage;

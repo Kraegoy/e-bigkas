@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from .models import Room, Friendship
 from django.db.models import Q
 from ebigkasAdminAPP.models import Slideshow, Feedback
+from ebigkasLearnings.models import Learning, UserLearning
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from .models import UserProfile, Conversation, Message, RecentCalls
@@ -501,8 +502,6 @@ def loginPage(request):
     context = {'page': page}
     return render(request, 'login.html', context)
 
-
-
 @login_required
 def home(request):
     userProfile = UserProfile.objects.get(user=request.user)  # Get the UserProfile object for the current user
@@ -511,9 +510,37 @@ def home(request):
     
     # Retrieve active slideshows first, ordered by most recent
     slideshows = Slideshow.objects.filter(is_active=True).order_by('-created_at')
-    friend_suggestion = get_friend_suggestions(request.user)    
+    friend_suggestion = get_friend_suggestions(request.user)  
     
-    return render(request, 'home.html', {'isNewUser': isNewUser, 'user_profile_pic': user_profile_pic, 'slideshows': slideshows, 'friend_suggestion': friend_suggestion})
+    # Retrieve all learnings
+    all_learnings = Learning.objects.all()
+    
+    # Retrieve UserLearning records for the current user
+    learned_learnings = UserLearning.objects.filter(user=request.user).select_related('learning')
+    
+    # Calculate learned and not learned
+    learned_ids = set(learning.learning.id for learning in learned_learnings)
+    total_learnings = all_learnings.count()
+    learned_count = len(learned_ids)
+    not_learned_count = total_learnings - learned_count
+    
+    # Calculate percentage
+    percentage_learned = (learned_count / total_learnings * 100) if total_learnings > 0 else 0
+
+    # Get not learned learnings
+    not_learned_learnings = all_learnings.exclude(id__in=learned_ids)
+
+    # Pass the learning data to the template
+    return render(request, 'home.html', {
+        'isNewUser': isNewUser,
+        'user_profile_pic': user_profile_pic,
+        'slideshows': slideshows,
+        'friend_suggestion': friend_suggestion,
+        'learned_count': learned_count,
+        'not_learned_count': not_learned_count,
+        'percentage_learned': percentage_learned,
+        'not_learned_learnings': not_learned_learnings,
+    })
 
 
 @login_required
