@@ -6,5 +6,3 @@ db.sqlite3
 
 text.txt
 
-# Ignore media files
-media/

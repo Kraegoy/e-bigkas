@@ -992,6 +992,7 @@ async function startRecordingCamera() {
         if (isCameraOpen) {
                 await camera.stop();
                 stopRecordingCamera();
+                isCameraOpen = false;
                 cameraBtn.style.backgroundColor = 'rgb(255, 80, 80, 1)'; 
                 openNav();
                 setTimeout(function() {
@@ -1007,13 +1008,15 @@ async function startRecordingCamera() {
                 cameraBtn.style.backgroundColor = 'rgba(245, 222, 179, 0.886)'; 
                 closeNav();
                 await camera.stop();
+
                 await startRecordingCamera();
+                isCameraOpen = true;
+
             }
-            isCameraOpen = !isCameraOpen;
         });
 
         recognitionButton.addEventListener('click', async function() {
-            if (true) {
+            if (isCameraOpen) {
                 if (!isRecognizing) { // Start recognition
                     closeNav();
                     localVideo.style.display = 'none'; // Hide video for the sender
