@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'styles/styles.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'styles/settings.css' %}">
+
+    <title>Sign Language Detection</title>
+</head>
+
+
+<body>
+    <div class="container">
+        {% include 'nav.html' %}
+        {% include 'topnav.html' %}
+
+        <div class="settings-container">
+            <h2>Verify Your Email Address</h2>
+
+                <!-- Messages -->
+                {% if messages %}
+                    <ul class="messages">
+                        {% for message in messages %}
+                            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                <form method="POST" action="">
+                    {% csrf_token %}
+                    <div>
+                        <label for="verification_code">Verification Code:</label>
+                        <input type="text" id="verification_code" name="verification_code" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Verify Email</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+
+
+</body>
+</html>

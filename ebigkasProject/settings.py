@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -157,3 +158,12 @@ LOGIN_REDIRECT_URL = '/'
 
 SESSION_COOKIE_AGE = 259200  # 3 days in seconds
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+# Email configuration in settings.py
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER="ebigkas1@gmail.com"
+EMAIL_HOST_PASSWORD="rwno kmun mcvs twvj"
+DEFAULT_FROM_EMAIL="ebigkas1@gmail.com"

@@ -15,7 +15,11 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from .models import UserProfile, Conversation, Message, RecentCalls
 import os
+from django.core.mail import send_mail
+from django.utils.crypto import get_random_string
+from django.conf import settings
 from django.utils import timezone
+from django.contrib.auth import update_session_auth_hash
 import logging
 import random
 logger = logging.getLogger(__name__)
@@ -654,6 +658,103 @@ def update_location(request):
         return redirect('profile', request.user.id)  
 
     return render(request, 'profile.html')
+
+@login_required
+def settings_view(request):
+    if request.method == 'POST':
+        # Update Username and Email
+        if 'update_info' in request.POST:
+            new_username = request.POST.get('username')
+            new_email = request.POST.get('email')
+
+            # Track if verification code is sent
+            verification_sent = False
+
+            # Check if the username has changed
+            if new_username and new_username != request.user.username:
+                request.user.username = new_username
+                messages.success(request, f'Your username has been updated to {new_username}.')
+
+            # Check if the email has changed
+            if new_email and new_email != request.user.email:
+                # Generate a random verification code
+                verification_code = get_random_string(6, allowed_chars='0123456789')
+                
+                # Save the verification code and new email to the user's session
+                request.session['verification_code'] = verification_code
+                request.session['new_email'] = new_email
+
+                try:
+                    # Send the verification email
+                    send_mail(
+                        'Verify your email address',
+                        f'Your verification code is {verification_code}',
+                        settings.DEFAULT_FROM_EMAIL,
+                        [new_email],
+                        fail_silently=False,
+                    )
+                    messages.success(request, 'A verification code has been sent to your new email address. Please enter it to confirm the update.')
+                    verification_sent = True
+                except Exception as e:
+                    messages.error(request, f'An error occurred while sending the email: {str(e)}')
+
+            # Save changes to the user if username was updated
+            if new_username and new_username != request.user.username:
+                request.user.save()
+
+            # Redirect to verification page if email verification was sent
+            if verification_sent:
+                return redirect('verify_email')  
+
+            # If no changes were detected, notify the user
+            if not verification_sent and not new_username and not new_email:
+                messages.error(request, 'Please provide a new username or email.')
+
+        # Change Password
+        if 'change_password' in request.POST:
+            current_password = request.POST.get('current_password')
+            new_password = request.POST.get('new_password')
+            confirm_password = request.POST.get('confirm_password')
+
+            if request.user.check_password(current_password):
+                if new_password == confirm_password:
+                    request.user.set_password(new_password)
+                    request.user.save()
+                    update_session_auth_hash(request, request.user)  # Prevents logout
+                    messages.success(request, 'Your password has been updated successfully.')
+                    return redirect('settings')
+                else:
+                    messages.error(request, 'New passwords do not match.')
+            else:
+                messages.error(request, 'Current password is incorrect.')
+
+    return render(request, 'settings.html')
+
+
+
+@login_required
+def verify_email(request):
+    if request.method == 'POST':
+        entered_code = request.POST.get('verification_code')
+        saved_code = request.session.get('verification_code')
+        new_email = request.session.get('new_email')
+
+        if entered_code == saved_code:
+            # Update user's email
+            request.user.email = new_email
+            request.user.save()
+
+            # Clear session variables
+            del request.session['verification_code']
+            del request.session['new_email']
+
+            messages.success(request, 'Your email address has been updated successfully.')
+            return redirect('settings')  # Redirect back to settings page after successful update
+        else:
+            messages.error(request, 'The verification code you entered is incorrect. Please try again.')
+
+    return render(request, 'verify_email.html')  
+
 
 @login_required
 def logout_view(request):

@@ -1,11 +1,8 @@
-import cv2
 import numpy as np
-import mediapipe as mp
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 import threading
 from django.http import JsonResponse
-from happytransformer import HappyTextToText, TTSettings
 import base64
 import asyncio
 from .models import Message, Conversation
@@ -22,16 +19,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-mp_holistic = mp.solutions.holistic  # Holistic model
-mp_drawing = mp.solutions.drawing_utils  # Drawing utilities
 
-def mediapipe_detection(image, model):
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # COLOR CONVERSION BGR 2 RGB
-    image.flags.writeable = False  # Image is no longer writeable
-    results = model.process(image)  # Make prediction
-    image.flags.writeable = True  # Image is now writeable
-    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)  # COLOR COVERSION RGB 2 BGR
-    return image, results
 
 def draw_styled_landmarks(image, results):
     # Draw face outlines
@@ -85,22 +73,7 @@ model.load_weights('MyModels/seven.h5')
 colors = [(245, 117, 16), (117, 245, 16), (16, 117, 245), (245, 125, 16), (16, 117, 100)]
 colors = [(245, 117, 16), (117, 245, 16), (16, 117, 245), (245, 125, 16), (16, 117, 100)]
 
-def prob_viz(res, input_frame, colors):
-    output_frame = input_frame.copy()
-    for num, prob in enumerate(res):
-        cv2.rectangle(output_frame, (0, 60 + num * 40), (int(prob * 100), 90 + num * 40), colors[num], -1)
-        cv2.putText(output_frame, actions[num], (0, 85 + num * 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2,
-                    cv2.LINE_AA)
-    return output_frame
 
-
-happy_tt = HappyTextToText("T5", "prithivida/grammar_error_correcter_v1")
-settings = TTSettings(do_sample=True, top_k=10, temperature=0.5, min_length=1, max_length=100)
-
-def paraphrase(text):
-    input_text = "gec: " + text  
-    result = happy_tt.generate_text(input_text, args=settings)
-    return result.text 
 
 
     
@@ -229,85 +202,9 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
                 
                   
 
-    def recognition_loop(self, sender_id, room_id):
-        # Ensure OpenCV setup is correct
-        if self.cap is None:
-            self.cap = cv2.VideoCapture(0)
-            self.cap.set(3, 640)
-            self.cap.set(4, 480)
-            self.cap.set(cv2.CAP_PROP_FPS, 15)
+   
 
-        cap = self.cap
-        if cap.isOpened():
-            sequence = []
-            sentence = []
-            predictions = []
-            threshold = 0.5
-
-            with mp.solutions.holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.4) as holistic:
-                while self.recognizing and cap.isOpened():
-                    ret, frame = cap.read()
-                    if not ret:
-                        break
-
-                    frame = cv2.flip(frame, 1)
-                    image, results = mediapipe_detection(frame, holistic)
-                    if image is None:
-                        continue
-
-                    draw_styled_landmarks(image, results)
-
-                    keypoints = extract_keypoints(results)
-                    sequence.append(keypoints)
-                    sequence = sequence[-23:]
-
-                    # Use async processing for prediction
-                    action, confidence = asyncio.run(self.process_frame_and_predict(sequence))
-
-                    if action is not None:
-                        predictions.append(action)
-                        if np.unique(predictions[-10:])[0] == action and confidence > threshold:
-                            action_name = actions[action]
-                            if len(sentence) == 0 or action_name != sentence[-1]:
-                                sentence.append(action_name)
-
-                    if len(sentence) > 5:
-                        sentence = sentence[-5:]
-
-                    self.output_text_f = " ".join(sentence)
-
-                    _, jpeg = cv2.imencode('.jpg', image, [cv2.IMWRITE_JPEG_QUALITY, 15])
-                    frame_bytes = jpeg.tobytes()
-                    frame_base64 = base64.b64encode(frame_bytes).decode('utf-8')
-                    data_url = 'data:image/jpeg;base64,' + frame_base64
-
-                    # Use async_to_sync to call send_frame from sync context
-                    async_to_sync(self.send_frame)(data_url, sender_id, room_id)
-
-        self.stop_recognition()
-
-    async def stop_recognition(self):
-        logger.info("Stopping recognition") 
-        frame = "{% static '/images/ebigkas-logo.png' %}"
-        if self.recognizing:
-            self.recognizing = False
-            if self.cap is not None:
-                self.cap.release()
-                cv2.destroyAllWindows()
-                if len(self.output_text_f) > 0:
-                    paraphrased_text = paraphrase(self.output_text_f)  
-                else:
-                    paraphrased_text = 'blank'
-                await self.channel_layer.group_send(
-                    "video_call_group",
-                    {
-                        'type': 'output_text1',
-                        'output_text1': paraphrased_text,
-                        'frame': frame,
-                    }
-                )
-                logger.info("Recognition stopped. Output text: %s", paraphrased_text) 
-                self.cap = None
+   
                 
     async def output_text1(self, event):
         await self.send(text_data=json.dumps({

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'styles/styles.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'styles/settings.css' %}">
+
+
+    <title>Sign Language Detection</title>
+</head>
+
+
+<body>
+    <div class="container">
+        {% include 'nav.html' %}
+        {% include 'topnav.html' %}
+
+        <div class="settings-container">
+            <h2>Account Settings</h2>
+        
+            <!-- Button to show Update Info Form -->
+            <div class="popup-btn" id="show-info-form">Update Account Info</div>
+            <!-- Update Username and Email Form (Initially hidden) -->
+            <div class="settings-section" id="info-form">
+                <h3>Update Account Info</h3>
+                <form method="POST" action="">
+                    {% csrf_token %}
+                    <div>
+                        <label for="username">Username:</label>
+                        <input type="text" class="settings-input" id="username" name="username" placeholder="{{ request.user.username }}">
+                    </div>
+                    <div>
+                        <label for="email">Email:</label>
+                        <input type="email" class="settings-input"  id="email" name="email" placeholder="{{ request.user.email }}">
+                    </div>
+                    <button type="submit" name="update_info" class="btn btn-primary">Update Info</button>
+                </form>
+            </div>
+        
+            <!-- Button to show Change Password Form -->
+            <div class="popup-btn" id="show-password-form">Change Password</div>
+            <!-- Change Password Form (Initially hidden) -->
+            <div class="settings-section" id="password-form">
+                <h3>Change Password</h3>
+                <form method="POST" action="">
+                    {% csrf_token %}
+                    <div>
+                        <label for="current_password">Current Password:</label>
+                        <input type="password" class="settings-input"  id="current_password" name="current_password" required>
+                    </div>
+                    <div>
+                        <label for="new_password">New Password:</label>
+                        <input type="password" class="settings-input" id="new_password" name="new_password" required>
+                    </div>
+                    <div>
+                        <label for="confirm_password">Confirm New Password:</label>
+                        <input type="password" class="settings-input"  id="confirm_password" name="confirm_password" required>
+                    </div>
+                    <button type="submit" name="change_password" class="btn btn-primary">Change Password</button>
+                </form>
+            </div>
+        
+            <!-- Messages -->
+            {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        
+
+
+
+    </div>
+
+
+<script>
+            // JavaScript to toggle visibility of forms
+    document.getElementById('show-info-form').addEventListener('click', function () {
+        let infoForm = document.getElementById('info-form');
+        let passwordForm = document.getElementById('password-form');
+        
+        if (infoForm.style.display === 'none' || infoForm.style.display === '') {
+            infoForm.style.display = 'block';
+            passwordForm.style.display = 'none'; // Hide password form if open
+        } else {
+            infoForm.style.display = 'none';
+        }
+    });
+
+    document.getElementById('show-password-form').addEventListener('click', function () {
+        let passwordForm = document.getElementById('password-form');
+        let infoForm = document.getElementById('info-form');
+        
+        if (passwordForm.style.display === 'none' || passwordForm.style.display === '') {
+            passwordForm.style.display = 'block';
+            infoForm.style.display = 'none'; // Hide info form if open
+        } else {
+            passwordForm.style.display = 'none';
+        }
+    });
+
+    // Add the 'show' class to messages after the page loads
+document.addEventListener('DOMContentLoaded', function () {
+    const messages = document.querySelectorAll('.messages li');
+    messages.forEach(function (message) {
+        message.classList.add('show');
+    });
+});
+
+
+</script>
+</body>
+</html>

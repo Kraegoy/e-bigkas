@@ -11,6 +11,10 @@ from django.http import HttpResponseRedirect
 from geopy.geocoders import Nominatim
 from ebigkasAPP .models import UserProfile
 import folium
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+
 
 def get_coordinates(location):
     geolocator = Nominatim(user_agent="MyGeocoderApp/1.0/ebigkas/fsl-recognition-system")
@@ -137,3 +141,28 @@ def edit_slideshow(request, id):
         slideshow.save()
         messages.success(request, "Slideshow updated successfully.")
         return redirect('ebigkas_admin') 
+    
+
+@login_required   
+@csrf_exempt
+@require_POST
+def submit_response(request, feedback_id):
+    try:
+        feedback = Feedback.objects.get(id=feedback_id)
+        response_message = request.body.decode('utf-8')  # Get the response data
+
+        # You may want to parse the JSON data if you're using a JSON request
+        import json
+        data = json.loads(response_message)
+        response_text = data.get('response', '')
+
+        # Save the response in your model (you can create a Response model for this)
+        feedback.response = response_text  # Assuming you have a response field in your Feedback model
+        feedback.save()
+
+        return JsonResponse({'status': 'success', 'message': 'Response submitted successfully.'})
+    
+    except Feedback.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Feedback not found.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

@@ -83,9 +83,9 @@
                                 <td>{{ feedback.created_at }}</td>
 
                                 <td>
-                                    <a href="#" title="Respond" class="feedback-details">
-                                     View
-                                    </a>
+                                    <span class="feedback-details" onclick="responseTo({{ feedback.id }}, '{{ feedback.user.username }}', '{{ feedback.feedback_type }}', '{{ feedback.message }}', '{{ feedback.created_at|date:"F j, Y, g:i a" }}')">
+                                        View
+                                    </span>
                                 </td>
                                 
                             </tr>
@@ -98,6 +98,22 @@
                 </table>
             </div>
         </div>
+
+<!-- Modal structure -->
+<div id="feedbackModal" class="feedbackModal">
+    <div class="feedback-modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2 class="feedback-header">Feedback Details</h2>
+        <p class="feedback-p"><strong>ID:</strong> <span id="feedbackID"></span></p>
+        <p class="feedback-p"><strong>Username:</strong> <span id="feedbackUsername"></span></p>
+        <p class="feedback-p"><strong>Feedback Type:</strong> <span id="feedbackType"></span></p>
+        <p class="feedback-p"><strong>Message:</strong> <span id="feedbackDetails"></span></p>
+        <p class="feedback-p"><strong>Created At:</strong> <span id="feedbackCreatedAt"></span></p>
+        <textarea class="feedbackTextArea" id="responseInput" placeholder="Enter your response here..."></textarea>
+        <button class="submit-response-btn" onclick="submitResponse()">Submit Response</button>
+    </div>
+</div>
+
     
         <script>
             function showTab(tabId, btn) {
@@ -115,6 +131,64 @@
                 // Add active class to the clicked button
                 btn.classList.add('active');
             }
+            function responseTo(feedbackID, username, feedbackType, feedbackMessage, createdAt) {
+                // Populate the feedback details
+                document.getElementById('feedbackID').innerText = feedbackID;
+                document.getElementById('feedbackUsername').innerText = username;
+                document.getElementById('feedbackType').innerText = feedbackType;
+                document.getElementById('feedbackDetails').innerText = feedbackMessage;
+                document.getElementById('feedbackCreatedAt').innerText = createdAt;
+            
+                // Show the modal
+                const modal = document.getElementById('feedbackModal');
+                modal.style.display = "block";
+            }
+            
+            function closeModal() {
+                const modal = document.getElementById('feedbackModal');
+                modal.style.display = "none";
+            }
+            
+            function submitResponse() {
+                const feedbackID = document.getElementById('feedbackID').innerText; // Get the feedback ID from the modal
+                const response = document.getElementById('responseInput').value;
+            
+                // Send the response to the server using AJAX or a form submission
+                fetch(`/submit_response/${feedbackID}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'), // Get CSRF token if using Django
+                    },
+                    body: JSON.stringify({ response: response })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Handle success (e.g., show a success message)
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+            
+            // Function to get CSRF token (Django specific)
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            
+
         </script>
 </body>
 

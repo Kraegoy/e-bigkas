@@ -27,6 +27,8 @@ from .views import (
     feedback_view,
     send_feedback,
     remove_friend,
+    settings_view,
+    verify_email,
     
 )
 
@@ -41,6 +43,10 @@ urlpatterns = [
     path('help/', help_view, name='help'),
     path('profile/<int:user_id>/', profile, name='profile'),
     path('update_profile_info/', update_profile_info, name='update_profile_info'),
+    path('settings/', settings_view, name='settings'),
+    path('verify_email/', verify_email, name='verify_email'),  
+
+
 
     path('create_room/', create_room, name='create_room'),  
     path('room/<str:room_id>/', room_detail, name='room_detail'),
