@@ -2362,3 +2362,36 @@ to {opacity: 1}
 .space{
   height: 100px;
 }
+
+.bottom3 {
+    display: flex;
+    justify-content: center;
+    align-items: center;     
+    padding: 20px;           
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    background-color: rgba(0, 0, 0, 0.552);
+}
+
+.help-deaf-container {
+    display: inline-block;   
+    padding: 10px;    
+    transition: all 0.3s ease;   
+    color: wheat;    
+}
+
+.help-deaf-container:hover{
+  font-size: 1.3em;
+}
+
+.pfd-img {
+    max-width: 100%;         /* Ensures the image scales responsively */
+    height: auto;            /* Keeps the image aspect ratio */
+    border-radius: 8px;      /* Slight rounding of the image corners */
+    transition: transform 0.3s ease-in-out; /* Smooth scaling effect on hover */
+    box-shadow: 0 14px 8px rgba(0, 0, 0, 0.392); 
+
+}
+
+.pfd-img:hover {
+    transform: scale(1.05);  /* Slightly enlarges the image on hover */
+}

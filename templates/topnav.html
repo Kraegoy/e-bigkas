@@ -68,7 +68,7 @@
 
         <div class="drop-support">
           <i class="fas fa-life-ring"></i>
-          <a href="#" id="support" class="drop-support">Support</a>
+          <a href="https://pfdeaf.org/donate/" id="support" target="blank" class="drop-support">Support</a>
         </div>
 
         <div class="drop-feedback">
@@ -94,6 +94,10 @@
 
 <script>
   const loggedInUserIdTopnav = sessionStorage.getItem("loggedInUserId");
+  sessionStorage.setItem('isIncall', 'false');
+  const isIncall = sessionStorage.getItem('isIncall');
+  console.log("is in call? " +isIncall)
+
 
   const baseUrlTopNav = "{% url 'profile' 0 %}".replace("/0/", "/"); // Remove the placeholder part to avoid extra slashes
 

@@ -358,7 +358,7 @@
             
             scrollToBottom();
         } else {
-            console.error('Receiver ID is null or undefined');
+            console.log('Receiver ID is null or undefined');
         }
     }
 
@@ -369,7 +369,9 @@
 </body>
 
 <script>
-
+    sessionStorage.setItem('isIncall', 'true');
+    const isIncall = sessionStorage.getItem('isIncall');
+    console.log("is in call? " +isIncall)
     
     sessionStorage.setItem('roomID', roomID);
     const video = document.getElementById('video1');

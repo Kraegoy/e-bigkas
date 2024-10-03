@@ -174,14 +174,15 @@
     
 
     <div class="chat-box">
-        <form id="chat-form" method="post" action="">
+        <form id="chat-form" method="post" action="" onsubmit="sendMessage(event); return false;">
             {% csrf_token %}
             <textarea id="chat-input" name="message" class="chat-here" placeholder="Enter chat..." onkeydown="handleKeyDown(event)"></textarea>
             <input type="hidden" id="sender" name="sender" value="">
             <input type="hidden" id="receiver" name="receiver" value="">
             <input type="hidden" id="conversationName" name="conversationName" value="">
-            <button id="sendButton" class="sendButton" onclick="sendMessage()" type="submit">Send</button>
+            <button id="sendButton" class="sendButton" type="submit">Send</button>
         </form>
+        
         
     </div>
     
@@ -389,9 +390,17 @@ fetch('/friends_list/')
             sessionStorage.setItem('invitedUserID', invitedUserID);
             
             const loggedInUserId = "{{ request.user.id }}";
-            // Pass loggedInUserId as an argument to the sendVideoCallInvitation function
-            sendVideoCallInvitation(roomID, invitedUserID, loggedInUserId);
-           createRoomForm.submit(); // Submit the form when the image is clicked
+            const isIncall = sessionStorage.getItem('isIncall');
+
+            if(isIncall == 'true'){
+                alert("Currently in call")
+            }
+            else{
+                // Pass loggedInUserId as an argument to the sendVideoCallInvitation function
+                sendVideoCallInvitation(roomID, invitedUserID, loggedInUserId);
+                createRoomForm.submit(); // Submit the form when the image is clicked
+            }
+       
     });
 
     // Append the list item to the friends list
@@ -463,46 +472,56 @@ function handleIncomingMessage(message) {
 }
 
 
+function handleKeyDown(event) {
+    // Check if "Enter" is pressed (keyCode 13) and Shift key is NOT pressed
+    if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();  // Prevent the default behavior (which adds a new line)
+        sendMessage(event);  // Call the sendMessage function
+    }
+}
 
-
-function sendMessage() {
+function sendMessage(event) {
+    event.preventDefault(); // Prevent the default form submission
     loadFriendsConversations();
     const chatInput = document.getElementById('chat-input');
     const messageContent = chatInput.value;
     const senderId = sessionStorage.getItem('loggedInUserId');
     const conversationName = sessionStorage.getItem('conversationName');
-    const userHolderContainer = document.getElementById('user-holder-container')
-    if(userHolderContainer){
-        userHolderContainer.style.display= 'none';
+    const userHolderContainer = document.getElementById('user-holder-container');
+
+    // Hide user holder if it exists
+    if (userHolderContainer) {
+        userHolderContainer.style.display = 'none';
     }
-    
-    const recieverID = sessionStorage.getItem('receiverId');
-    if (messageContent.trim() !== '' && recieverID) { 
+
+    const receiverID = sessionStorage.getItem('receiverId');
+
+    // Check if the message content is empty
+    if (messageContent.trim() === '') {
+        console.log("Message content is empty. Not sending.");
+        return; // Exit the function if the message is empty
+    }
+
+    // Proceed only if receiverID is valid
+    if (receiverID) {
         const message = {
             sender_id: senderId,
-            receiver_id: recieverID, 
+            receiver_id: receiverID,
             content: messageContent,
             timestamp: new Date().toISOString(),
             conversationName: conversationName
         };
-        
+
         console.log("Sending message:", message);
         socket.send(JSON.stringify({ type: 'message', message: message }));
-        
+
+        // Clear the input field after sending
         chatInput.value = '';
-        
+
+        // Scroll to the bottom of the chat (if applicable)
         scrollToBottom();
     } else {
-        console.error('Receiver ID is null or undefined');
-    }
-}
-
-
-function handleKeyDown(event) {
-    // Check if the Enter key is pressed
-    if (event.keyCode === 13 && !event.shiftKey) {
-        event.preventDefault(); // Prevent the default Enter key behavior (line break)
-        sendMessage(); // Call the sendMessage function
+        console.log('Receiver ID is null or undefined');
     }
 }
 
