@@ -141,8 +141,6 @@ USE_TZ = True
 
 # Add these at the end of your settings file if they aren't present
 STATIC_URL = '/static/'
-
-# Directory where static files will be collected
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Additional static directories (if needed)
