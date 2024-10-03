@@ -1,8 +1,7 @@
-mediapipe
-tensorflow==2.12.0rc0
+tensorflow==2.16.2
 django
 channels
-happytransformer
 daphne
 folium
 geopy
+pillows
