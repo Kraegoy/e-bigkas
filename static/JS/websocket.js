@@ -370,7 +370,7 @@ if (message.type === 'messages_loaded') {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    window.location.href = `${window.location.origin}/room/${roomId}/`;
+                    window.location.href = `${window.location.protocol}//${window.location.host}/room/${roomId}/`;
                     playRingtone(); // Call function to play ringtone
                 }
             })
