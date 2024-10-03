@@ -347,7 +347,9 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
                     {   
                         "type": "chat_message",
                         "message": message,
-                        "conversation_name" : conversation_name
+                        "conversation_name" : conversation_name,
+                        "sender_id": sender_id,
+                        "receiver_id" : receiver_id,
                     }
                 )
             elif data['type'] == 'start_recognition':
@@ -549,9 +551,14 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
     
     async def chat_message(self, event):
         message = event['message']
+        sender_id = event['sender_id']
+        receiver_id = event['receiver_id']
         conversation_name = event['conversation_name']
         await self.send(text_data=json.dumps({
             "type": "message",
             "message": message,
-            "conversation_name": conversation_name 
+            "conversation_name": conversation_name,
+            "sender_id": sender_id,
+            "receiver_id": receiver_id,
+
         }))

@@ -289,8 +289,12 @@ if (message.type === 'update_profile') {
 
 
 if (message.type === 'message') {
+    const messagesAlert1 = document.getElementById('message-alert');
+    if(message.receiver_id == loggedInUserID){
+        messagesAlert1.style.display = "flex";
+    }
     const message_convoName = message.conversation_name;
-        loadFriendsConversations();
+    loadFriendsConversations();
 
 
     if(conversationName == message_convoName ){
@@ -299,6 +303,7 @@ if (message.type === 'message') {
         console.log("loaded friends messages")
     }
 }
+
 if (message.type === 'messages_loaded') { 
     const message_convoName = message.conversation_name;
         if(conversationName == message_convoName){

@@ -144,85 +144,83 @@
 
       function typeText(element, text, index = 0) {
         if (index < text.length) {
-          element.textContent += text.charAt(index);
-          index++;
-          setTimeout(() => typeText(element, text, index), 45);
+            element.textContent += text.charAt(index);
+            index++;
+            setTimeout(() => typeText(element, text, index), 45); // Adjust typing speed here
         }
-      }
-
-      window.onload = function () {
-        var isNewUser = "{{ isNewUser }}";
+    }
+    
+    window.onload = function () {
+        var isNewUser = "{{ isNewUser }}"; // Get user status from server-side template variable
         const newUserModal = document.getElementById("newUserModal");
-
+    
         if (isNewUser === "True") {
-          const newUserModalContent = `
+            const newUserModalContent = `
                 <div class="newUserModal-content">
                     <div class="Welcome-video-container" id="Welcome-video-container">
-                        <video id="Welcome-video" autoplay muted >
+                        <p class="welcome-content"></p>
+
+                        <video id="Welcome-video" autoplay muted>
                             <source src="{% static 'tutorial_ebigkas/part1.mp4' %}" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
                     </div>
-                    
                     <span class="close">&times;</span>
-                    <p class="welcome-content"></p>
                 </div>
             `;
-
-          newUserModal.innerHTML = newUserModalContent;
-
-          // Show the modal
-          var modal = document.getElementById("newUserModal");
-          var overlay = document.getElementById("overlay");
-          var welcomeMessages = [
-            "Welcome to e-Bigkas, where gestures speak volumes.",
-            "Help us build a better tomorrow, where barriers dissolve and understanding reigns supreme.",
-            "Join our community at e-Bigkas, where every sign is a step towards a more inclusive world.",
-            "Together, let's shape a future where communication knows no bounds.",
-            "Let your gestures be heard.",
-          ];
-
-          var x = 0;
-
-          var span = document.getElementsByClassName("close")[0];
-
-          var video = document.getElementById("Welcome-video");
-
-          modal.style.display = "block";
-          overlay.style.display = "block";
-
-          video.onplay = function () {
-            // Start typing the welcome messages when the video starts playing
-            typeText(welcomeContent, welcomeMessages[x]);
-
-            function nextMessage() {
-              setTimeout(function () {
-                if (x < welcomeMessages.length - 1) {
-                  x++;
-                  welcomeContent.textContent = ""; // Clear the content before typing the next message
-                  typeText(welcomeContent, welcomeMessages[x]);
-                  nextMessage(); // Call nextMessage recursively to iterate through messages
+    
+            newUserModal.innerHTML = newUserModalContent;
+    
+            // Show the modal
+            var modal = document.getElementById("newUserModal");
+            var overlay = document.getElementById("overlay");
+            var welcomeMessages = [
+                "Welcome to e-Bigkas, where gestures speak volumes.",
+                "Help us build a better tomorrow, where barriers dissolve and understanding reigns supreme.",
+                "Join our community at e-Bigkas, where every sign is a step towards a more inclusive world.",
+                "Together, let's shape a future where communication knows no bounds.",
+                "Let your gestures be heard.",
+            ];
+    
+            var x = 0;
+            var welcomeContent = document.querySelector('.welcome-content'); // Select the welcome content paragraph
+            var span = document.getElementsByClassName("close")[0]; // Close button
+    
+            var video = document.getElementById("Welcome-video");
+    
+            modal.style.display = "block"; // Display the modal
+            overlay.style.display = "block"; // Display the overlay
+    
+            video.onplay = function () {
+                // Start typing the welcome messages when the video starts playing
+                typeText(welcomeContent, welcomeMessages[x]);
+    
+                function nextMessage() {
+                    setTimeout(function () {
+                        if (x < welcomeMessages.length - 1) {
+                            x++;
+                            welcomeContent.textContent = ""; // Clear the content before typing the next message
+                            typeText(welcomeContent, welcomeMessages[x]);
+                            nextMessage(); // Call nextMessage recursively to iterate through messages
+                        }
+                    }, 8000); // Wait for 8 seconds before showing the next message
                 }
-              }, 8000); // Wait for 10 seconds before showing the next message
-            }
-
-            nextMessage(); // Start the process
-          };
-
-          // Close the modal when the user clicks on the close button
-          span.onclick = function () {
-            modal.style.display = "none";
-            overlay.style.display = "none";
-          };
-
-          // Close the modal when the user clicks anywhere outside of it
-          window.onclick = function (event) {
-            if (event.target == modal) {
-              modal.style.display = "none";
-            }
-          };
+    
+                nextMessage(); // Start the process
+            };
+    
+            // Close the modal when the user clicks on the close button
+            span.onclick = function () {
+                modal.style.display = "none"; // Hide the modal
+                overlay.style.display = "none"; // Hide the overlay
+            };
         }
-      };
+    };
+    
+
+
+
+
 
       function fetchRecentCalls() {
         fetch('/recent-calls/')

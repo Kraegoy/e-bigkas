@@ -21,6 +21,7 @@
         id="friend-request"
         onclick="showFriendRequests()"
       >
+        <span class="friend-request-count" id="friend-request-count"></span>
         <i class="fas fa-user-friends"></i>
       </div>
 
@@ -39,7 +40,11 @@
         id="friend-message"
         onclick="showMessageDropdown()"
       >
-        <i class="fas fa-envelope"></i>
+      <div class="message-alert" id="message-alert" >
+        <i class="fas fa-exclamation" ></i> <!-- Warning icon -->
+      </div>        
+      <i class="fas fa-envelope"></i>
+
       </div>
 
       <div class="message-dropdown1" id="message-dropdown">
@@ -261,6 +266,8 @@
   let toggleDrop = true;
   let toggleMessageDrop = true;
   let toggleFriendRequest = true;
+  const messagesAlert = document.getElementById('message-alert');
+  const friendsAlert = document.getElementById('friends-alert');
 
   function showMessageDropdown() {
     if (toggleMessageDrop) {
@@ -272,6 +279,7 @@
       }
       loadFriendsConversations();
       message_dropdown.style.display = "block";
+      messagesAlert.style.display = "none";
       envelope.style.boxShadow = "-1px -2px 20px 4px wheat";
 
       toggleMessageDrop = false;
@@ -380,6 +388,26 @@
     }
   }
 
+
+document.addEventListener("DOMContentLoaded", function() {
+    getFriendRequestCount();
+});
+
+function getFriendRequestCount() {
+    fetch("/pending_friendships_list/")
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.success) {
+                const pendingCount = document.getElementById('friend-request-count');
+                pendingCount.innerHTML = data.pending_user_info.length;
+            }
+        })
+        .catch((error) => {
+            console.error('Error fetching pending friend requests:', error);
+        });
+}
+
+
   function loadFriendRequests() {
     fetch("/pending_friendships_list/")
         .then((response) => response.json())
@@ -387,6 +415,9 @@
             if (data.success) {
                 const pendingDropdown = document.getElementById("pending-friendships-dropdown");
                 const pendingFriendshipsText = document.getElementById("pending-friendships-text");
+                const pendingCount = document.getElementById('friend-request-count');
+                console.log(data.pending_user_info.length);
+                pendingCount.innerHTML = data.pending_user_info.length;
 
                 // Clear previous content
                 pendingDropdown.innerHTML = "";
@@ -579,6 +610,7 @@
               displaychat1(friend.id, friend.username);
               showMessageDropdown();
               reset_unread_count(conversation_name);
+              messagesAlert.style.display = "none";
             });
 
             const timestamp = document.createElement("span");
