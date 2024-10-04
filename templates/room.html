@@ -834,10 +834,6 @@
             if (localStream) {
                 localStream.getTracks().forEach(track => track.stop());
             }
-            if (peerConnection) {
-                peerConnection.close();
-                peerConnection = null; // Reset peerConnection
-            }
         }
     
         
@@ -978,12 +974,7 @@ async function startRecordingCamera() {
       if (localStream) {
           recognitionButton.innerHTML = "Start Recognition"; 
           localStream.getTracks().forEach(track => track.stop());
-
          
-      }
-      if (peerConnection) {
-          peerConnection.close();
-          peerConnection = null; // Reset peerConnection
       }
       camera.stop();
      

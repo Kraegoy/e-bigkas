@@ -20,38 +20,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-
-def draw_styled_landmarks(image, results):
-    # Draw face outlines
-    mp_drawing.draw_landmarks(image, results.face_landmarks, mp_holistic.FACEMESH_CONTOURS,
-                               mp_drawing.DrawingSpec(color=(80, 110, 10), thickness=1, circle_radius=0),
-                               mp_drawing.DrawingSpec(color=(80, 256, 121), thickness=1, circle_radius=0)
-                               )
-    # Draw pose connections
-    mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_holistic.POSE_CONNECTIONS,
-                               mp_drawing.DrawingSpec(color=(80, 22, 10), thickness=1, circle_radius=0),
-                               mp_drawing.DrawingSpec(color=(80, 44, 121), thickness=1, circle_radius=0)
-                               )
-    # Draw left hand connections
-    mp_drawing.draw_landmarks(image, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS,
-                               mp_drawing.DrawingSpec(color=(121, 22, 76), thickness=1, circle_radius=0),
-                               mp_drawing.DrawingSpec(color=(121, 44, 250), thickness=1, circle_radius=0)
-                               )
-    # Draw right hand connections
-    mp_drawing.draw_landmarks(image, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS,
-                               mp_drawing.DrawingSpec(color=(245, 117, 66), thickness=1, circle_radius=0),
-                               mp_drawing.DrawingSpec(color=(245, 66, 230), thickness=1, circle_radius=0)
-                               )
-
-
-def extract_keypoints(results):
-    pose = np.array([[res.x, res.y, res.z, res.visibility] for res in results.pose_landmarks.landmark]).flatten() if results.pose_landmarks else np.zeros(33 * 4)
-    face = np.array([[res.x, res.y, res.z] for res in results.face_landmarks.landmark]).flatten() if results.face_landmarks else np.zeros(468 * 3)
-    lh = np.array([[res.x, res.y, res.z] for res in results.left_hand_landmarks.landmark]).flatten() if results.left_hand_landmarks else np.zeros(21 * 3)
-    rh = np.array([[res.x, res.y, res.z] for res in results.right_hand_landmarks.landmark]).flatten() if results.right_hand_landmarks else np.zeros(21 * 3)
-    return np.concatenate([pose, face, lh, rh])
-
-
 # Actions that we try to detect
 # actions = np.array(['blank','maybe','no','sorry','take care','thank you','understand','welcome','what','when','where','yes','hello', 'thank you', 'how are you', 'I\'m fine', 'I love you', "I'm not fine"])
 actions = np.array(['hello', 'thank you', 'I love you','how are you', "I'm fine", "I'm not fine", "yes"])
@@ -82,19 +50,9 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
     cap = None
     recognizing = False
     stop_requested = False
-    recognition_thread = None
     recognized_actions = []
     last_sent_message_time = 0
 
-    async def start_recognition(self, sender_id, room_id):
-        self.recognized_actions = []
-
-        if not self.recognizing:
-            self.recognizing = True
-            self.stop_requested = False
-            self.recognition_thread = threading.Thread(target=self.recognition_loop, args=(sender_id, room_id,))
-            self.recognition_thread.start()
-                     
     
     async def process_extracted_keypoints(self, sender_id, room_id, sequences):
         threshold = 0.6

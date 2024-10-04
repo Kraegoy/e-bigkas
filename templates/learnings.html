@@ -31,7 +31,7 @@
             </div>
             <div class="learnings-right">
                 <div class="not-learned-container">
-                    <p class="not-learned-header">Not learned </p>
+                    <p class="not-learned-header">To learn </p>
                     <div class="learnings-not-learned-actions-container">
 
                         {% for learning in not_learned_learnings %}
@@ -39,11 +39,11 @@
                             <div class="learning-action">
                                 {{ learning.title }}
                             </div>
-                            <a href="{% url 'learn_action' learning.id %}" class="learning-learn-button">
-                                <div>
-                                    Learn
-                                </div>
-                            </a>
+                            <div class="learning-learn-button" onclick="showLearningModal('{{ learning.title|escapejs }}', {{ learning.id }})">
+                                Learn
+                            </div>
+                            
+                            
                             
                         </div>
                         {% endfor %}            
@@ -55,26 +55,40 @@
                     <div class="learnings-not-learned-actions-container">
 
                         {% for learned in learned_learnings %}
-                        <div class="learning-action-container">
-                            <div class="learning-action">
-                                {{ learned.learning }}
-                            </div>
-                            <a href="#" class="learning-learn-button">
-                                <div>
-                                    Done
+                            <div class="learning-action-container">
+                                <div class="learning-action">
+                                    {{ learned.learning }}
                                 </div>
-                            </a>
-                        </div>
-                        {% endfor %}            
+                                <div class="learning-learn-button" onclick="showLearningModal('{{ learned.learning.title|escapejs }}', {{ learned.learning.id }})">
+                                    Recap
+                                </div>
+                            </div>
+                        {% endfor %}
+        
                     </div>
                 </div>
-
-
             </div>
+
+           
         </div>
         
     </div>
-
+    <div class="learning-modal-container" id="learning-modal-container">
+        <div class="close-learning-modal" id="close-learning-modal" onclick="closeLearningModal()">
+            x
+        </div>
+        <div class="learning-modal-title" id="learning-modal-title">
+            
+        </div>
+        <div class="learning-video-container">
+            <video src="" id="earning-modal-video" class="learning-modal-video" autoplay muted></video>
+        </div>
+        <a data-url="{% url 'learn_action' 0 %}" class="ready-button" id="ready-button">
+            <div>
+                Ready
+            </div>
+        </a>
+    </div>
 
 
 <script>
@@ -132,6 +146,28 @@
             }
         }
       });
+
+      const learningTitle = document.getElementById('learning-modal-title');
+      const learningModal = document.getElementById('learning-modal-container');
+      const closeLearningModalButton = document.getElementById('closeLearningModal')
+      const readyButton = document.getElementById('ready-button')
+      const learningVideo = document.getElementById('earning-modal-video')
+
+
+      function showLearningModal(action_title, action_id){
+        learningVideo.src = `/static/Tutorial Videos/${action_title}/${action_title}.MOV`;
+        learningModal.style.display = "flex";
+        learningTitle.innerHTML = action_title;
+        let url = readyButton.getAttribute('data-url').replace('0', action_id);
+        readyButton.href = url;
+      }
+
+      function closeLearningModal(){
+        learningModal.style.display = "none";
+
+      }
+
+
 </script>
 </body>
 </html>

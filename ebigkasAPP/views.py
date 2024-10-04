@@ -467,7 +467,10 @@ def register(request):
                 user.save()
                 return redirect('login')
         else:
-            messages.error(request, 'Try again')
+            # Loop through form errors and display them
+            for error in form.errors.values():
+                for message in error:
+                    messages.error(request, message)
     
     return render(request, 'login.html', {'form': form})
 

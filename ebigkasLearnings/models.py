@@ -5,6 +5,7 @@ class Learning(models.Model):
     title = models.CharField(max_length=100)
     action_model = models.IntegerField(default=1)
     model_file_path = models.CharField(max_length=255, null=True)
+    belongs_to = models.TextField(default='')  
 
     def __str__(self):
         return self.title

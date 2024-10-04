@@ -4,4 +4,3 @@ channels
 daphne
 folium
 geopy
-pillows
