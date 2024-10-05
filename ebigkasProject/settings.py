@@ -12,12 +12,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-uuky)(k2i(ifs$4wgz*e^^o&^s8jpp(b*n6lb#&#s6ee*-c(%2'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '54.242.122.41', 'ebigkas.com', 'www.ebigkas.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '54.242.122.41', 'ebigkas.com', 'wwww.ebigkas.com']
 
 
 # Application definition
@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'ebigkasAPP.apps.EbigkasappConfig',
     'ebigkasAdminAPP',
     'ebigkasLearnings',
+    'storages',
 
 ]
 
@@ -129,6 +130,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
+# Add these at the end of your settings file if they aren't present
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Additional static directories (if needed)
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),  # Assuming you have a 'static' directory in your project
+]
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -139,6 +148,26 @@ LOGIN_URL = '/login/'
 
 # URL where users should be redirected to after they log in
 LOGIN_REDIRECT_URL = '/'
+
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+
+AWS_STORAGE_BUCKET_NAME = 'ebigkas-bkt-41'
+AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+AWS_S3_FILE_OVERWRITE = False
+
+STORAGES = {
+    #MEDIA FILE (IAMGE) MANAGEMENT
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3StaticStorage",
+    },
+    
+    #CSS AND JS FILE MANAGEMENT
+    "staticfiles": {
+        "BACKEND": "storages.backends.s3boto3.S3StaticStorage",
+    },
+}
+
 
 
 SESSION_COOKIE_AGE = 259200  # 3 days in seconds
