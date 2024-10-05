@@ -124,7 +124,6 @@ def learnings_view(request):
         'not_learned_learnings': not_learned_learnings,
         'learned_learnings' : learned_learnings,
         'AWS_S3_CUSTOM_DOMAIN': settings.AWS_S3_CUSTOM_DOMAIN,
-
     })
 
 
