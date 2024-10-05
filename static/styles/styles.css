@@ -2418,3 +2418,9 @@ to {opacity: 1}
 }
 
 
+.learning-modal-video{
+  width: 60%;
+  height: auto;
+  margin: auto;
+  border-radius: 2em;
+}

@@ -7,6 +7,8 @@ import numpy as np
 from django.http import JsonResponse
 import json
 import logging
+from django.conf import settings
+
 
 
 
@@ -112,6 +114,7 @@ def learnings_view(request):
     # Get not learned learnings
     not_learned_learnings = all_learnings.exclude(id__in=learned_ids)
 
+
     # Pass the learning data to the template
     return render(request, 'learnings.html', {
    
@@ -120,6 +123,8 @@ def learnings_view(request):
         'percentage_learned': percentage_learned,
         'not_learned_learnings': not_learned_learnings,
         'learned_learnings' : learned_learnings,
+        'AWS_S3_CUSTOM_DOMAIN': settings.AWS_S3_CUSTOM_DOMAIN,
+
     })
 
 

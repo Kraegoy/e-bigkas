@@ -152,10 +152,13 @@
       const closeLearningModalButton = document.getElementById('closeLearningModal')
       const readyButton = document.getElementById('ready-button')
       const learningVideo = document.getElementById('earning-modal-video')
+      const AWS_S3_CUSTOM_DOMAIN_STATIC = "{{ AWS_S3_CUSTOM_DOMAIN }}";
+      console.log("aws: " + AWS_S3_CUSTOM_DOMAIN_STATIC)
+
 
 
       function showLearningModal(action_title, action_id){
-        learningVideo.src = `/static/Tutorial Videos/${action_title}/${action_title}.MOV`;
+        learningVideo.src = `https://${AWS_S3_CUSTOM_DOMAIN_STATIC}/Tutorial%20Videos/${action_title}/${action_title}.MOV`;
         learningModal.style.display = "flex";
         learningTitle.innerHTML = action_title;
         let url = readyButton.getAttribute('data-url').replace('0', action_id);

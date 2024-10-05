@@ -596,7 +596,7 @@ def help_view(request):
         folder_path = os.path.join(base_dir, folder_name)
         if os.path.isdir(folder_path):
             folders.append({'name': folder_name})
-    return render(request, 'help.html', {'folders': folders})
+    return render(request, 'help.html', {'folders': folders, 'AWS_S3_CUSTOM_DOMAIN': settings.AWS_S3_CUSTOM_DOMAIN,})
 
 @login_required
 def load_videos(request):

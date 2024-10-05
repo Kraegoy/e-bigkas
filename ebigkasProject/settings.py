@@ -85,8 +85,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ebigkasProject.wsgi.application'
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 
@@ -154,6 +152,9 @@ LOGIN_URL = '/login/'
 # URL where users should be redirected to after they log in
 LOGIN_REDIRECT_URL = '/'
 
+
+
+
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 
@@ -162,16 +163,20 @@ AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
 AWS_S3_FILE_OVERWRITE = False
 
 STORAGES = {
+    
     #MEDIA FILE (IAMGE) MANAGEMENT
     "default": {
         "BACKEND": "storages.backends.s3boto3.S3StaticStorage",
     },
-    
+        
     #CSS AND JS FILE MANAGEMENT
     "staticfiles": {
         "BACKEND": "storages.backends.s3boto3.S3StaticStorage",
     },
 }
+
+MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 

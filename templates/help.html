@@ -87,9 +87,9 @@
         }
         
         .video-item {
-            flex: 0 0 auto;
             margin: 10px;
-            width: 40%;
+            margin-top: 10px;
+            width: 75%;
             height: 100%;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Add box shadow */
@@ -356,9 +356,11 @@
 <script src="{% static 'JS/index.js' %}"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
+    const AWS_S3_CUSTOM_DOMAIN_STATIC = "{{ AWS_S3_CUSTOM_DOMAIN }}";
+
     $(document).ready(function() {
-        $('.video-card1').click(function() { // Change selector to .video-card1
-            var folderName = $(this).find('.folder-name').text().toUpperCase(); // Get folder name within .video-card1
+        $('.video-card1').click(function() { 
+            var folderName = $(this).find('.folder-name').text();
     
             $.ajax({
                 url: '/load_videos/', 
@@ -371,17 +373,13 @@
     
                     // Display videos in modal
                     $.each(videos, function(index, video) {
-                        var videoElement = $('<video class="video-item" width="320" height="240" controls muted></video>');
-                        var sourceElement = $('<source type="video/mp4">');
-                        sourceElement.attr('src', `/static/Tutorial Videos/${folderName}/${video}`);
-                        videoElement.append(sourceElement);
+                        var videoElement = $(`<video src="https://${AWS_S3_CUSTOM_DOMAIN_STATIC}/Tutorial%20Videos/${folderName}/${video}" class="video-item" width="320" height="240" muted autoplay></video>`);
                         videoContainer.append(videoElement);
                     });
     
                     // Display folder name in modal at bottom end
                     var folderNameElement = $('<h2>').text(folderName);
                     folderNameElement.css({
-                        'text-transform': 'uppercase', 
                         'position': 'absolute', 
                         'top': '90%', 
                         'left': '50%',
