@@ -4,5 +4,3 @@ ebigkas-venv/
 text.txt
 
 .env
-
-db.sqlite3
