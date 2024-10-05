@@ -4,3 +4,6 @@ channels
 daphne
 folium
 geopy
+python-dotenv
+boto3
+django-storages
