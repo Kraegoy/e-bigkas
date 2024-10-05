@@ -22,7 +22,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '54.242.122.41', 'ebigkas.com', 'wwww.ebigkas.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '54.198.184.25', 'ebigkas.com', 'wwww.ebigkas.com']
 
 
 # Application definition
