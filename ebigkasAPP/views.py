@@ -547,6 +547,8 @@ def home(request):
         'not_learned_count': not_learned_count,
         'percentage_learned': percentage_learned,
         'not_learned_learnings': not_learned_learnings,
+        'AWS_S3_CUSTOM_DOMAIN': settings.AWS_S3_CUSTOM_DOMAIN,
+
     })
 
 
