@@ -29,6 +29,10 @@ from .views import (
     remove_friend,
     settings_view,
     verify_email,
+    register_email_verification,
+    forgot_password, 
+    enter_verification_code, 
+    reset_password,
     
 )
 
@@ -45,6 +49,8 @@ urlpatterns = [
     path('update_profile_info/', update_profile_info, name='update_profile_info'),
     path('settings/', settings_view, name='settings'),
     path('verify_email/', verify_email, name='verify_email'),  
+    path('register/verify-email/<str:email>', register_email_verification, name='register_email_verification'),
+
 
 
 
@@ -72,6 +78,10 @@ urlpatterns = [
     path('feedback_view/', feedback_view, name='feedback_view'),
     path('send_feedback/', send_feedback, name='send_feedback'),
 
+
+    path('forgot_password/<str:username>/', forgot_password, name='forgot_password'),
+    path('enter_verification_code/', enter_verification_code, name='enter_verification_code'),
+    path('reset_password/<str:username>/', reset_password, name='reset_password'),
 
     
 

@@ -453,30 +453,15 @@ def load_messages(request):
     # Handle other HTTP methods
     return JsonResponse({'error': 'Method not allowed'}, status=405)
 
-def register(request):
-    form = UserCreationForm()
-    if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            username = form.cleaned_data.get('username')
-            if User.objects.filter(username__iexact=username).exists():
-                messages.error(request, 'Username already exists.')
-            else:
-                user = form.save(commit=False)
-                user.username = username.lower()
-                user.save()
-                return redirect('login')
-        else:
-            # Loop through form errors and display them
-            for error in form.errors.values():
-                for message in error:
-                    messages.error(request, message)
-    
-    return render(request, 'login.html', {'form': form})
 
 
 def loginPage(request):
     page = 'login'
+
+    # Initialize or retrieve the failed login attempts from the session
+    if 'failed_login_attempts' not in request.session:
+        request.session['failed_login_attempts'] = 0
+
     if request.method == 'POST':
         username = request.POST.get('username').lower()
         password = request.POST.get('password')
@@ -484,30 +469,59 @@ def loginPage(request):
         if username and password:  # Check if both fields are not empty
             user = authenticate(request, username=username, password=password)
             if user is not None:
+                # Reset failed login attempts on successful login
+                request.session['failed_login_attempts'] = 0
 
-                if user.is_staff:
-                    login(request, user)
-                    return redirect('ebigkas_admin')
-                
+                # Log the user in
                 login(request, user)
+
+                # Redirect to different pages depending on user role
+                if user.is_staff:
+                    return redirect('ebigkas_admin')
                 
                 # Update user profile status
                 user_profile = UserProfile.objects.get(user=user)
                 user_profile.status = 'online'
                 user_profile.save()
 
-                # Fetch the newUser status for the logged-in user
-                new_user_status = user_profile.newUser
-
-                # Redirect to home page to avoid form resubmission
-                return redirect('home')  # Redirect to the homePage view
+                return redirect('home') 
             else:
+                # Increment the failed login attempts count in the session
+                request.session['failed_login_attempts'] += 1
                 messages.error(request, 'Invalid username or password.')
+
+               # Check if there have been 3 failed attempts
+                if request.session['failed_login_attempts'] >= 3:
+                    # Check if the username exists in the system
+                    if User.objects.filter(username=username).exists():
+                        # Fetch the user and their profile
+                        user = User.objects.get(username=username)
+                        user_profile = UserProfile.objects.get(user=user)
+                        
+                        # Redirect to retry page with username and profile picture context
+                        return render(request, 'retry_login.html', {
+                            'username': username,
+                            'profile_picture': user_profile.profile_picture.url,  
+                        })
+                    else:
+                        messages.error(request, f'No user with username {username} found.')
+                        # Provide an error message for invalid login attempts
+                        return render(request, 'login.html', {'page': page})
+
         else:
             messages.error(request, 'Please fill in all fields.')
-    
-    context = {'page': page}
+
+     # Convert messages to list to access the last message
+    messages_list = list(messages.get_messages(request))
+    last_message = messages_list[-1] if messages_list else None
+
+    context = {
+        'page': page,
+        'last_message': last_message,  # Pass last message to template
+        'failed_login_attempts': request.session['failed_login_attempts'],
+    }
     return render(request, 'login.html', context)
+
 
 @login_required
 def home(request):
@@ -736,6 +750,101 @@ def settings_view(request):
     return render(request, 'settings.html')
 
 
+from django.contrib.auth.forms import UserCreationForm
+from django.core.mail import send_mail
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.utils.crypto import get_random_string
+from django.conf import settings
+from django.contrib.auth.models import User
+
+def register(request):
+    form = UserCreationForm()
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+
+            # Check if the username already exists
+            if User.objects.filter(username__iexact=username).exists():
+                messages.error(request, 'Username already exists.')
+            else:
+                password = form.cleaned_data.get('password1')
+                user = User(username=username)  # Create user without email
+                user.set_password(password)  # Hash the password
+                user.save()
+                
+                
+                email = request.POST.get('email')
+
+
+                # If an email is provided, send verification code
+                if email:
+                    verification_code = get_random_string(6, allowed_chars='0123456789')
+                    request.session['verification_code'] = verification_code
+
+                    try:
+                        print(f"Sending email to {email} with verification code: {verification_code}")
+
+                        # Send the verification email
+                        send_mail(
+                            'Verify your email address',
+                            f'Your verification code is {verification_code}',
+                            settings.DEFAULT_FROM_EMAIL,
+                            [email],
+                            fail_silently=False,
+                        )
+                        messages.success(request, 'A verification code has been sent to your email. Please enter it to confirm your registration.')
+
+                        # Store the username and email in session for verification
+                        request.session['username'] = username.lower()
+                        request.session['password'] = password
+                        request.session['email'] = email  # Store email for verification
+                        return redirect('register_email_verification', email)
+
+                    except Exception as e:
+                        messages.error(request, f'An error occurred while sending the email: {str(e)}')
+                else:
+                    messages.success(request, 'Your account has been created successfully!')
+                    return redirect('login')
+
+        else:
+            # Loop through form errors and display them
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field.capitalize()}: {error}")
+
+    return render(request, 'login.html', {'form': form})
+
+def register_email_verification(request, email):
+    username = request.session.get('username')
+    password = request.session.get('password')
+
+    if request.method == 'POST':
+        entered_code = request.POST.get('verification_code')
+        saved_code = request.session.get('verification_code')
+
+        if entered_code == saved_code:
+            # Retrieve the email from session
+            email = request.session.get('email')
+            user = User.objects.get(username=username)
+            user.email = email  # Set email after verification
+            user.save()
+
+            # Clear session variables
+            del request.session['verification_code']
+            del request.session['username']
+            del request.session['email']
+            del request.session['password']
+
+            messages.success(request, 'Your email address has been verified and your account has been created successfully.')
+            return redirect('login')
+        else:
+            messages.error(request, 'The verification code you entered is incorrect. Please try again.')
+
+    return render(request, 'register_email_verification.html', {'username': username, 'email': email})
+
 
 @login_required
 def verify_email(request):
@@ -774,5 +883,103 @@ def logout_view(request):
 
 
 
+def forgot_password(request, username):
+    try:
+        # Check if the user exists
+        user = User.objects.get(username=username)
+        
+        # Generate a random verification code
+        verification_code = random.randint(100000, 999999)
+        
+        # Save the code to the user's session (or save it in the database)
+        request.session['verification_code'] = verification_code
+        request.session['username'] = username
+        
+        # Create the email content with HTML formatting
+        email_subject = 'Verify your email address'
+        email_body = f"""
+        <html>
+            <body>
+                <h2 style="font-family: Arial, sans-serif;">Verify Your Email Address</h2>
+                <p style="font-family: Arial, sans-serif;">Your verification code is:</p>
+                <h1 style="font-family: Arial, sans-serif; font-size: 32px; color: #2a7f2a; border: 2px solid #2a7f2a; display: inline-block; padding: 10px; border-radius: 5px;">
+                    {verification_code}
+                </h1>
+                <p style="font-family: Arial, sans-serif;">Not you? Ignore this message.</p>
+                <p style="font-family: Arial, sans-serif;">Thank you for using our service!</p>
+            </body>
+        </html>
+        """
+
+        # Send the verification email
+        send_mail(
+            email_subject,
+            email_body,
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            fail_silently=False,
+            html_message=email_body  # Include the HTML content
+        )
+        
+        # Notify the user that the email has been sent
+        messages.success(request, 'A verification code has been sent to your email address. Please enter it to reset your password.')
+        
+        # Redirect to a page where the user enters the verification code
+        return redirect('enter_verification_code')
+
+    except User.DoesNotExist:
+        # If the user doesn't exist, show an error
+        messages.error(request, f'No user found with username {username}.')
+        return redirect('login')
+
+    except Exception as e:
+        # Handle email sending failure
+        messages.error(request, f'An error occurred while sending the verification code: {str(e)}')
+        return redirect('login')
 
 
+
+from django.contrib.auth.hashers import make_password
+def enter_verification_code(request):
+    if request.method == 'POST':
+        entered_code = request.POST.get('verification_code')
+        correct_code = request.session.get('verification_code')
+        username = request.session.get('username')
+
+        if entered_code == str(correct_code):
+            # Redirect to reset password page
+            return redirect('reset_password', username=username)
+        else:
+            messages.error(request, 'Incorrect verification code. Please try again.')
+
+    messages_list = list(messages.get_messages(request))
+    last_message = messages_list[-1] if messages_list else None
+    return render(request, 'enter_verification_code.html', {'last_message': last_message})
+
+
+def reset_password(request, username):
+    if request.method == 'POST':
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+
+        if new_password == confirm_password:
+            try:
+                # Get the user and update their password
+                user = User.objects.get(username=username)
+                user.password = make_password(new_password)
+                user.save()
+
+                messages.success(request, 'Your password has been successfully reset.')
+                return redirect('login')
+
+            except User.DoesNotExist:
+                messages.error(request, f'No user found with username {username}.')
+                return redirect('login')
+
+        else:
+            messages.error(request, 'Passwords do not match. Please try again.')
+
+    messages_list = list(messages.get_messages(request))
+    last_message = messages_list[-1] if messages_list else None
+    
+    return render(request, 'reset_password.html', {'last_message': last_message})

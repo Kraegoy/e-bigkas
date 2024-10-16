@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification</title>
+</head>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #262525;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .container {
+        max-width: 400px;
+        margin: 50px auto;
+        padding: 20px;
+        color: white;
+        background-color: black;
+        border-radius: 5px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    h2 {
+        text-align: center;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    label {
+        display: block;
+        margin-bottom: 5px;
+    }
+    a{
+        color: wheat;
+    }
+    
+    input[type="text"] {
+        width: 90%;
+        
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+    
+    button {
+        width: 100%;
+        padding: 10px;
+        background-color: #1d1e1d;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    
+    button:hover {
+        background-color: wheat;
+        color: black;
+    }
+    
+    .messages {
+        list-style-type: none;
+        padding: 0;
+    }
+    
+    .messages li {
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 5px;
+    }
+    
+    .messages li.error {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .messages li.success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .form-footer {
+        text-align: center;
+        margin-top: 20px;
+    }
+    
+</style>
+<body>
+    <div class="container">
+        <h2>Email Verification</h2>
+        
+        <!-- Display success or error messages -->
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <form method="POST" action="">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="verification_code">Enter Verification Code:</label>
+                <input type="text" id="verification_code" name="verification_code" required aria-label="Verification Code" placeholder="Verification Code">
+            </div>
+            <button type="submit">Verify Email</button>
+        </form>
+
+        <div class="form-footer">
+            <p>Already verified your email? <a href="{% url 'login' %}">Log in here</a>.</p>
+        </div>
+    </div>
+</body>
+</html>

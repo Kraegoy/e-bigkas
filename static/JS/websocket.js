@@ -1,5 +1,5 @@
 // websocket.js
-const socket = new WebSocket('ws://localhost:8000/ws/video_call/');
+const socket = new WebSocket('ws://ebigkas.com/ws/video_call/');
 
 
 let sentStatus = sessionStorage.getItem('sentStatus') || 0;
@@ -238,7 +238,7 @@ if (message.type === 'ice_candidate' && message.sender_id != loggedInUserId) {
         outputTextElement.textContent = ''; 
         typeText(outputTextElement, sanitizedOutputText); 
         if(sanitizedOutputText != 'blank'){
-            speakText(sanitizedOutputText);
+            speakText2(sanitizedOutputText);
         }
   
         setTimeout(() => {

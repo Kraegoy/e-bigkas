@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retry Login</title>
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: #f5deb3; /* wheat color */
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .retry-container {
+            background-color: #2c2c2c;
+            padding: 40px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            width: 350px;
+        }
+
+        .retry-container img {
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border: 2px solid #f5deb3; /* wheat color */
+        }
+
+        h2 {
+            color: #f5deb3; /* wheat color */
+            margin-top: 10px;
+        }
+
+        p {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .btn-link{
+            color: white;
+        }
+
+        .btn-link:hover{
+            color: wheat;
+        }
+
+        
+    </style>
+</head>
+<body>
+    <div class="retry-container">
+        <!-- Profile picture and username -->
+        <img src="{{ profile_picture }}" alt="Profile Picture">
+        <h2>{{ username }}</h2>
+
+        <!-- Message to the user -->
+        <p>It looks like you're having trouble loggin in.</p>
+
+        <!-- Action buttons -->
+        <div class="buttons">
+            <a href="{% url 'forgot_password' username %}" class="btn-link">forgot password?</a>
+            <a href="{% url 'login' %}" class="btn-link">not you?</a>
+            <a href="{% url 'login' %}" class="btn-link">try again?</a>
+
+        </div>
+    </div>
+</body>
+</html>

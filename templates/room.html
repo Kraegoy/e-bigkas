@@ -366,12 +366,12 @@
 
 </script>
 
+<script src="https://code.responsivevoice.org/responsivevoice.js?key=wJWpwJEV"></script>
 </body>
 
 <script>
     sessionStorage.setItem('isIncall', 'true');
     const isIncall = sessionStorage.getItem('isIncall');
-    console.log("is in call? " +isIncall)
     
     sessionStorage.setItem('roomID', roomID);
     const video = document.getElementById('video1');
@@ -394,6 +394,10 @@
     const controlsWrapper = document.querySelector('#controls-wrapper');
     const cameraBtn = document.getElementById('camera-btn');
 
+    function speakText2(textToSpeak) {
+        responsiveVoice.speak(textToSpeak, "UK English Male");
+    }
+
     function typeText(element, text, index = 0) {
         if (index < text.length) {
             element.textContent += text.charAt(index);
@@ -402,25 +406,33 @@
         }
     }
 
+
+
     
     function speakText(textToSpeak) {
         var synth = window.speechSynthesis;
         var utterance = new SpeechSynthesisUtterance(textToSpeak);
     
-        // Set the language
-        utterance.lang = 'en-IE'; // English (Ireland)
     
         // Set the voice directly without relying on onvoiceschanged event
         var voices = synth.getVoices();
+        var femaleVoiceFound = false;
+    
+        // Look for a female voice in the available voices
         for (var i = 0; i < voices.length; i++) {
-            if (voices[i].name === 'Microsoft Emily Online (Natural) - English (Ireland)') {
+            // Check if the voice name contains a common female voice identifier
+            if (voices[i].name.includes('Female') || voices[i].name.includes('Emily') || voices[i].name.includes('Zira')) {
                 utterance.voice = voices[i];
+                femaleVoiceFound = true;
                 break;
             }
         }
+    
         // Speak the utterance
         synth.speak(utterance);
     }
+
+  
     
     document.addEventListener('DOMContentLoaded', function () {
         const addFriendForms = document.querySelectorAll('.add-friend-form');
