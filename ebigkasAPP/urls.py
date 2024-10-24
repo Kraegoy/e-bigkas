@@ -33,6 +33,7 @@ from .views import (
     forgot_password, 
     enter_verification_code, 
     reset_password,
+    update_voice_preference,
     
 )
 
@@ -82,6 +83,7 @@ urlpatterns = [
     path('forgot_password/<str:username>/', forgot_password, name='forgot_password'),
     path('enter_verification_code/', enter_verification_code, name='enter_verification_code'),
     path('reset_password/<str:username>/', reset_password, name='reset_password'),
+    path('update-voice-preference/', update_voice_preference, name='update_voice_preference'),
 
     
 

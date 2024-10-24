@@ -1,5 +1,7 @@
 // websocket.js
+//const socket = new WebSocket('ws://ebigkas.com/ws/video_call/');
 const socket = new WebSocket('ws://localhost:8000/ws/video_call/');
+
 
 
 let sentStatus = sessionStorage.getItem('sentStatus') || 0;
@@ -231,14 +233,14 @@ if (message.type === 'ice_candidate' && message.sender_id != loggedInUserId) {
         } else {
             newDiv.classList.add('friend-sent-action');
         }
+
         
-    
         // Clear and speak the output text
         const outputTextElement = document.getElementById('translatedText');
         outputTextElement.textContent = ''; 
         typeText(outputTextElement, sanitizedOutputText); 
         if(sanitizedOutputText != 'blank'){
-            speakText(sanitizedOutputText);
+            speakText(sanitizedOutputText)
         }
   
         setTimeout(() => {
@@ -289,8 +291,12 @@ if (message.type === 'update_profile') {
 
 
 if (message.type === 'message') {
+    const messagesAlert1 = document.getElementById('message-alert');
+    if(message.receiver_id == loggedInUserID){
+        messagesAlert1.style.display = "flex";
+    }
     const message_convoName = message.conversation_name;
-        loadFriendsConversations();
+    loadFriendsConversations();
 
 
     if(conversationName == message_convoName ){
@@ -299,6 +305,7 @@ if (message.type === 'message') {
         console.log("loaded friends messages")
     }
 }
+
 if (message.type === 'messages_loaded') { 
     const message_convoName = message.conversation_name;
         if(conversationName == message_convoName){
@@ -370,7 +377,7 @@ if (message.type === 'messages_loaded') {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    window.open(`${window.location.protocol}//${window.location.host}/room/${roomId}/`, '_blank');
+                    window.location.href = `${window.location.protocol}//${window.location.host}/room/${roomId}/`;
                     playRingtone(); // Call function to play ringtone
                 }
             })

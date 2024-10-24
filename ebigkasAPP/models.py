@@ -17,6 +17,7 @@ class UserProfile(models.Model):
     status = models.CharField(max_length=10, default='offline') 
     location = models.CharField(max_length=200, null=True)
     bio = models.CharField(max_length=100, null=True)
+    voice_preference = models.CharField(default="Male", max_length=7)
 
     def __str__(self):
         return f'Profile of {self.user.username}'

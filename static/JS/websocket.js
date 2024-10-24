@@ -1,5 +1,7 @@
 // websocket.js
-const socket = new WebSocket('ws://ebigkas.com/ws/video_call/');
+//const socket = new WebSocket('ws://ebigkas.com/ws/video_call/');
+const socket = new WebSocket('ws://localhost:8000/ws/video_call/');
+
 
 
 let sentStatus = sessionStorage.getItem('sentStatus') || 0;
@@ -231,14 +233,14 @@ if (message.type === 'ice_candidate' && message.sender_id != loggedInUserId) {
         } else {
             newDiv.classList.add('friend-sent-action');
         }
+
         
-    
         // Clear and speak the output text
         const outputTextElement = document.getElementById('translatedText');
         outputTextElement.textContent = ''; 
         typeText(outputTextElement, sanitizedOutputText); 
         if(sanitizedOutputText != 'blank'){
-            speakText2(sanitizedOutputText);
+            speakText(sanitizedOutputText)
         }
   
         setTimeout(() => {

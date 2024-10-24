@@ -366,7 +366,10 @@
 
 </script>
 
+<!--
 <script src="https://code.responsivevoice.org/responsivevoice.js?key=wJWpwJEV"></script>
+
+-->
 </body>
 
 <script>
@@ -394,9 +397,9 @@
     const controlsWrapper = document.querySelector('#controls-wrapper');
     const cameraBtn = document.getElementById('camera-btn');
 
-    function speakText2(textToSpeak) {
-        responsiveVoice.speak(textToSpeak, "UK English Male");
-    }
+   //function speakText2(textToSpeak) {
+ //    responsiveVoice.speak(textToSpeak, "UK English Female");
+   //}
 
     function typeText(element, text, index = 0) {
         if (index < text.length) {
@@ -407,7 +410,7 @@
     }
 
 
-
+    console.log("voice pref: " +`{{voice_preference}}` )
     
     function speakText(textToSpeak) {
         var synth = window.speechSynthesis;
@@ -416,21 +419,28 @@
     
         // Set the voice directly without relying on onvoiceschanged event
         var voices = synth.getVoices();
+        var voicePreference = `{{voice_preference}}`;
         var femaleVoiceFound = false;
     
-        // Look for a female voice in the available voices
-        for (var i = 0; i < voices.length; i++) {
-            // Check if the voice name contains a common female voice identifier
-            if (voices[i].name.includes('Female') || voices[i].name.includes('Emily') || voices[i].name.includes('Zira')) {
-                utterance.voice = voices[i];
-                femaleVoiceFound = true;
-                break;
+        
+        if (voicePreference == "Female") {
+              // Look for a female voice in the available voices
+            for (var i = 0; i < voices.length; i++) {
+                // Check if the voice name contains a common female voice identifier
+                if (voices[i].name.includes('Female') || voices[i].name.includes('Emily') || voices[i].name.includes('Zira')) {
+                    utterance.voice = voices[i];
+                    femaleVoiceFound = true;
+                    break;
+                }
             }
         }
-    
+        else{
+            utterance.voice = voices[1];
+        }
         // Speak the utterance
         synth.speak(utterance);
     }
+    speakText(" ")
 
   
     

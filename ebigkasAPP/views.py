@@ -433,8 +433,10 @@ def get_recent_calls(request):
 def room_detail(request, room_id):
     # Retrieve room details based on room_id
     room = get_object_or_404(Room, room_id=room_id)
+    userProfile = UserProfile.objects.get(user=request.user)  
+    voice_preference = userProfile.voice_preference 
     # Render the room.html template with the room details
-    return render(request, 'room.html', {'room': room})
+    return render(request, 'room.html', {'room': room, 'voice_preference' : voice_preference})
 
 
 import json
@@ -983,3 +985,14 @@ def reset_password(request, username):
     last_message = messages_list[-1] if messages_list else None
     
     return render(request, 'reset_password.html', {'last_message': last_message})
+
+
+def update_voice_preference(request):
+    if request.method == 'POST':
+        voice_preference = request.POST.get('voice_preference')
+        user_profile = UserProfile.objects.get(user=request.user)
+        user_profile.voice_preference = voice_preference
+        user_profile.save()
+        return JsonResponse({'status': 'success', 'voice_preference': voice_preference})
+
+    return JsonResponse({'status': 'error'}, status=400)

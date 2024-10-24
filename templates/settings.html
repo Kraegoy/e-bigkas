@@ -62,6 +62,16 @@
                     <button type="submit" name="change_password" class="btn btn-primary">Change Password</button>
                 </form>
             </div>
+
+            <div class="popup-btn">
+
+                <h2>Edit Voice Preference</h2>
+                <label for="voice-preference">Choose your voice preference:</label>
+                <select id="voice-preference">
+                    <option value="Male" {% if user.userprofile.voice_preference == "Male" %}selected{% endif %}>Male</option>
+                    <option value="Female" {% if user.userprofile.voice_preference == "Female" %}selected{% endif %}>Female</option>
+                </select>
+            </div>
         
             <!-- Messages -->
             {% if messages %}
@@ -73,11 +83,11 @@
             {% endif %}
         </div>
         
-
-
+    
 
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
             // JavaScript to toggle visibility of forms
@@ -114,6 +124,30 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
+</script>
+
+
+<script>
+    $(document).ready(function() {
+        $('#voice-preference').change(function() {
+            var voicePreference = $(this).val();
+
+            $.ajax({
+                url: "{% url 'update_voice_preference' %}",
+                method: "POST",
+                data: {
+                    'voice_preference': voicePreference,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'  // Include CSRF token
+                },
+                success: function(response) {
+                    $('#status-message').text('Voice preference updated to: ' + response.voice_preference);
+                },
+                error: function(xhr) {
+                    $('#status-message').text('Error updating voice preference.');
+                }
+            });
+        });
+    });
 </script>
 </body>
 </html>

@@ -142,7 +142,21 @@ body{
     text-decoration: none;
     color: wheat;
     margin-left: auto;
+    cursor: pointer;
 }
+
+.action-title-header{
+    color: wheat;
+    font-weight: bold;
+    text-transform: capitalize;
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+    font-size: 2em;
+    border-bottom: 1px solid grey ;
+    border-top: 1px solid grey ;
+
+  }
 
 .not-learned-header, .learned-header{
     margin: 1em;
@@ -170,4 +184,101 @@ body{
     width: 70%;
     align-items: center;
     justify-content: center;
+}
+
+
+.learning-modal-container{
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    height: 90%;
+    width: 80%;
+    border: 1px solid grey;
+    z-index: 199999;
+    background-color: rgb(0, 0, 0);
+    box-shadow: -20px 9px 1000px 700px rgba(0, 0, 0, 0.849); /* Shadow for depth */
+    color: white;
+    display: none;
+    flex-direction: column;
+}
+
+.ready-button{
+    margin: auto;
+    padding: 1em;
+    color: black;
+    text-decoration: none;
+    border: 1px solid grey;
+    border-radius: 10px;
+    background-color: antiquewhite;
+    font-weight: bold;
+}
+
+.ready-button:hover{
+    scale: 1.1;
+}
+
+.close-learning-modal{
+    padding: 8px;
+    padding-right: 16px;
+    margin-left: auto;
+    font-size: 2em;
+    cursor: pointer;
+    color: rgb(210, 208, 208);
+}
+
+.learning-modal-title{
+    font-size: 2em;
+    padding: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: -1em;
+    text-transform: capitalize;
+}
+
+.learning-video-container{
+    object-fit: contain;
+    width: 100%;
+    height: auto;
+    display: flex;
+}
+
+.learning-modal-video{
+    width: 60%;
+    height: auto;
+    margin: auto;
+    border-radius: 2em;
+}
+
+
+.results-container{
+    height: 80%;
+    margin: 1em;
+    color: white;
+    display: flex;
+    flex-direction: column;
+}
+
+.learning-result{
+    border: 1px solid grey;
+    border-radius: 1em;
+    padding: 1em;
+    width: auto;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 10px;
+}
+
+.learning-correct{
+    color: #5dff5d;
+}
+
+.learning-retry{
+    border-color: wheat;
+    color: wheat;
+}
+
+.learning-text{
+    color: rgb(196, 196, 196);
+    padding: 5px;
 }

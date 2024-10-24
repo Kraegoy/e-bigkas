@@ -175,9 +175,9 @@ STORAGES = {
     },
 }
 
+
 MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
 
 
 SESSION_COOKIE_AGE = 259200  # 3 days in seconds
