@@ -28,6 +28,7 @@ actions = np.array(['hello', 'thank you', 'I love you','how are you', "I'm fine"
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
 
+
 model = Sequential()
 model.add(LSTM(64, return_sequences=True, activation='relu', input_shape=(23, 1662)))
 model.add(LSTM(128, return_sequences=True, activation='relu'))
