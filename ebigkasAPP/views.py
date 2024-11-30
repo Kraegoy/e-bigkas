@@ -435,8 +435,9 @@ def room_detail(request, room_id):
     room = get_object_or_404(Room, room_id=room_id)
     userProfile = UserProfile.objects.get(user=request.user)  
     voice_preference = userProfile.voice_preference 
+    
     # Render the room.html template with the room details
-    return render(request, 'room.html', {'room': room, 'voice_preference' : voice_preference})
+    return render(request, 'room.html', {'room': room, 'voice_preference' : voice_preference, 'AWS_S3_CUSTOM_DOMAIN': settings.AWS_S3_CUSTOM_DOMAIN,})
 
 
 import json

@@ -222,7 +222,7 @@ if (message.type === 'ice_candidate' && message.sender_id != loggedInUserId) {
         console.log('Received data with room ID:', message); 
         const outputText = message.predicted_action ? message.predicted_action : "blank";
         
-        const sanitizedOutputText = removeDuplicates(outputText);
+        const sanitizedOutputText = "Hello, how are you?";
         
         // Create a new div element
         const newDiv = document.createElement('div');
