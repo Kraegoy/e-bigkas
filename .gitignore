@@ -4,3 +4,7 @@ ebigkas-venv/
 text.txt
 
 .env
+
+static/
+staticfiles/
+media/
