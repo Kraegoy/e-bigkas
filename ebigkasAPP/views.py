@@ -987,6 +987,18 @@ def reset_password(request, username):
     
     return render(request, 'reset_password.html', {'last_message': last_message})
 
+def get_user_info(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+        userProfile = UserProfile.objects.get(user=user)  
+        profile_picture = userProfile.profile_picture.url
+        return JsonResponse({
+            'username': user.username,
+            'profile_picture': profile_picture
+        })
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found'}, status=404)
+
 
 def update_voice_preference(request):
     if request.method == 'POST':

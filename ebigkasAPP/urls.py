@@ -34,6 +34,7 @@ from .views import (
     enter_verification_code, 
     reset_password,
     update_voice_preference,
+    get_user_info,
     
 )
 
@@ -51,6 +52,7 @@ urlpatterns = [
     path('settings/', settings_view, name='settings'),
     path('verify_email/', verify_email, name='verify_email'),  
     path('register/verify-email/<str:email>', register_email_verification, name='register_email_verification'),
+    path('get_user_info/<int:user_id>/', get_user_info, name='get_user_info'),
 
 
 
