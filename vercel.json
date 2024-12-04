@@ -1,13 +1,13 @@
 {
     "builds": [{
-        "src": "myproject/wsgi.py",
+        "src": "ebigkasProject/wsgi.py",
         "use": "@vercel/python",
         "config": { "maxLambdaSize": "15mb", "runtime": "python3.9" }
     }],
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "myproject/wsgi.py"
+            "dest": "ebigkasProject/wsgi.py"
         }
     ]
 }
