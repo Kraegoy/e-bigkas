@@ -22,7 +22,7 @@ SECRET_KEY = 'django-insecure-uuky)(k2i(ifs$4wgz*e^^o&^s8jpp(b*n6lb#&#s6ee*-c(%2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '98.80.234.132', 'ebigkas.com', 'wwww.ebigkas.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '98.80.234.132', 'ebigkas.com', 'wwww.ebigkas.com', '.vercel.app']
 
 
 # Application definition
